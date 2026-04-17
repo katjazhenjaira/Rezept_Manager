@@ -1,0 +1,227 @@
+# Recipe Manager — Roadmap
+
+> Live plan for the refactoring and migration effort. Updated each session by Claude and committed together with code changes.
+
+---
+
+## Текущий статус
+
+- **Активная фаза:** Phase 0a — гигиена (ещё не начата, только планирование)
+- **Следующий шаг:** перенести Firebase config из хардкода в env-переменные (`VITE_FIREBASE_*`)
+- **Обновлено:** 2026-04-17
+- **Blocker:** нет
+- **Next-session note:** в начале следующей сессии один раз открыть `/hooks`, чтобы Claude Code подхватил `.claude/settings.json` с Stop hook (watcher не видит файлы, созданные в ходе текущей сессии)
+
+---
+
+## Финальная цель
+
+Превратить Recipe Manager из монолитного прототипа (`App.tsx` на 7500 строк) в модульную feature-based архитектуру, готовую к масштабу десятков тысяч пользователей и тысяч консультантов:
+
+1. **Безопасность.** Gemini API-ключ — только на сервере. Firebase/Supabase — только через Auth и Security Rules/RLS.
+2. **Модульность.** 6 вкладок — 6 независимых feature-модулей. Shared-доменная логика (КБЖУ, аллергии) — в `shared/domain/`.
+3. **Абстракция БД.** Repository-паттерн позволяет переключить Firebase на Supabase одной строкой в `main.tsx`.
+4. **Тесты.** Vitest с первого дня, 100% покрытие `shared/domain/`, critical flow tests на allergy check и KBZHU sync.
+5. **Целевой стек:** React 19 + Vite + TypeScript strict + Cloudflare Pages + Cloudflare Workers (Gemini proxy) + Supabase (DB + Auth + Realtime) + react-i18next.
+
+---
+
+## Стратегические решения (2026-04-17)
+
+| Вопрос | Выбор | Почему |
+|--------|-------|--------|
+| Supabase vs Firebase long-term | **Supabase** (Phase 3) | Postgres + RLS подходит для multi-tenant сценария «консультант → клиенты»; биллинг за чтения дешевле на масштабе |
+| Хостинг | **Cloudflare остаётся** | Free tier щедрее Vercel (unlimited bandwidth, 100k Worker req/day) |
+| Next.js | **Отложен** | App-like приложение, SSR не работает с real-time; вернёмся только при SEO-потребности |
+| Auth timing | **До миграции Supabase** (Phase 2, Firebase Auth) | Избегаем периода «открытая БД без Auth»; потом мигрируем user_id в Supabase |
+| Phase 1 extras | **Vitest + i18n сразу** | Тесты страхуют рефакторинг; i18n дешевле ввести при разбиении, чем ретрофитить |
+| better-sqlite3, dotenv | **Удалить** | Не используются, offline-режим не в приоритете |
+
+---
+
+## Фазы
+
+### Phase 0a — security hygiene (0.5 дня)
+
+**Статус:** [ ] в работе
+
+- [ ] Firebase config → env (`VITE_FIREBASE_API_KEY`, `VITE_FIREBASE_*`)
+- [ ] `src/firebase.ts` → `src/infrastructure/firebaseApp.ts`
+- [ ] `tsconfig.json`: alias `@/*` → `./src/*`, добавить `"strict": true`, `"noUncheckedIndexedAccess": true`
+- [ ] Починить ошибки, которые вскроет strict mode (ожидаемо — много `any`, допустимо временно с TODO)
+- [ ] Удалить `better-sqlite3`, `dotenv` из `package.json`
+- [ ] Обновить `.env.example`
+
+**Критерий готовности:**
+- `npm run build` — зелёный
+- `npm run lint` (tsc --noEmit) — 0 ошибок
+- `git grep -n 'AIza\|firebaseapp.com'` в `src/` — 0 совпадений (конфиг только в .env)
+
+---
+
+### Phase 0b — Gemini proxy на Cloudflare Worker (3–5 дней)
+
+**Статус:** [ ] не начата
+
+- [ ] Подтянуть актуальную документацию через context7: Wrangler, `@google/genai`, Hono
+- [ ] Скаффолдинг `worker/` с `wrangler.toml`
+- [ ] 6 routes: `import-from-url`, `import-from-pdf`, `import-from-photo`, `generate-image`, `calculate-kbzhu`, `fill-remaining`
+- [ ] Shared contracts: `src/services/ai/contracts.ts` (импортируется Worker-ом)
+- [ ] Клиент: `src/services/ai/aiClient.ts`
+- [ ] Rate limiting (token bucket в Cloudflare KV, 10 req/min для import-операций)
+- [ ] Переписать 6 вызовов `new GoogleGenAI()` в `App.tsx` на `aiClient.*`
+- [ ] Vite dev: `wrangler dev` на :8787, Vite proxy `/api → :8787`
+- [ ] Убрать `define: { 'process.env.GEMINI_API_KEY' }` из `vite.config.ts`
+- [ ] Cloudflare secret `GEMINI_API_KEY` в Worker
+- [ ] Запустить security-review skill
+
+**Критерий готовности:**
+- `grep -r GEMINI_API_KEY dist/` → 0 совпадений
+- Все 6 AI-фич вручную работают через прокси
+- Rate limit: 11-й запрос/мин возвращает 429
+
+---
+
+### Phase 1 — разбор монолита (6–10 недель)
+
+**Статус:** [ ] не начата
+
+**1. Доменный слой (до UI):**
+- [ ] `src/shared/domain/types.ts` — все типы из `App.tsx:163-275`
+- [ ] `src/shared/domain/macros.ts` — sumMacros, remainingMacros, resolveActiveTargets
+- [ ] `src/shared/domain/allergies.ts` — recipeAllergens, recipeHasAllergens
+- [ ] `src/features/cart/services/staples.ts` — BASIC_KEYWORDS, isStaple
+- [ ] Vitest + тесты 100% покрытия на вышеперечисленное
+
+**2. Сервисный слой:**
+- [ ] Repository-интерфейсы: `services/RecipesRepository.ts`, PlannerRepository, ProgramsRepository, CartRepository, UserProfileRepository, NutritionPlanRepository
+- [ ] Firestore-реализации в `src/infrastructure/firestore/`
+- [ ] `src/infrastructure/firestore/converters.ts` (Timestamp ↔ ISO)
+- [ ] Тесты на репозитории с fake (in-memory) реализациями
+
+**3. Providers и Shell:**
+- [ ] `src/app/providers/RepositoryProvider.tsx`, `DataProvider.tsx`, `UserProfileProvider.tsx`, `I18nProvider.tsx`
+- [ ] `src/app/layout/Shell.tsx`, `TabBar.tsx`
+- [ ] Перенос `activeNutritionPlan` из localStorage в Firestore `settings/profile`
+- [ ] react-i18next setup: ru.json, de.json, en.json
+
+**4. По одной вкладке (от простого к сложному):**
+- [ ] Settings
+- [ ] Cart
+- [ ] Recipes (с 5 методами импорта)
+- [ ] Programs (иерархия subfolders)
+- [ ] Planner (calendar day/week/month)
+- [ ] Tracker (KBZHU + AI suggestions)
+
+**5. Финальная очистка:**
+- [ ] `App.tsx` → < 200 строк
+- [ ] Удалить inline render-функции
+- [ ] `npm run lint` зелёный со strict
+
+**Критерий готовности (DoD):**
+- `wc -l src/App.tsx` < 200
+- `grep -r "firebase/firestore" src/features src/shared src/app` → 0
+- `grep -r "BASIC_KEYWORDS" src/` → 1 match
+- Vitest: 50+ тестов на shared/domain, 10+ на репозитории, 5+ на critical flows
+- 4 regression flows проходят: allergy check, KBZHU sync, fillRemaining, share-linking
+- Mobile viewport обход 6 вкладок — без визуальных регрессий
+- Переключение ru/de/en работает на всех вкладках
+
+---
+
+### Phase 2 — Firebase Auth + Security Rules (1–2 недели)
+
+**Статус:** [ ] не начата
+
+- [ ] Включить Firebase Auth (email/password + Google OAuth)
+- [ ] `src/features/auth/LoginScreen.tsx`, `SignupScreen.tsx`
+- [ ] `src/infrastructure/firebaseAuth.ts`, `useAuth()` hook
+- [ ] Миграционный скрипт: `scripts/migrate-assign-user.ts` — все существующие документы получают `userId = <твой uid>`
+- [ ] Добавить `userId` в типы и во все writes
+- [ ] Обновить все `*.firestore.ts`: фильтр `where('userId', '==', auth.uid())`
+- [ ] `firestore.rules` с `request.auth.uid == resource.data.userId`
+- [ ] Публичные программы: поле `isPublic`, отдельное правило
+- [ ] Logged-out landing + `/login` UX
+- [ ] Повторный security-review
+
+**Критерий готовности:**
+- Firebase Rules Playground: неаутентифицированное чтение recipes → denied
+- Новый юзер видит пустое приложение (не чужие данные)
+- `?programId=` публичной программы работает без логина
+
+---
+
+### Phase 3 — миграция на Supabase (3–4 недели)
+
+**Статус:** [ ] не начата
+
+- [ ] Создать Supabase-проект, настроить Auth (email + Google OAuth)
+- [ ] Спроектировать схему (`supabase/migrations/*.sql`):
+  - `user_profiles`, `recipes`, `planner_entries`, `cart_items`, `programs`, `program_subfolders`, `program_recipes` (junction), `program_resources` (или JSONB)
+  - `ingredients`, `steps` → JSONB (не text[])
+  - Индексы: `recipes(user_id)`, `planner_entries(user_id, date)`, GIN на categories
+- [ ] RLS policies на каждую таблицу (own_select, own_insert, own_update, own_delete)
+- [ ] pgtap-тесты RLS: user_A не видит user_B
+- [ ] `src/infrastructure/supabase/*Repository.supabase.ts` — реализации интерфейсов
+- [ ] `src/infrastructure/createRepositories.ts` — feature flag `VITE_BACKEND=firebase|supabase`
+- [ ] Supabase Realtime подписки через `postgres_changes`
+- [ ] Reconnect fallback (re-select + diff)
+- [ ] Миграционный скрипт `scripts/migrate-firestore-to-supabase.ts`:
+  - dry-run режим
+  - id mapping (Firestore auto-id → UUID)
+  - правильный порядок: users → profiles → recipes → programs → subfolders → planner_entries → cart_items
+  - backward-compat passthrough для pdfUrl/link полей в programs
+  - валидация: row count match, 0 orphan references
+- [ ] Auth migration: экспорт scrypt-хешей из Firebase, импорт в Supabase (dry-run на staging сначала)
+- [ ] Удалить Firebase после успешного переключения (отдельный commit)
+
+**Критерий готовности:**
+- Feature flag переключает бэкенд без UI-изменений
+- Real-time: два вкладки под одним юзером — апдейт ≤ 2 сек
+- Все 4 regression flows работают на обоих бэкендах
+- pgtap тесты зелёные
+
+---
+
+### Phase 4 — Next.js миграция (опционально, 1–3 недели)
+
+**Статус:** [ ] под вопросом
+
+Возвращаемся к этому вопросу только если появилась конкретная SEO-потребность (публичные share-страницы программ должны индексироваться в Google). Альтернатива — отдельная static HTML страница для share-view без переезда всего приложения.
+
+---
+
+### Phase 5 — collaboration & premium (по необходимости)
+
+- Shared programs с тонкими permissions (not just public/private)
+- Консультант ↔ клиент dashboards
+- Premium tier, биллинг
+- Offline режим (IndexedDB в репозиториях)
+
+---
+
+## Журнал решений
+
+- **2026-04-17** — Supabase выбран для Phase 3 (обоснование: multi-tenant масштаб + стоимость).
+- **2026-04-17** — Cloudflare остаётся хостингом (вместо планировавшегося Vercel): free tier выгоднее для Vite-приложения без SSR. Gemini proxy делаем на Cloudflare Workers, не на Vercel Functions.
+- **2026-04-17** — Next.js миграция отложена до появления реальной SEO-потребности.
+- **2026-04-17** — Auth вводится в Phase 2 на Firebase (до переезда в Supabase), чтобы избежать периода «БД без Auth».
+- **2026-04-17** — Repository pattern закладывается в Phase 1 (не отдельная фаза), чтобы избежать двойной работы.
+- **2026-04-17** — Vitest и react-i18next включены в scope Phase 1 (не отдельные фазы).
+- **2026-04-17** — `CLAUDE.md` упрощён: удалены дубли Application_description.md (Feature Map по 6 вкладкам), устаревшая Repository Structure, Current Development Status, Notes & Decisions Log. Остались tech stack, safety-critical constraints, development conventions, session start/end protocols.
+- **2026-04-17** — добавлена инфраструктура persistence между сессиями: `ROADMAP.md` как single source of truth для статуса, memory-записи `project_roadmap.md` и `project_session_end.md`, Stop hook в `.claude/settings.json` + `.claude/hooks/session-end-reminder.sh` — автоматически инжектит reminder про Session end protocol, когда пользователь прощается (паттерны RU+EN).
+
+---
+
+## Протокол работы над этим roadmap'ом
+
+В начале каждой сессии Claude:
+1. Читает этот файл, сверяет раздел «Текущий статус».
+2. Одним предложением пересказывает пользователю, на какой фазе мы и что следующее.
+3. Ждёт подтверждения, что работаем над запланированным шагом (или переключаемся на ad-hoc задачу).
+
+По ходу работы:
+1. Отмечает `[x]` в чеклисте текущей фазы по мере завершения подзадач.
+2. Коммитит `ROADMAP.md` вместе с кодом того же шага.
+3. При значимом решении (выбор библиотеки, изменение архитектуры, обнаружение блокера) добавляет запись в «Журнал решений» с датой.
+4. При переходе между фазами обновляет «Текущий статус» и делает отдельный commit для видимой вехи.
