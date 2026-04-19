@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { generateImage } from "./routes/generateImage";
 import { calculateKbzhu } from "./routes/calculateKbzhu";
+import { importFromUrl } from "./routes/importFromUrl";
 
 type Bindings = {
   GEMINI_API_KEY: string;
@@ -20,10 +21,10 @@ app.onError((err, c) => {
 
 app.post("/api/ai/generate-image", generateImage);
 app.post("/api/ai/calculate-kbzhu", calculateKbzhu);
+app.post("/api/ai/import-from-url", importFromUrl);
 
-// Остальные 4 ещё не портированы — stubs (см. Phase 0b slice 2 progression).
-const NOT_IMPLEMENTED = { error: "Not implemented yet (Phase 0b slice 2)" };
-app.post("/api/ai/import-from-url", (c) => c.json(NOT_IMPLEMENTED, 501));
+// Остальные 3 ещё не портированы — stubs.
+const NOT_IMPLEMENTED = { error: "Not implemented yet (Phase 0b)" };
 app.post("/api/ai/import-from-pdf", (c) => c.json(NOT_IMPLEMENTED, 501));
 app.post("/api/ai/import-from-photo", (c) => c.json(NOT_IMPLEMENTED, 501));
 app.post("/api/ai/fill-remaining", (c) => c.json(NOT_IMPLEMENTED, 501));
