@@ -5986,25 +5986,7 @@ export default function App() {
                             }
                             setIsScanning(true);
                             try {
-                              const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
-                              const response = await ai.models.generateContent({
-                                model: "gemini-3-flash-preview",
-                                contents: `Calculate KBJU (calories, proteins, fats, carbs) for these ingredients: ${formData.ingredients}. Return JSON with fields: calories, proteins, fats, carbs. Return ONLY JSON.`,
-                                config: {
-                                  responseMimeType: "application/json",
-                                  responseSchema: {
-                                    type: Type.OBJECT,
-                                    properties: {
-                                      calories: { type: Type.NUMBER },
-                                      proteins: { type: Type.NUMBER },
-                                      fats: { type: Type.NUMBER },
-                                      carbs: { type: Type.NUMBER }
-                                    },
-                                    required: ["calories", "proteins", "fats", "carbs"]
-                                  }
-                                }
-                              });
-                              const data = JSON.parse(response.text || '{}');
+                              const data = await aiClient.calculateKbzhu({ ingredients: formData.ingredients });
                               setFormData({
                                 ...formData,
                                 calories: data.calories || 0,

@@ -55,9 +55,7 @@ export type GenerateImageResponse = { imageDataUri: string };
 // --- КБЖУ ---
 
 export type CalculateKbzhuRequest = {
-  title: string;
-  ingredients: string[];
-  servings: number;
+  ingredients: string;
 };
 export type CalculateKbzhuResponse = Macros;
 
