@@ -4,6 +4,7 @@ import type {
   GenerateImageRequest,
   GenerateImageResponse,
 } from "../../../src/services/ai/contracts";
+import { generateImageDataUri } from "../helpers/generateImageDataUri";
 
 type Bindings = { GEMINI_API_KEY: string };
 
@@ -16,31 +17,12 @@ export async function generateImage(c: Context<{ Bindings: Bindings }>) {
   }
 
   const ai = new GoogleGenAI({ apiKey: c.env.GEMINI_API_KEY });
-  const response = await ai.models.generateContent({
-    model: "gemini-2.5-flash-image",
-    contents: {
-      parts: [
-        {
-          text: `A professional food photography of ${title}. Ingredients: ${ingredients.join(", ")}. High quality, appetizing, top view or 45 degree angle.`,
-        },
-      ],
-    },
-    config: {
-      imageConfig: {
-        aspectRatio: "4:3",
-        imageSize: "1K",
-      },
-    },
-  });
+  const dataUri = await generateImageDataUri(ai, title, ingredients);
 
-  for (const part of response.candidates?.[0]?.content?.parts ?? []) {
-    if (part.inlineData?.data) {
-      const payload: GenerateImageResponse = {
-        imageDataUri: `data:image/png;base64,${part.inlineData.data}`,
-      };
-      return c.json(payload);
-    }
+  if (!dataUri) {
+    return c.json({ error: "Gemini returned no inline image data" }, 502);
   }
 
-  return c.json({ error: "Gemini returned no inline image data" }, 502);
+  const payload: GenerateImageResponse = { imageDataUri: dataUri };
+  return c.json(payload);
 }
