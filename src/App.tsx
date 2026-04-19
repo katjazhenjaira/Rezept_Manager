@@ -48,7 +48,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, getDoc, setDoc } from "firebase/firestore";
-import { db } from "./firebase";
+import { db } from "./infrastructure/firebaseApp";
 import { 
   format, 
   addDays, 
@@ -435,7 +435,7 @@ export default function App() {
         }
       });
 
-      const result = JSON.parse(response.text);
+      const result = JSON.parse(response.text ?? '{}');
       if (isAlternative && suggestion) {
         setSuggestion({
           ...result,
@@ -636,8 +636,7 @@ export default function App() {
         
         if (parts.length > 1) {
           const lastPart = parts[parts.length - 1];
-          // If last part has digits, assume it's amount
-          if (/\d/.test(lastPart)) {
+          if (lastPart && /\d/.test(lastPart)) {
             amount = lastPart;
             name = parts.slice(0, -1).join(' ');
           }
@@ -834,7 +833,7 @@ export default function App() {
           },
         },
       });
-      for (const part of response.candidates[0].content.parts) {
+      for (const part of response.candidates?.[0]?.content?.parts ?? []) {
         if (part.inlineData) {
           return `data:image/png;base64,${part.inlineData.data}`;
         }
@@ -856,7 +855,7 @@ export default function App() {
         recipeIds: [...program.recipeIds, recipeId]
       });
     } else {
-      const newSubfolders = program.subfolders.map(sf => 
+      const newSubfolders = (program.subfolders ?? []).map(sf =>
         sf.id === subfolderId ? { ...sf, recipeIds: [...sf.recipeIds, recipeId] } : sf
       );
       await updateDoc(doc(db, "programs", programId), {
@@ -1003,7 +1002,7 @@ export default function App() {
 
       const data = JSON.parse(response.text || '{}');
       
-      const firstImageBase64 = images[0].base64;
+      const firstImageBase64 = images[0]?.base64 ?? '';
       let dishImage = firstImageBase64;
       if (data.dishBoundingBox) {
         dishImage = await cropImage(firstImageBase64, data.dishBoundingBox);
@@ -1406,7 +1405,7 @@ export default function App() {
       return plannerEntries.filter(e => e.date === dateStr);
     };
 
-    const getRecipeById = (id: string) => recipes.find(r => r.id === id);
+    const getRecipeById = (id: string | undefined) => (id ? recipes.find(r => r.id === id) : undefined);
 
     const getMacrosForDate = (date: Date) => {
       const entries = getEntriesForDate(date);
@@ -2131,29 +2130,30 @@ export default function App() {
                       );
                       if (existingKey) key = existingKey;
 
-                      if (!ingredientMap[key]) {
-                        ingredientMap[key] = { amount: '', dishes: new Set(), isBasic };
+                      let entry = ingredientMap[key];
+                      if (!entry) {
+                        entry = { amount: '', dishes: new Set(), isBasic };
+                        ingredientMap[key] = entry;
                       }
-                      
-                      ingredientMap[key].dishes.add(recipe.title);
-                      
+
+                      entry.dishes.add(recipe.title);
+
                       // Simple amount extraction and summing attempt
                       const amountMatch = ing.match(/^([\d.,/]+(?:\s*[г|кг|мл|л|шт|ст\.л|ч\.л|зубчик|щепотка|пучок|банка|упаковка])?)/i);
                       if (amountMatch) {
-                        const newAmount = amountMatch[1].trim();
-                        if (!ingredientMap[key].amount) {
-                          ingredientMap[key].amount = newAmount;
+                        const newAmount = (amountMatch[1] ?? '').trim();
+                        if (!entry.amount) {
+                          entry.amount = newAmount;
                         } else {
-                          // Try to sum if units match
-                          const currentVal = parseFloat(ingredientMap[key].amount.replace(',', '.'));
+                          const currentVal = parseFloat(entry.amount.replace(',', '.'));
                           const newVal = parseFloat(newAmount.replace(',', '.'));
-                          const currentUnit = ingredientMap[key].amount.replace(/[\d.,/\s]/g, '');
+                          const currentUnit = entry.amount.replace(/[\d.,/\s]/g, '');
                           const newUnit = newAmount.replace(/[\d.,/\s]/g, '');
-                          
+
                           if (!isNaN(currentVal) && !isNaN(newVal) && currentUnit === newUnit) {
-                            ingredientMap[key].amount = (currentVal + newVal) + currentUnit;
+                            entry.amount = (currentVal + newVal) + currentUnit;
                           } else {
-                            ingredientMap[key].amount += `, ${newAmount}`;
+                            entry.amount += `, ${newAmount}`;
                           }
                         }
                         // Remove amount from name if it was at the start
@@ -2162,10 +2162,11 @@ export default function App() {
                           if (nameOnly) {
                             delete ingredientMap[key];
                             key = nameOnly;
-                            if (!ingredientMap[key]) {
+                            const existing = ingredientMap[key];
+                            if (!existing) {
                               ingredientMap[key] = { amount: newAmount, dishes: new Set([recipe.title]), isBasic };
                             } else {
-                              ingredientMap[key].dishes.add(recipe.title);
+                              existing.dishes.add(recipe.title);
                             }
                           }
                         }
@@ -3202,7 +3203,7 @@ export default function App() {
                               </div>
                               <div className="max-h-32 overflow-y-auto space-y-1 pr-1 custom-scrollbar">
                                 {recipes
-                                  .filter(r => (subfolderRecipeFilters[subfolder.id] || 'Все') === 'Все' || r.categories.includes(subfolderRecipeFilters[subfolder.id]))
+                                  .filter(r => (subfolderRecipeFilters[subfolder.id] || 'Все') === 'Все' || r.categories.includes(subfolderRecipeFilters[subfolder.id] ?? ''))
                                   .map(recipe => (
                                   <label key={recipe.id} className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-zinc-50 transition-colors">
                                     <input 
@@ -5687,7 +5688,7 @@ export default function App() {
                         setIsScanning(true);
                         const reader = new FileReader();
                         reader.onloadend = async () => {
-                          const base64 = (reader.result as string).split(',')[1];
+                          const base64 = (reader.result as string).split(',')[1] ?? '';
                           try {
                             const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
                             const response = await ai.models.generateContent({
