@@ -15,8 +15,8 @@ export type AllergyList = string[];
 export type ImportedRecipe = {
   title: string;
   author?: string;
-  ingredients: string;
-  steps: string;
+  ingredients: string[];
+  steps: string[];
   time: string;
   categories: string[];
   servings: number;
