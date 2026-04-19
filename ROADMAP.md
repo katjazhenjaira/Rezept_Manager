@@ -73,6 +73,9 @@
 - [ ] Убрать `define: { 'process.env.GEMINI_API_KEY' }` из `vite.config.ts`
 - [ ] Cloudflare secret `GEMINI_API_KEY` в Worker
 - [ ] Запустить security-review skill
+- [ ] **TODO (code review):** Унифицировать image generation в App.tsx — PDF handler вызывает `aiClient.generateImage()` напрямую, а ручное добавление и import-from-url идут через wrapper `generateRecipeImage`. Удалить wrapper, везде использовать `aiClient.generateImage()`.
+- [ ] **TODO (code review):** Ужесточить prompt для `import-from-pdf` — заменить "provide the 'pageNumber'..." на "MUST include 'pageNumber' and 'dishBoundingBox' for every recipe" чтобы Gemini не пропускал координаты.
+- [ ] **TODO (known issue):** Firestore отклоняет рецепты с base64-картинкой > 1 МБ. Правильный фикс — хранить изображения в Cloudflare R2 (или Firebase Storage) и писать в Firestore только URL. Планируется в Phase 1 или отдельным хот-фиксом.
 
 **Критерий готовности:**
 - `grep -r GEMINI_API_KEY dist/` → 0 совпадений
