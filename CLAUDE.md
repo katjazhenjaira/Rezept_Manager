@@ -34,6 +34,11 @@
 
 3. **Добавь запись в `ROADMAP.md` → «Журнал решений»** — если в сессии было значимое архитектурное решение (выбор библиотеки, смена подхода, обнаружение блокера, отказ от ранее планировавшегося).
 
+3a. **Сохрани нефиксированные замечания из code review субагентов** по правилу:
+   - Actionable TODO (нужно сделать X) → добавь пункт `[ ] TODO (code review): ...` в чеклист текущей фазы `ROADMAP.md`
+   - Ограничение/антипаттерн для этого проекта → добавь в раздел «Known constraints» `CLAUDE.md`
+   - Паттерн/подход который здесь работает → сохрани в memory-файл
+
 4. **Закоммить изменения документации** одним коммитом с сообщением `docs: update roadmap and business logic — session YYYY-MM-DD`, только если пользователь этого не запретил ранее в сессии.
 
 5. **Кратко сообщи пользователю**, что было сохранено (1-2 предложения, по списку изменённых файлов), и только после этого прощайся.
@@ -56,6 +61,14 @@
 3. **Active program overrides profile goals** в Tracker, когда программа или подпапка активна; без активной программы действуют цели из профиля.
 4. **Firebase / Supabase — единственный источник истины.** `localStorage` допустим только как optimistic cache для мгновенного UI.
 5. **"Fill remaining KBZHU"** AI-запрос всегда включает: remaining macros, user allergies, active program rules (allowedProducts / forbiddenProducts), user recipe library. Ответ — ровно 3 варианта с порцией и обоснованием.
+
+## Known constraints
+
+Ограничения, выявленные в ходе разработки — учитывать автоматически:
+
+- **Firestore: не хранить base64-картинки.** Лимит документа — ~1 МБ. AI-generated images (~700 КБ+) превышают его. Правильный путь — Cloudflare R2 / Firebase Storage, в Firestore писать только URL. Фикс запланирован в Phase 1.
+- **Не хранить `GEMINI_API_KEY` на клиенте.** Все Gemini-вызовы идут через Cloudflare Worker (`/api/ai/*`). Прямой `new GoogleGenAI(process.env.GEMINI_API_KEY)` в коде фронтенда — ошибка.
+- **Cloudflare Worker: Canvas API недоступен.** Операции с PDF-изображениями (`extractImageFromPDF`) должны выполняться на клиенте через `pdfjs-dist`.
 
 ## Development conventions
 
