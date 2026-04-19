@@ -6,8 +6,8 @@
 
 ## Текущий статус
 
-- **Активная фаза:** Phase 0b — Gemini proxy на Cloudflare Worker (не начата)
-- **Следующий шаг:** через context7 подтянуть актуальную документацию Wrangler, `@google/genai`, Hono; затем скаффолдить `worker/` с `wrangler.toml`
+- **Активная фаза:** Phase 0b — Gemini proxy на Cloudflare Worker (в работе, слайс 2: портировано 2 из 6 роутов)
+- **Следующий шаг:** портировать `import-from-url` (самый простой из 4 оставшихся импортёров) — создать `worker/src/routes/importFromUrl.ts`, убрать прямой `GoogleGenAI` вызов на App.tsx:1059, протестировать через curl + браузер (вставить ссылку).
 - **Обновлено:** 2026-04-19
 - **Blocker:** нет
 
@@ -62,14 +62,14 @@
 
 **Статус:** [ ] не начата
 
-- [ ] Подтянуть актуальную документацию через context7: Wrangler, `@google/genai`, Hono
-- [ ] Скаффолдинг `worker/` с `wrangler.toml`
-- [ ] 6 routes: `import-from-url`, `import-from-pdf`, `import-from-photo`, `generate-image`, `calculate-kbzhu`, `fill-remaining`
-- [ ] Shared contracts: `src/services/ai/contracts.ts` (импортируется Worker-ом)
-- [ ] Клиент: `src/services/ai/aiClient.ts`
+- [x] Подтянуть актуальную документацию через context7: Wrangler, `@google/genai`, Hono
+- [x] Скаффолдинг `worker/` с `wrangler.toml`
+- [ ] 6 routes: ~~`generate-image`~~ ✅, ~~`calculate-kbzhu`~~ ✅, `import-from-url`, `import-from-pdf`, `import-from-photo`, `fill-remaining`
+- [x] Shared contracts: `src/services/ai/contracts.ts` (импортируется Worker-ом)
+- [x] Клиент: `src/services/ai/aiClient.ts`
 - [ ] Rate limiting (token bucket в Cloudflare KV, 10 req/min для import-операций)
 - [ ] Переписать 6 вызовов `new GoogleGenAI()` в `App.tsx` на `aiClient.*`
-- [ ] Vite dev: `wrangler dev` на :8787, Vite proxy `/api → :8787`
+- [x] Vite dev: `wrangler dev` на :8787, Vite proxy `/api → :8787`
 - [ ] Убрать `define: { 'process.env.GEMINI_API_KEY' }` из `vite.config.ts`
 - [ ] Cloudflare secret `GEMINI_API_KEY` в Worker
 - [ ] Запустить security-review skill
@@ -213,6 +213,7 @@
 - **2026-04-19** — Phase 0b слайс 1 готов: скаффолдинг `worker/` (Hono + wrangler.toml на порту 8787, compatibility_date 2026-04-19, `@cloudflare/workers-types`, strict tsconfig), 6 POST stub-роутов с CORS и глобальным onError. Общие DTO для всех 6 фич — в `src/services/ai/contracts.ts` (импортируется и клиентом, и воркером через `include` в worker/tsconfig.json). Клиент — `src/services/ai/aiClient.ts` с типизированным POST-враппером. Vite dev proxy `/api → http://localhost:8787`. Root tsconfig теперь явно `exclude: worker/**`. Секреты воркера — в `worker/.dev.vars` локально (в .gitignore) и через `wrangler secret put` в проде.
 - **2026-04-19** — Phase 0b слайс 2: роут 1 из 6 (`generate-image`) перенесён на воркер. Портирован промпт и конфиг модели (`gemini-2.5-flash-image`, aspectRatio 4:3, imageSize 1K), клиентская функция `generateRecipeImage` теперь — тонкая обёртка над `aiClient.generateImage`, 4 call-site не тронуты. Воркер ответил 200 OK за ~7 сек через Vite proxy, реальный data-URI от Gemini приехал на клиент.
 - **2026-04-19** — Known issue обнаружен при e2e-тесте generate-image: **Firestore отклоняет рецепт с AI-картинкой в base64**, т.к. property `image` превышает лимит 1 048 487 байт. Это **НЕ регрессия** от переноса на воркер — старый клиентский код возвращал идентичный oversized data-URI, просто путь «ручное создание рецепта без собственной картинки» раньше не тестировался. **Решение отложено:** правильный фикс — заливать картинки в Cloudflare R2 (или Firebase Storage) и хранить URL, а не base64. Планируется в рамках Phase 1 (repository refactor) или отдельным хот-фиксом раньше при необходимости. Для остальных 5 AI-роутов (импорты + добор КБЖУ + расчёт КБЖУ) эта проблема не возникает — они не возвращают картинки.
+- **2026-04-19** — Phase 0b слайс 2: роут 2 из 6 (`calculate-kbzhu`) перенесён на воркер. Модель и схема ответа сохранены 1-в-1 (`gemini-3-flash-preview`, responseSchema с calories/proteins/fats/carbs). `CalculateKbzhuRequest` упрощён до `{ ingredients: string }` — прежний черновик типа `{ title, ingredients: string[], servings }` не соответствовал реальному call-site (форма передаёт сырую строку). Проверено курлом и в браузере (200 OK, КБЖУ заполнилось корректно). Также добавлен `server.watch.ignored` в `vite.config.ts` для `.claude/`, `.playwright-mcp/`, `worker/` — без этого Claude Code писал `settings.local.json` каждые несколько секунд, и Vite reload-ил страницу, ломая browser-тесты модалок.
 
 ---
 
