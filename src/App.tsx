@@ -1056,73 +1056,25 @@ export default function App() {
 
     setIsScanning(true);
     try {
-      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
-      const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
-        config: {
-          systemInstruction: `You are a precise recipe extraction engine. Your goal is to extract recipe data ONLY from the provided URL. 
-          For categories, ONLY choose from this list: ${availableCategories.join(', ')}.
-          If the content is not a recipe or cannot be accessed, return an error or a very minimal object. NEVER hallucinate a recipe from a different source.`,
-          tools: [{ urlContext: {} }],
-          responseMimeType: "application/json",
-          responseSchema: {
-            type: Type.OBJECT,
-            properties: {
-              title: { type: Type.STRING },
-              author: { type: Type.STRING, description: "Name of the author, channel name, or creator" },
-              ingredients: { type: Type.ARRAY, items: { type: Type.STRING } },
-              steps: { type: Type.ARRAY, items: { type: Type.STRING } },
-              time: { type: Type.STRING },
-              calories: { type: Type.NUMBER },
-              proteins: { type: Type.NUMBER },
-              fats: { type: Type.NUMBER },
-              carbs: { type: Type.NUMBER },
-              categories: { type: Type.ARRAY, items: { type: Type.STRING } },
-              servings: { type: Type.NUMBER },
-              imageUrl: { type: Type.STRING, description: "Direct URL to the recipe image or video thumbnail" }
-            },
-            required: ["title", "ingredients", "steps", "time", "calories", "proteins", "fats", "carbs", "categories", "servings"]
-          }
-        },
-        contents: `TASK: Extract the recipe details ONLY from the provided URL: ${recipeLink}.
-        CONTEXT: This link might be a website, an Instagram Reel, or a TikTok video. 
-        INSTRUCTIONS:
-        1. Read the page content or video description carefully.
-        2. Extract the Title, Ingredients, Steps, Time, and Macros.
-        3. ВАЖНО: Если КБЖУ (калории, белки, жиры, углеводы) не указаны на странице явно, ПОЖАЛУЙСТА, РАССЧИТАЙТЕ ИХ самостоятельно на основе ингредиентов и их количества.
-        4. IMPORTANT: Find the primary image URL or video thumbnail URL. If it's a video, look for the 'og:image' or 'thumbnail' in the metadata.
-        5. Extract the author's name or channel name (e.g., if it's YouTube, get the channel name).
-        6. If the page contains multiple recipes, pick the main one.
-        7. DO NOT hallucinate or use external knowledge. Only use what's on the page.
-        8. Return the data in Russian.`
+      const result = await aiClient.importFromUrl({
+        url: recipeLink,
+        availableCategories,
       });
+      const r = result.recipe;
 
-      const data = JSON.parse(response.text || '{}');
-      
-      let imageUrl = data.imageUrl;
-      if (!imageUrl) {
-        const generated = await generateRecipeImage(data.title || "Новый рецепт", (data.ingredients || '').split('\n'));
-        if (generated) imageUrl = generated;
-      }
-      
       const recipeData = {
-        title: data.title || "Новый рецепт",
-        author: data.author || "",
-        image: imageUrl || null,
-        sourceUrl: recipeLink,
-        time: data.time || "30 мин",
-        servings: data.servings || 2,
-        categories: (data.categories || []).filter((c: string) => availableCategories.includes(c.toLowerCase())),
-        ingredients: data.ingredients || [],
-        steps: data.steps || [],
-        macros: {
-          calories: data.calories || 0,
-          proteins: data.proteins || 0,
-          fats: data.fats || 0,
-          carbs: data.carbs || 0
-        },
+        title: r.title,
+        author: r.author ?? "",
+        image: r.dishImage ?? null,
+        sourceUrl: r.sourceUrl ?? recipeLink,
+        time: r.time,
+        servings: r.servings,
+        categories: r.categories,
+        ingredients: r.ingredients,
+        steps: r.steps,
+        macros: r.macros,
         isFavorite: false,
-        createdAt: new Date().toISOString()
+        createdAt: new Date().toISOString(),
       };
 
       const docRef = await addDoc(collection(db, "recipes"), recipeData);
