@@ -5623,111 +5623,48 @@ export default function App() {
                         reader.onloadend = async () => {
                           const base64 = (reader.result as string).split(',')[1] ?? '';
                           try {
-                            const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
-                            const response = await ai.models.generateContent({
-                              model: "gemini-3-flash-preview",
-                              contents: [
-                                {
-                                  inlineData: {
-                                    mimeType: "application/pdf",
-                                    data: base64
-                                  }
-                                },
-                                {
-                                  text: `Extract ALL recipe details from this PDF. If there are multiple recipes, return them all. Return structured data in Russian. 
-                                  Include title, ingredients (as a single string with newlines), steps (as a single string with newlines), time, calories, proteins, fats, carbs, servings.
-                                  ВАЖНО: Если КБЖУ (калории, белки, жиры, углеводы) не указаны в документе явно, ПОЖАЛУЙСТА, РАССЧИТАЙТЕ ИХ самостоятельно на основе ингредиентов и их количества.
-                                  Include 'author' if mentioned in the document.
-                                  For each recipe, provide the 'pageNumber' (1-indexed) and 'dishBoundingBox' [ymin, xmin, ymax, xmax] for the main photo associated with that recipe. Use normalized coordinates (0-1000).
-                                  For categories, ONLY choose from this list: ${availableCategories.join(', ')}.`
-                                }
-                              ],
-                              config: {
-                                responseMimeType: "application/json",
-                                responseSchema: {
-                                  type: Type.OBJECT,
-                                  properties: {
-                                    recipes: {
-                                      type: Type.ARRAY,
-                                      items: {
-                                        type: Type.OBJECT,
-                                        properties: {
-                                          title: { type: Type.STRING },
-                                          author: { type: Type.STRING },
-                                          ingredients: { type: Type.STRING },
-                                          steps: { type: Type.STRING },
-                                          time: { type: Type.STRING },
-                                          calories: { type: Type.NUMBER },
-                                          proteins: { type: Type.NUMBER },
-                                          fats: { type: Type.NUMBER },
-                                          carbs: { type: Type.NUMBER },
-                                          categories: { type: Type.ARRAY, items: { type: Type.STRING } },
-                                          servings: { type: Type.NUMBER },
-                                          sourceUrl: { type: Type.STRING },
-                                          pageNumber: { type: Type.NUMBER },
-                                          dishBoundingBox: {
-                                            type: Type.OBJECT,
-                                            properties: {
-                                              ymin: { type: Type.NUMBER },
-                                              xmin: { type: Type.NUMBER },
-                                              ymax: { type: Type.NUMBER },
-                                              xmax: { type: Type.NUMBER }
-                                            }
-                                          }
-                                        },
-                                        required: ["title", "ingredients", "steps", "time", "calories", "proteins", "fats", "carbs", "categories", "servings"]
-                                      }
-                                    }
-                                  },
-                                  required: ["recipes"]
-                                }
-                              }
+                            const result = await aiClient.importFromPdf({
+                              pdfBase64: base64,
+                              availableCategories,
                             });
 
-                            const result = JSON.parse(response.text || '{"recipes":[]}');
-                            const recipesToProcess = result.recipes || [];
+                            for (const r of result.recipes) {
+                              let dishImage: string | null = null;
 
-                            for (const data of recipesToProcess) {
-                              let dishImage = '';
-                              if (data.pageNumber && data.dishBoundingBox) {
-                                dishImage = await extractImageFromPDF(base64, data.pageNumber, data.dishBoundingBox);
+                              if (r.pageNumber && r.dishBoundingBox) {
+                                const extracted = await extractImageFromPDF(base64, r.pageNumber, r.dishBoundingBox);
+                                if (extracted) dishImage = extracted;
                               }
 
                               if (!dishImage) {
-                                const generated = await generateRecipeImage(data.title || 'Новый рецепт', (data.ingredients || '').split('\n'));
-                                if (generated) dishImage = generated;
+                                const generated = await aiClient.generateImage({
+                                  title: r.title,
+                                  ingredients: r.ingredients,
+                                });
+                                if (generated?.imageDataUri) dishImage = generated.imageDataUri;
                               }
 
-                              const recipeToSave = {
-                                title: data.title || 'Новый рецепт',
-                                author: data.author || '',
-                                sourceUrl: data.sourceUrl || '',
-                                image: dishImage || null,
-                                time: data.time || '30 мин',
-                                servings: data.servings || 2,
-                                categories: (data.categories || []).filter((c: string) => availableCategories.includes(c.toLowerCase())),
-                                ingredients: (data.ingredients || '').split('\n').map((s: string) => s.trim()).filter(Boolean),
-                                steps: (data.steps || '').split('\n').map((s: string) => s.trim()).filter(Boolean),
-                                macros: {
-                                  calories: data.calories || 0,
-                                  proteins: data.proteins || 0,
-                                  fats: data.fats || 0,
-                                  carbs: data.carbs || 0
-                                },
-                                isFavorite: false
-                              };
-
                               const docRef = await addDoc(collection(db, "recipes"), {
-                                ...recipeToSave,
-                                createdAt: new Date().toISOString()
+                                title: r.title,
+                                author: r.author ?? "",
+                                image: dishImage,
+                                time: r.time,
+                                servings: r.servings,
+                                categories: r.categories,
+                                ingredients: r.ingredients,
+                                steps: r.steps,
+                                macros: r.macros,
+                                isFavorite: false,
+                                createdAt: new Date().toISOString(),
                               });
+
                               if (recipeTarget) {
                                 await addRecipeToTarget(docRef.id);
                               }
                             }
 
                             setIsAddingPDF(false);
-                            alert(`Успешно добавлено рецептов: ${recipesToProcess.length}`);
+                            alert(`Успешно добавлено рецептов: ${result.recipes.length}`);
                           } catch (error) {
                             console.error("Error analyzing PDF:", error);
                             alert("Не удалось распознать PDF. Попробуйте другой файл.");
