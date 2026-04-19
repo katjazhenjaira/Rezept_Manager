@@ -1,0 +1,3 @@
+# Секреты для локального `wrangler dev`. Скопируй в `.dev.vars` и заполни.
+# В продакшене секреты задаются через `wrangler secret put NAME`.
+GEMINI_API_KEY="MY_GEMINI_API_KEY"

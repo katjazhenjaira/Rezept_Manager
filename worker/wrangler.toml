@@ -1,0 +1,13 @@
+name = "rezept-manager-worker"
+main = "src/index.ts"
+compatibility_date = "2026-04-19"
+
+# GEMINI_API_KEY задаётся:
+#   - локально: в worker/.dev.vars (см. .dev.vars.example)
+#   - прод:    wrangler secret put GEMINI_API_KEY
+
+[dev]
+port = 8787
+
+[observability]
+enabled = true

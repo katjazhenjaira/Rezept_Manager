@@ -7,3 +7,8 @@ coverage/
 .env*
 !.env.example
 .playwright-mcp/
+
+# Worker local secrets, deps, wrangler state
+worker/.dev.vars
+worker/node_modules/
+worker/.wrangler/
