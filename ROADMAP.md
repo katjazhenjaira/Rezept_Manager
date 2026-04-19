@@ -6,11 +6,10 @@
 
 ## Текущий статус
 
-- **Активная фаза:** Phase 0a — гигиена (ещё не начата, только планирование)
-- **Следующий шаг:** перенести Firebase config из хардкода в env-переменные (`VITE_FIREBASE_*`)
-- **Обновлено:** 2026-04-17
+- **Активная фаза:** Phase 0b — Gemini proxy на Cloudflare Worker (не начата)
+- **Следующий шаг:** через context7 подтянуть актуальную документацию Wrangler, `@google/genai`, Hono; затем скаффолдить `worker/` с `wrangler.toml`
+- **Обновлено:** 2026-04-19
 - **Blocker:** нет
-- **Next-session note:** в начале следующей сессии один раз открыть `/hooks`, чтобы Claude Code подхватил `.claude/settings.json` с Stop hook (watcher не видит файлы, созданные в ходе текущей сессии)
 
 ---
 
@@ -43,14 +42,14 @@
 
 ### Phase 0a — security hygiene (0.5 дня)
 
-**Статус:** [ ] в работе
+**Статус:** [x] завершено (2026-04-19)
 
-- [ ] Firebase config → env (`VITE_FIREBASE_API_KEY`, `VITE_FIREBASE_*`)
-- [ ] `src/firebase.ts` → `src/infrastructure/firebaseApp.ts`
-- [ ] `tsconfig.json`: alias `@/*` → `./src/*`, добавить `"strict": true`, `"noUncheckedIndexedAccess": true`
-- [ ] Починить ошибки, которые вскроет strict mode (ожидаемо — много `any`, допустимо временно с TODO)
-- [ ] Удалить `better-sqlite3`, `dotenv` из `package.json`
-- [ ] Обновить `.env.example`
+- [x] Firebase config → env (`VITE_FIREBASE_API_KEY`, `VITE_FIREBASE_*`)
+- [x] `src/firebase.ts` → `src/infrastructure/firebaseApp.ts`
+- [x] `tsconfig.json`: alias `@/*` → `./src/*`, добавить `"strict": true`, `"noUncheckedIndexedAccess": true`
+- [x] Починить ошибки, которые вскроет strict mode (23 фикса без TODO — см. журнал решений)
+- [x] Удалить `better-sqlite3`, `dotenv` из `package.json`
+- [x] Обновить `.env.example`
 
 **Критерий готовности:**
 - `npm run build` — зелёный
@@ -210,6 +209,7 @@
 - **2026-04-17** — Vitest и react-i18next включены в scope Phase 1 (не отдельные фазы).
 - **2026-04-17** — `CLAUDE.md` упрощён: удалены дубли Application_description.md (Feature Map по 6 вкладкам), устаревшая Repository Structure, Current Development Status, Notes & Decisions Log. Остались tech stack, safety-critical constraints, development conventions, session start/end protocols.
 - **2026-04-17** — добавлена инфраструктура persistence между сессиями: `ROADMAP.md` как single source of truth для статуса, memory-записи `project_roadmap.md` и `project_session_end.md`, Stop hook в `.claude/settings.json` + `.claude/hooks/session-end-reminder.sh` — автоматически инжектит reminder про Session end protocol, когда пользователь прощается (паттерны RU+EN).
+- **2026-04-19** — Phase 0a завершена. Firebase config вынесен в `VITE_FIREBASE_*` env, `src/firebase.ts` переехал в `src/infrastructure/firebaseApp.ts`, включён TS strict + `noUncheckedIndexedAccess`. Strict-mode вскрыл 23 ошибки в `App.tsx` — все починены без TODO/any: `getRecipeById` теперь принимает `string | undefined`, добавлены guard-ы на Gemini `response.text` и `response.candidates?.[0]?.content?.parts`, `ingredientMap[key]` кеширован в локальную переменную (устранило 9 ошибок в shopping-list блоке одним рефакторингом). Установлены `@types/react`/`@types/react-dom`, удалены неиспользуемые `better-sqlite3` и `dotenv`. `.playwright-mcp/` добавлен в `.gitignore`.
 
 ---
 
