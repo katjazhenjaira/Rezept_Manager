@@ -49,6 +49,7 @@ import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, getDoc, setDoc } from "firebase/firestore";
 import { db } from "./infrastructure/firebaseApp";
+import { aiClient } from "./services/ai/aiClient";
 import { 
   format, 
   addDays, 
@@ -816,32 +817,12 @@ export default function App() {
 
   const generateRecipeImage = async (title: string, ingredients: string[]) => {
     try {
-      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-      const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash-image',
-        contents: {
-          parts: [
-            {
-              text: `A professional food photography of ${title}. Ingredients: ${ingredients.join(', ')}. High quality, appetizing, top view or 45 degree angle.`,
-            },
-          ],
-        },
-        config: {
-          imageConfig: {
-            aspectRatio: "4:3",
-            imageSize: "1K"
-          },
-        },
-      });
-      for (const part of response.candidates?.[0]?.content?.parts ?? []) {
-        if (part.inlineData) {
-          return `data:image/png;base64,${part.inlineData.data}`;
-        }
-      }
+      const { imageDataUri } = await aiClient.generateImage({ title, ingredients });
+      return imageDataUri;
     } catch (error) {
       console.error("Error generating recipe image:", error);
+      return null;
     }
-    return null;
   };
 
   const addRecipeToTarget = async (recipeId: string) => {
