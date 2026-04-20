@@ -64,6 +64,7 @@ export type CalculateKbzhuResponse = Macros;
 
 export type FillRemainingRequest = {
   remaining: Macros;
+  planName: string;
   allergies: AllergyList;
   activeProgramRules?: {
     allowedProducts?: string[];
@@ -72,12 +73,12 @@ export type FillRemainingRequest = {
   userRecipes: { id: string; title: string; macros: Macros }[];
 };
 export type FillRemainingOption = {
+  id: string;
+  type: "recipe" | "product";
   recipeId?: string;
-  title: string;
-  portion: string;
-  rationale: string;
+  description: string;
   macros: Macros;
 };
-export type FillRemainingResponse = { options: FillRemainingOption[] };
+export type FillRemainingResponse = { options: FillRemainingOption[]; reason: string };
 
 export type AiErrorResponse = { error: string };

@@ -6,9 +6,9 @@
 
 ## Текущий статус
 
-- **Активная фаза:** Phase 0b — Gemini proxy на Cloudflare Worker (в работе, 4/6 роутов готово)
-- **Следующий шаг:** портировать `import-from-photo` — создать `worker/src/routes/importFromPhoto.ts`, убрать `new GoogleGenAI` на App.tsx ~line 938, протестировать через curl + браузер.
-- **Обновлено:** 2026-04-19
+- **Активная фаза:** Phase 0b — Gemini proxy на Cloudflare Worker (в работе, 6/6 роутов готово)
+- **Следующий шаг:** убрать `define: { 'process.env.GEMINI_API_KEY' }` из `vite.config.ts`, запустить security-review skill, выполнить TODO code-review items.
+- **Обновлено:** 2026-04-20
 - **Blocker:** нет
 
 ---
@@ -64,11 +64,11 @@
 
 - [x] Подтянуть актуальную документацию через context7: Wrangler, `@google/genai`, Hono
 - [x] Скаффолдинг `worker/` с `wrangler.toml`
-- [ ] 6 routes: ~~`generate-image`~~ ✅, ~~`calculate-kbzhu`~~ ✅, ~~`import-from-url`~~ ✅, ~~`import-from-pdf`~~ ✅, `import-from-photo`, `fill-remaining`
+- [x] 6 routes: ~~`generate-image`~~ ✅, ~~`calculate-kbzhu`~~ ✅, ~~`import-from-url`~~ ✅, ~~`import-from-pdf`~~ ✅, ~~`import-from-photo`~~ ✅, ~~`fill-remaining`~~ ✅
 - [x] Shared contracts: `src/services/ai/contracts.ts` (импортируется Worker-ом)
 - [x] Клиент: `src/services/ai/aiClient.ts`
 - [ ] Rate limiting (token bucket в Cloudflare KV, 10 req/min для import-операций)
-- [ ] Переписать 6 вызовов `new GoogleGenAI()` в `App.tsx` на `aiClient.*` (осталось 2: photo, fill-remaining)
+- [x] Переписать 6 вызовов `new GoogleGenAI()` в `App.tsx` на `aiClient.*` — все 6 удалены
 - [x] Vite dev: `wrangler dev` на :8787, Vite proxy `/api → :8787`
 - [ ] Убрать `define: { 'process.env.GEMINI_API_KEY' }` из `vite.config.ts`
 - [ ] Cloudflare secret `GEMINI_API_KEY` в Worker
@@ -217,6 +217,7 @@
 - **2026-04-19** — Phase 0b слайс 2: роут 1 из 6 (`generate-image`) перенесён на воркер. Портирован промпт и конфиг модели (`gemini-2.5-flash-image`, aspectRatio 4:3, imageSize 1K), клиентская функция `generateRecipeImage` теперь — тонкая обёртка над `aiClient.generateImage`, 4 call-site не тронуты. Воркер ответил 200 OK за ~7 сек через Vite proxy, реальный data-URI от Gemini приехал на клиент.
 - **2026-04-19** — Known issue обнаружен при e2e-тесте generate-image: **Firestore отклоняет рецепт с AI-картинкой в base64**, т.к. property `image` превышает лимит 1 048 487 байт. Это **НЕ регрессия** от переноса на воркер — старый клиентский код возвращал идентичный oversized data-URI, просто путь «ручное создание рецепта без собственной картинки» раньше не тестировался. **Решение отложено:** правильный фикс — заливать картинки в Cloudflare R2 (или Firebase Storage) и хранить URL, а не base64. Планируется в рамках Phase 1 (repository refactor) или отдельным хот-фиксом раньше при необходимости. Для остальных 5 AI-роутов (импорты + добор КБЖУ + расчёт КБЖУ) эта проблема не возникает — они не возвращают картинки.
 - **2026-04-19** — Phase 0b слайсы 3–4: роуты `import-from-url` и `import-from-pdf` портированы на воркер. Ключевые решения: (1) `ImportedRecipe.ingredients/steps` переведены с `string` на `string[]` — Gemini возвращает массивы, App.tsx всегда использовал их как массивы; (2) Добавлено поле `sourceUrl?: string` в `ImportedRecipe`; (3) `generateImageDataUri` вынесен в хелпер `worker/src/helpers/generateImageDataUri.ts` (переиспользуется в `import-from-url` для fallback-изображений); (4) Для PDF `extractImageFromPDF` остаётся на клиенте (Canvas API недоступен в Workers) — клиент извлекает изображение из PDF по `pageNumber`+`dishBoundingBox`, при неудаче вызывает `aiClient.generateImage()`; (5) Все новые воркер-роуты используют try/catch вокруг Gemini + JSON.parse (возвращают 502), валидируют `availableCategories` через `Array.isArray`, применяют case-insensitive category filter с возвратом original-cased значения через `.find()`.
+- **2026-04-20** — Phase 0b слайсы 5–6: роуты `import-from-photo` и `fill-remaining` портированы на воркер. Все 6 маршрутов активны, `new GoogleGenAI` полностью удалён из `App.tsx`. `FillRemainingOption` в contracts.ts приведён в соответствие с реальным форматом ответа Gemini (поля `id`, `type`, `description` вместо `title`/`portion`/`rationale`). `FillRemainingRequest` дополнен полем `planName`. Для photo-импорта: cropping по `dishBoundingBox` остаётся на клиенте (Canvas API недоступен в Worker); изображение из фото не проходит через воркер, только КБЖУ и метаданные.
 - **2026-04-19** — Phase 0b слайс 2: роут 2 из 6 (`calculate-kbzhu`) перенесён на воркер. Модель и схема ответа сохранены 1-в-1 (`gemini-3-flash-preview`, responseSchema с calories/proteins/fats/carbs). `CalculateKbzhuRequest` упрощён до `{ ingredients: string }` — прежний черновик типа `{ title, ingredients: string[], servings }` не соответствовал реальному call-site (форма передаёт сырую строку). Проверено курлом и в браузере (200 OK, КБЖУ заполнилось корректно). Также добавлен `server.watch.ignored` в `vite.config.ts` для `.claude/`, `.playwright-mcp/`, `worker/` — без этого Claude Code писал `settings.local.json` каждые несколько секунд, и Vite reload-ил страницу, ломая browser-тесты модалок.
 
 ---

@@ -4,7 +4,6 @@
  */
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { GoogleGenAI, Type } from "@google/genai";
 import { 
   BookOpen, 
   Calendar, 
@@ -393,50 +392,17 @@ export default function App() {
     }
 
     try {
-      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-      const allowedText = currentTargets.allowedProducts && currentTargets.allowedProducts.length > 0 
-        ? `Разрешенные продукты: ${currentTargets.allowedProducts.join(', ')}.` 
-        : '';
-      const forbiddenText = currentTargets.forbiddenProducts && currentTargets.forbiddenProducts.length > 0 
-        ? `Запрещенные продукты: ${currentTargets.forbiddenProducts.join(', ')}.` 
-        : '';
-
-      const prompt = `У меня осталось ${remaining.calories} ккал, ${remaining.proteins}г белков, ${remaining.fats}г жиров, ${remaining.carbs}г углеводов на сегодня. 
-        Посоветуй 3 варианта перекуса.
-        ТЕКУЩИЙ ПЛАН ПИТАНИЯ: ${currentTargets.name}.
-        ${allowedText}
-        ${forbiddenText}
-        ВАЖНО: Ты ДОЛЖЕН строго следовать текущему плану питания. 
-        Если указаны разрешенные продукты, предлагай ТОЛЬКО их или комбинации из них.
-        Если указаны запрещенные продукты, НИКОГДА их не предлагай.
-        Если выбираешь рецепт из списка, укажи его ID и адаптируй порцию так, чтобы она вписалась в остаток.
-        Если это комбинация продуктов, опиши их (например: "1 жменя миндаля и 1 морковка 30г").
-        Учитывай мои аллергии и непереносимости: ${userProfile.allergies.length > 0 ? userProfile.allergies.join(', ') : 'нет'}.
-        Мои рецепты: ${recipes.map(r => `${r.title} (ID: ${r.id}, КБЖУ на порцию: ${r.macros.calories}/${r.macros.proteins}/${r.macros.fats}/${r.macros.carbs})`).join(', ')}
-        
-        Верни ответ в формате JSON:
-        {
-          "options": [
-            { 
-              "id": "unique_string_id",
-              "type": "recipe" | "product",
-              "recipeId": "id если это рецепт",
-              "description": "название блюда или описание продуктов (включая количество/вес)", 
-              "macros": { "calories": number, "proteins": number, "fats": number, "carbs": number } 
-            }
-          ],
-          "reason": "краткое пояснение, почему эти варианты подходят"
-        }`;
-
-      const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
-        contents: prompt,
-        config: {
-          responseMimeType: "application/json"
-        }
+      const result = await aiClient.fillRemaining({
+        remaining,
+        planName: currentTargets.name,
+        allergies: userProfile.allergies,
+        activeProgramRules: {
+          allowedProducts: currentTargets.allowedProducts ?? [],
+          forbiddenProducts: currentTargets.forbiddenProducts ?? [],
+        },
+        userRecipes: recipes.map(r => ({ id: r.id, title: r.title, macros: r.macros })),
       });
 
-      const result = JSON.parse(response.text ?? '{}');
       if (isAlternative && suggestion) {
         setSuggestion({
           ...result,
@@ -928,104 +894,32 @@ export default function App() {
   const analyzePhoto = async (images: { base64: string, mimeType: string }[], autoSave: boolean = false) => {
     setIsScanning(true);
     try {
-      const imageParts = images.map(img => ({
-        inlineData: {
-          mimeType: img.mimeType,
-          data: img.base64.split(',')[1]
-        }
-      }));
-      
-      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
-      
-      const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
-        contents: [
-          ...imageParts,
-          {
-            text: `Extract recipe details from these images. Return structured data in Russian. 
-            Include title, ingredients (as a single string with newlines), steps (as a single string with newlines), time, calories, proteins, fats, carbs, servings.
-            ВАЖНО: Если КБЖУ (калории, белки, жиры, углеводы) не указаны в источнике явно, ПОЖАЛУЙСТА, РАССЧИТАЙТЕ ИХ самостоятельно на основе ингредиентов и их количества.
-            For categories, ONLY choose from this list: ${availableCategories.join(', ')}.
-            If you find any URL or link to the original source in the text, include it in the 'sourceUrl' field.
-            Also, provide the bounding box [ymin, xmin, ymax, xmax] for the main dish shown in the images as 'dishBoundingBox'. Use normalized coordinates (0-1000).`
-          }
-        ],
-        config: {
-          responseMimeType: "application/json",
-          responseSchema: {
-            type: Type.OBJECT,
-            properties: {
-              title: { type: Type.STRING },
-              ingredients: { type: Type.STRING },
-              steps: { type: Type.STRING },
-              time: { type: Type.STRING },
-              calories: { type: Type.NUMBER },
-              proteins: { type: Type.NUMBER },
-              fats: { type: Type.NUMBER },
-              carbs: { type: Type.NUMBER },
-              categories: { type: Type.ARRAY, items: { type: Type.STRING } },
-              servings: { type: Type.NUMBER },
-              sourceUrl: { type: Type.STRING, description: "URL to the original recipe source if found" },
-              dishBoundingBox: {
-                type: Type.OBJECT,
-                properties: {
-                  ymin: { type: Type.NUMBER },
-                  xmin: { type: Type.NUMBER },
-                  ymax: { type: Type.NUMBER },
-                  xmax: { type: Type.NUMBER }
-                }
-              }
-            },
-            required: ["title", "ingredients", "steps", "time", "calories", "proteins", "fats", "carbs", "categories", "servings"]
-          }
-        }
-      });
+      const result = await aiClient.importFromPhoto({ images, availableCategories });
+      const r = result.recipe;
 
-      const data = JSON.parse(response.text || '{}');
-      
       const firstImageBase64 = images[0]?.base64 ?? '';
-      let dishImage = firstImageBase64;
-      if (data.dishBoundingBox) {
-        dishImage = await cropImage(firstImageBase64, data.dishBoundingBox);
+      let dishImage: string = firstImageBase64;
+      if (r.dishBoundingBox) {
+        dishImage = await cropImage(firstImageBase64, r.dishBoundingBox);
       }
-      
+
       if (!dishImage) {
-        const generated = await generateRecipeImage(data.title || 'Новый рецепт', (data.ingredients || '').split('\n'));
+        const generated = await generateRecipeImage(r.title, r.ingredients);
         if (generated) dishImage = generated;
       }
 
-      const newRecipeData = {
-        image: dishImage,
-        title: data.title || 'Новый рецепт',
-        ingredients: data.ingredients || '',
-        steps: data.steps || '',
-        time: data.time || '30 мин',
-        calories: data.calories || 0,
-        proteins: data.proteins || 0,
-        fats: data.fats || 0,
-        carbs: data.carbs || 0,
-        categories: (data.categories || []).filter((c: string) => availableCategories.includes(c.toLowerCase())),
-        servings: data.servings || 2,
-        sourceUrl: data.sourceUrl || ''
-      };
-
       if (autoSave) {
         const recipeToSave = {
-          title: newRecipeData.title,
+          title: r.title,
           author: '',
-          sourceUrl: newRecipeData.sourceUrl,
-          image: newRecipeData.image,
-          time: newRecipeData.time,
-          servings: newRecipeData.servings,
-          categories: newRecipeData.categories,
-          ingredients: newRecipeData.ingredients.split('\n').map((s: string) => s.trim()).filter(Boolean),
-          steps: newRecipeData.steps.split('\n').map((s: string) => s.trim()).filter(Boolean),
-          macros: {
-            calories: newRecipeData.calories,
-            proteins: newRecipeData.proteins,
-            fats: newRecipeData.fats,
-            carbs: newRecipeData.carbs,
-          },
+          sourceUrl: r.sourceUrl ?? '',
+          image: dishImage,
+          time: r.time,
+          servings: r.servings,
+          categories: r.categories,
+          ingredients: r.ingredients,
+          steps: r.steps,
+          macros: r.macros,
           substitutions: '',
           isFavorite: false,
           createdAt: new Date().toISOString()
@@ -1039,7 +933,18 @@ export default function App() {
       } else {
         setFormData(prev => ({
           ...prev,
-          ...newRecipeData
+          image: dishImage,
+          title: r.title,
+          sourceUrl: r.sourceUrl ?? '',
+          time: r.time,
+          servings: r.servings,
+          categories: r.categories,
+          ingredients: r.ingredients.join('\n'),
+          steps: r.steps.join('\n'),
+          calories: r.macros.calories,
+          proteins: r.macros.proteins,
+          fats: r.macros.fats,
+          carbs: r.macros.carbs,
         }));
       }
     } catch (error) {
