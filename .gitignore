@@ -12,3 +12,8 @@ coverage/
 worker/.dev.vars
 worker/node_modules/
 worker/.wrangler/
+
+# wrangler files
+.wrangler
+.dev.vars*
+!.dev.vars.example
