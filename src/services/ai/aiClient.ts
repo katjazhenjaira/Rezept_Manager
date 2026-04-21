@@ -13,7 +13,7 @@ import type {
   FillRemainingResponse,
 } from "./contracts";
 
-const API_BASE = "/api/ai";
+const API_BASE = `${import.meta.env.VITE_AI_WORKER_URL ?? ""}/api/ai`;
 
 async function post<TReq, TRes>(path: string, body: TReq): Promise<TRes> {
   const res = await fetch(`${API_BASE}${path}`, {
