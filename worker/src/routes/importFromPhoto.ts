@@ -5,10 +5,9 @@ import type {
   ImportFromPhotoResponse,
   ImportedRecipe,
 } from "../../../src/services/ai/contracts";
+import type { Env } from "../types";
 
-type Bindings = { GEMINI_API_KEY: string };
-
-export async function importFromPhoto(c: Context<{ Bindings: Bindings }>) {
+export async function importFromPhoto(c: Context<{ Bindings: Env }>) {
   const body = await c.req.json<ImportFromPhotoRequest>();
   const { images, availableCategories } = body;
 

@@ -5,10 +5,9 @@ import type {
   GenerateImageResponse,
 } from "../../../src/services/ai/contracts";
 import { generateImageDataUri } from "../helpers/generateImageDataUri";
+import type { Env } from "../types";
 
-type Bindings = { GEMINI_API_KEY: string };
-
-export async function generateImage(c: Context<{ Bindings: Bindings }>) {
+export async function generateImage(c: Context<{ Bindings: Env }>) {
   const body = await c.req.json<GenerateImageRequest>();
   const { title, ingredients } = body;
 

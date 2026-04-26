@@ -6,10 +6,9 @@ import type {
   ImportedRecipe,
 } from "../../../src/services/ai/contracts";
 import { generateImageDataUri } from "../helpers/generateImageDataUri";
+import type { Env } from "../types";
 
-type Bindings = { GEMINI_API_KEY: string };
-
-export async function importFromUrl(c: Context<{ Bindings: Bindings }>) {
+export async function importFromUrl(c: Context<{ Bindings: Env }>) {
   const body = await c.req.json<ImportFromUrlRequest>();
   const { url, availableCategories } = body;
 

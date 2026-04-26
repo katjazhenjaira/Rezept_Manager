@@ -5,10 +5,9 @@ import type {
   FillRemainingResponse,
   FillRemainingOption,
 } from "../../../src/services/ai/contracts";
+import type { Env } from "../types";
 
-type Bindings = { GEMINI_API_KEY: string };
-
-export async function fillRemaining(c: Context<{ Bindings: Bindings }>) {
+export async function fillRemaining(c: Context<{ Bindings: Env }>) {
   const body = await c.req.json<FillRemainingRequest>();
   const { remaining, planName, allergies, activeProgramRules, userRecipes } = body;
 

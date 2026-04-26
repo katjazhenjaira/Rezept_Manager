@@ -5,10 +5,9 @@ import type {
   ImportFromPdfResponse,
   ImportedRecipe,
 } from "../../../src/services/ai/contracts";
+import type { Env } from "../types";
 
-type Bindings = { GEMINI_API_KEY: string };
-
-export async function importFromPdf(c: Context<{ Bindings: Bindings }>) {
+export async function importFromPdf(c: Context<{ Bindings: Env }>) {
   const body = await c.req.json<ImportFromPdfRequest>();
   const { pdfBase64, availableCategories } = body;
 

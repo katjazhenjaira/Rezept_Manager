@@ -14,12 +14,15 @@ export async function rateLimit(c: Context<{ Bindings: Env }>, next: Next) {
   const key = `rate:${ip}:${minute}`;
 
   const raw = await c.env.RATE_LIMIT_KV.get(key);
-  const count = raw ? parseInt(raw, 10) : 0;
+  const parsed = raw ? parseInt(raw, 10) : 0;
+  const count = Number.isFinite(parsed) ? parsed : 0;
 
   if (count >= LIMIT) {
+    const secondsUntilNextMinute = 60 - (Math.floor(Date.now() / 1000) % 60);
     return c.json(
       { error: "Rate limit exceeded. Maximum 10 requests per minute." },
-      429
+      429,
+      { "Retry-After": String(secondsUntilNextMinute) }
     );
   }
 

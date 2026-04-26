@@ -4,10 +4,9 @@ import type {
   CalculateKbzhuRequest,
   CalculateKbzhuResponse,
 } from "../../../src/services/ai/contracts";
+import type { Env } from "../types";
 
-type Bindings = { GEMINI_API_KEY: string };
-
-export async function calculateKbzhu(c: Context<{ Bindings: Bindings }>) {
+export async function calculateKbzhu(c: Context<{ Bindings: Env }>) {
   const body = await c.req.json<CalculateKbzhuRequest>();
   const { ingredients } = body;
 
