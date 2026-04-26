@@ -76,7 +76,7 @@
 - [x] Деплой Worker на Cloudflare
 - [x] Деплой Pages на Cloudflare + кастомный домен `rezept-manager.flowgence.de`
 - [x] Запустить security-review skill
-- [ ] **TODO (code review):** Унифицировать image generation в App.tsx — PDF handler вызывает `aiClient.generateImage()` напрямую, а ручное добавление и import-from-url идут через wrapper `generateRecipeImage`. Удалить wrapper, везде использовать `aiClient.generateImage()`.
+- [x] **TODO (code review):** Унифицировать image generation в App.tsx — PDF handler вызывает `aiClient.generateImage()` напрямую, а ручное добавление и import-from-url идут через wrapper `generateRecipeImage`. Удалить wrapper, везде использовать `aiClient.generateImage()`.
 - [ ] **TODO (code review):** Ужесточить prompt для `import-from-pdf` — заменить "provide the 'pageNumber'..." на "MUST include 'pageNumber' and 'dishBoundingBox' for every recipe" чтобы Gemini не пропускал координаты.
 - [ ] **TODO (known issue):** Firestore отклоняет рецепты с base64-картинкой > 1 МБ. Правильный фикс — хранить изображения в Cloudflare R2 (или Firebase Storage) и писать в Firestore только URL. Планируется в Phase 1 или отдельным хот-фиксом.
 - [ ] **TODO (code review, Phase 1):** Устранить двойной fetch source page в `import-from-url` — Gemini уже фетчит страницу через `urlContext`, worker фетчит её повторно для og:image. Решение: добавить поле `rawOgImage` в response schema и просить Gemini вернуть значение og:image напрямую.
