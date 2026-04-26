@@ -75,10 +75,12 @@
 - [x] `aiClient.ts`: `API_BASE` использует `VITE_AI_WORKER_URL` для продакшена
 - [x] Деплой Worker на Cloudflare
 - [x] Деплой Pages на Cloudflare + кастомный домен `rezept-manager.flowgence.de`
-- [ ] Запустить security-review skill
+- [x] Запустить security-review skill
 - [ ] **TODO (code review):** Унифицировать image generation в App.tsx — PDF handler вызывает `aiClient.generateImage()` напрямую, а ручное добавление и import-from-url идут через wrapper `generateRecipeImage`. Удалить wrapper, везде использовать `aiClient.generateImage()`.
 - [ ] **TODO (code review):** Ужесточить prompt для `import-from-pdf` — заменить "provide the 'pageNumber'..." на "MUST include 'pageNumber' and 'dishBoundingBox' for every recipe" чтобы Gemini не пропускал координаты.
 - [ ] **TODO (known issue):** Firestore отклоняет рецепты с base64-картинкой > 1 МБ. Правильный фикс — хранить изображения в Cloudflare R2 (или Firebase Storage) и писать в Firestore только URL. Планируется в Phase 1 или отдельным хот-фиксом.
+- [ ] **TODO (code review, Phase 1):** Устранить двойной fetch source page в `import-from-url` — Gemini уже фетчит страницу через `urlContext`, worker фетчит её повторно для og:image. Решение: добавить поле `rawOgImage` в response schema и просить Gemini вернуть значение og:image напрямую.
+- [ ] **TODO (code review, Phase 1):** Добавить unit-тесты для `worker/src/middleware/rateLimit.ts` через `@cloudflare/vitest-pool-workers` — покрыть: count=9 (pass), count=10 (429 + Retry-After), corrupted KV value (NaN guard), minute-boundary reset.
 
 **Критерий готовности:**
 - `grep -r GEMINI_API_KEY dist/` → 0 совпадений
