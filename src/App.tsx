@@ -67,9 +67,9 @@ import {
 import { ru } from 'date-fns/locale';
 
 import * as pdfjs from 'pdfjs-dist';
+import pdfjsWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 
-// Set worker source
-pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`;
+pdfjs.GlobalWorkerOptions.workerSrc = pdfjsWorker;
 
 // Utility for tailwind classes
 function cn(...inputs: ClassValue[]) {
@@ -5549,10 +5549,13 @@ export default function App() {
                                 if (generated?.imageDataUri) dishImage = generated.imageDataUri;
                               }
 
+                              // Firestore limit ~1MB per doc; base64 images can exceed it.
+                              // Phase 1 will move images to Firebase Storage / R2.
+                              const imageToStore = dishImage && dishImage.length <= 800_000 ? dishImage : null;
                               const docRef = await addDoc(collection(db, "recipes"), {
                                 title: r.title,
                                 author: r.author ?? "",
-                                image: dishImage,
+                                image: imageToStore,
                                 time: r.time,
                                 servings: r.servings,
                                 categories: r.categories,
