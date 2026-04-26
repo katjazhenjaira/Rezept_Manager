@@ -6,14 +6,13 @@ import { importFromUrl } from "./routes/importFromUrl";
 import { importFromPdf } from "./routes/importFromPdf";
 import { importFromPhoto } from "./routes/importFromPhoto";
 import { fillRemaining } from "./routes/fillRemaining";
+import { rateLimit } from "./middleware/rateLimit";
+import type { Env } from "./types";
 
-type Bindings = {
-  GEMINI_API_KEY: string;
-};
-
-const app = new Hono<{ Bindings: Bindings }>();
+const app = new Hono<{ Bindings: Env }>();
 
 app.use("*", cors());
+app.use("/api/ai/*", rateLimit);
 
 app.get("/", (c) => c.text("Rezept Manager AI proxy"));
 
