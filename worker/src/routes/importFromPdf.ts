@@ -51,7 +51,7 @@ export async function importFromPdf(c: Context<{ Bindings: Env }>) {
 Include title, ingredients as an array of strings, steps as an array of strings, time, calories, proteins, fats, carbs, servings.
 ВАЖНО: Если КБЖУ (калории, белки, жиры, углеводы) не указаны в документе явно, ПОЖАЛУЙСТА, РАССЧИТАЙТЕ ИХ самостоятельно на основе ингредиентов и их количества.
 Include 'author' if mentioned in the document.
-For each recipe, provide the 'pageNumber' (1-indexed) and 'dishBoundingBox' with ymin, xmin, ymax, xmax for the main photo associated with that recipe. Use normalized coordinates (0-1000).
+MUST include 'pageNumber' (1-indexed) and 'dishBoundingBox' with ymin, xmin, ymax, xmax for EVERY recipe — use the bounding box of the main dish photo on that page. Use normalized coordinates (0-1000). If no photo exists, estimate the box covering the top half of the page.
 For categories, ONLY choose from this list: ${availableCategories.join(", ")}.`,
         },
       ],
