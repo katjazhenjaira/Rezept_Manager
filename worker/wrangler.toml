@@ -11,3 +11,8 @@ port = 8787
 
 [observability]
 enabled = true
+
+[[kv_namespaces]]
+binding = "RATE_LIMIT_KV"
+id = "31b944d7992243d2b9bed0e5fa26d04f"
+preview_id = "b9a71fbc82d24b689628b43a44ea7693"
