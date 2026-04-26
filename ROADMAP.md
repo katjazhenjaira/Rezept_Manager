@@ -7,8 +7,8 @@
 ## Текущий статус
 
 - **Активная фаза:** Phase 0b — Gemini proxy на Cloudflare Worker (в работе, деплой готов)
-- **Следующий шаг:** Rate limiting (KV token bucket) → security-review skill → TODO code-review items.
-- **Обновлено:** 2026-04-21
+- **Следующий шаг:** Запустить security-review skill → TODO code-review items.
+- **Обновлено:** 2026-04-26
 - **Blocker:** нет
 
 ---
@@ -67,7 +67,7 @@
 - [x] 6 routes: ~~`generate-image`~~ ✅, ~~`calculate-kbzhu`~~ ✅, ~~`import-from-url`~~ ✅, ~~`import-from-pdf`~~ ✅, ~~`import-from-photo`~~ ✅, ~~`fill-remaining`~~ ✅
 - [x] Shared contracts: `src/services/ai/contracts.ts` (импортируется Worker-ом)
 - [x] Клиент: `src/services/ai/aiClient.ts`
-- [ ] Rate limiting (token bucket в Cloudflare KV, 10 req/min для import-операций)
+- [x] Rate limiting (token bucket в Cloudflare KV, 10 req/min для import-операций)
 - [x] Переписать 6 вызовов `new GoogleGenAI()` в `App.tsx` на `aiClient.*` — все 6 удалены
 - [x] Vite dev: `wrangler dev` на :8787, Vite proxy `/api → :8787`
 - [x] Убрать `define: { 'process.env.GEMINI_API_KEY' }` из `vite.config.ts`
