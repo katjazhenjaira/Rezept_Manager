@@ -6,8 +6,8 @@
 
 ## Текущий статус
 
-- **Активная фаза:** Phase 0b — Gemini proxy на Cloudflare Worker (в работе, деплой готов)
-- **Следующий шаг:** Запустить security-review skill → TODO code-review items.
+- **Активная фаза:** Phase 1 — разбор монолита (в работе, Phase 1a завершена)
+- **Следующий шаг:** Phase 1b — Repository-интерфейсы и Firestore-реализации (сервисный слой)
 - **Обновлено:** 2026-04-26
 - **Blocker:** нет
 
@@ -91,16 +91,17 @@
 
 ### Phase 1 — разбор монолита (6–10 недель)
 
-**Статус:** [ ] не начата
+**Статус:** [ ] в работе (Phase 1a завершена)
 
-**1. Доменный слой (до UI):**
-- [ ] `src/shared/domain/types.ts` — все типы из `App.tsx:163-275`
-- [ ] `src/shared/domain/macros.ts` — sumMacros, remainingMacros, resolveActiveTargets
-- [ ] `src/shared/domain/allergies.ts` — recipeAllergens, recipeHasAllergens
-- [ ] `src/features/cart/services/staples.ts` — BASIC_KEYWORDS, isStaple
-- [ ] Vitest + тесты 100% покрытия на вышеперечисленное
+**1. Доменный слой (до UI):** ✅ Phase 1a завершена (2026-04-26)
+- [x] `src/shared/domain/types.ts` — все типы из `App.tsx:163-275`
+- [x] `src/shared/domain/macros.ts` — sumMacros, remainingMacros, resolveActiveTargets
+- [x] `src/shared/domain/allergies.ts` — recipeAllergens, recipeHasAllergens
+- [x] `src/features/cart/services/staples.ts` — BASIC_KEYWORDS, isStaple
+- [x] Vitest + тесты 100% покрытия на вышеперечисленное (32 теста, 3 файла)
 
-**2. Сервисный слой:**
+**2. Сервисный слой:** (Phase 1b — следующий шаг)
+- [ ] **TODO (code review, Phase 1b):** Заменить все 3 вхождения `BASIC_KEYWORDS` в `App.tsx` (строки 593, 1946, 3481) на импорт из `src/features/cart/services/staples.ts`
 - [ ] Repository-интерфейсы: `services/RecipesRepository.ts`, PlannerRepository, ProgramsRepository, CartRepository, UserProfileRepository, NutritionPlanRepository
 - [ ] Firestore-реализации в `src/infrastructure/firestore/`
 - [ ] `src/infrastructure/firestore/converters.ts` (Timestamp ↔ ISO)
@@ -224,6 +225,7 @@
 - **2026-04-19** — Phase 0b слайсы 3–4: роуты `import-from-url` и `import-from-pdf` портированы на воркер. Ключевые решения: (1) `ImportedRecipe.ingredients/steps` переведены с `string` на `string[]` — Gemini возвращает массивы, App.tsx всегда использовал их как массивы; (2) Добавлено поле `sourceUrl?: string` в `ImportedRecipe`; (3) `generateImageDataUri` вынесен в хелпер `worker/src/helpers/generateImageDataUri.ts` (переиспользуется в `import-from-url` для fallback-изображений); (4) Для PDF `extractImageFromPDF` остаётся на клиенте (Canvas API недоступен в Workers) — клиент извлекает изображение из PDF по `pageNumber`+`dishBoundingBox`, при неудаче вызывает `aiClient.generateImage()`; (5) Все новые воркер-роуты используют try/catch вокруг Gemini + JSON.parse (возвращают 502), валидируют `availableCategories` через `Array.isArray`, применяют case-insensitive category filter с возвратом original-cased значения через `.find()`.
 - **2026-04-21** — Phase 0b деплой: Worker задеплоен на Cloudflare с `GEMINI_API_KEY` секретом; Pages задеплоен с кастомным доменом `rezept-manager.flowgence.de` (CNAME у HostEurope, основной домен `flowgence.de` остаётся там). `aiClient.ts` обновлён: `API_BASE` берёт `VITE_AI_WORKER_URL` из env, в dev fallback на `""` (Vite proxy работает как прежде).
 - **2026-04-20** — Phase 0b слайсы 5–6: роуты `import-from-photo` и `fill-remaining` портированы на воркер. Все 6 маршрутов активны, `new GoogleGenAI` полностью удалён из `App.tsx`. `FillRemainingOption` в contracts.ts приведён в соответствие с реальным форматом ответа Gemini (поля `id`, `type`, `description` вместо `title`/`portion`/`rationale`). `FillRemainingRequest` дополнен полем `planName`. Для photo-импорта: cropping по `dishBoundingBox` остаётся на клиенте (Canvas API недоступен в Worker); изображение из фото не проходит через воркер, только КБЖУ и метаданные.
+- **2026-04-26** — Phase 1a завершена: доменный слой (types, macros, allergies, staples) вынесен из монолита в `src/shared/domain/` и `src/features/cart/services/`. Vitest 4.x с v8 coverage настроен, 32 теста, 100% покрытие всех новых файлов. App.tsx не тронут — дублирование типов временное, устраняется в Phase 1b. В процессе обнаружено: `BASIC_KEYWORDS` встречается в App.tsx **3 раза** (строки 593, 1946, 3481), а не 2 как планировалось — Phase 1b должна заменить все три вхождения. `vitest.config.ts` получил `exclude: ['**/.worktrees/**']` для корректного поведения при работе с git worktrees.
 - **2026-04-19** — Phase 0b слайс 2: роут 2 из 6 (`calculate-kbzhu`) перенесён на воркер. Модель и схема ответа сохранены 1-в-1 (`gemini-3-flash-preview`, responseSchema с calories/proteins/fats/carbs). `CalculateKbzhuRequest` упрощён до `{ ingredients: string }` — прежний черновик типа `{ title, ingredients: string[], servings }` не соответствовал реальному call-site (форма передаёт сырую строку). Проверено курлом и в браузере (200 OK, КБЖУ заполнилось корректно). Также добавлен `server.watch.ignored` в `vite.config.ts` для `.claude/`, `.playwright-mcp/`, `worker/` — без этого Claude Code писал `settings.local.json` каждые несколько секунд, и Vite reload-ил страницу, ломая browser-тесты модалок.
 
 ---
