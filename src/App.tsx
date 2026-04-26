@@ -781,16 +781,6 @@ export default function App() {
     }
   };
 
-  const generateRecipeImage = async (title: string, ingredients: string[]) => {
-    try {
-      const { imageDataUri } = await aiClient.generateImage({ title, ingredients });
-      return imageDataUri;
-    } catch (error) {
-      console.error("Error generating recipe image:", error);
-      return null;
-    }
-  };
-
   const addRecipeToTarget = async (recipeId: string) => {
     if (!recipeTarget) return;
     const { programId, subfolderId } = recipeTarget;
@@ -818,8 +808,8 @@ export default function App() {
     
     let imageUrl = formData.image;
     if (!imageUrl) {
-      const generated = await generateRecipeImage(formData.title, formData.ingredients.split('\n'));
-      if (generated) imageUrl = generated;
+      const generated = await aiClient.generateImage({ title: formData.title, ingredients: formData.ingredients.split('\n') });
+      if (generated?.imageDataUri) imageUrl = generated.imageDataUri;
     }
     
     const recipeData = {
@@ -904,8 +894,8 @@ export default function App() {
       }
 
       if (!dishImage) {
-        const generated = await generateRecipeImage(r.title, r.ingredients);
-        if (generated) dishImage = generated;
+        const generated = await aiClient.generateImage({ title: r.title, ingredients: r.ingredients });
+        if (generated?.imageDataUri) dishImage = generated.imageDataUri;
       }
 
       if (autoSave) {
