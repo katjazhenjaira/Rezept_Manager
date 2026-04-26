@@ -7,8 +7,10 @@ const TTL_SECONDS = 65;
 export async function rateLimit(c: Context<{ Bindings: Env }>, next: Next) {
   const ip =
     c.req.header("CF-Connecting-IP") ??
-    c.req.header("X-Forwarded-For")?.split(",")[0]?.trim() ??
-    "unknown";
+    c.req.header("X-Forwarded-For")?.split(",")[0]?.trim();
+
+  // No IP header means local dev (wrangler dev has no CF headers) — skip rate limit.
+  if (!ip) return next();
 
   const minute = Math.floor(Date.now() / 60_000);
   const key = `rate:${ip}:${minute}`;

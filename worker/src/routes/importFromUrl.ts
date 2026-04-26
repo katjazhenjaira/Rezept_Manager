@@ -97,7 +97,13 @@ INSTRUCTIONS:
       const ogMatch =
         html.match(/property=["']og:image["'][^>]*content=["']([^"']+)["']/i) ??
         html.match(/content=["']([^"']+)["'][^>]*property=["']og:image["']/i);
-      if (ogMatch?.[1]) imageUrlCandidates.push(ogMatch[1]);
+      if (ogMatch?.[1]) {
+        try {
+          // Resolve relative URLs and decode HTML entities (e.g. &amp; in CDN query strings).
+          const decoded = ogMatch[1].replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">");
+          imageUrlCandidates.push(new URL(decoded, url).href);
+        } catch { /* ignore malformed URLs */ }
+      }
     }
   } catch {}
 
