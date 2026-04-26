@@ -77,7 +77,52 @@ INSTRUCTIONS:
     return c.json({ error: `Gemini error: ${message}` }, 502);
   }
 
-  let dishImage: string | undefined = data.imageUrl ?? undefined;
+  let dishImage: string | undefined;
+
+  // Download the image server-side to avoid hotlink protection on external CDNs.
+  // Spoof Referer to the source page so CDN treats it as a legitimate request.
+  // Build a list of image URLs to try: og:image from HTML first, then Gemini's guess.
+  // og:image is designed for external crawlers and is more reliably accessible.
+  const imageUrlCandidates: string[] = [];
+
+  try {
+    const pageResp = await fetch(url, {
+      headers: {
+        // Social-crawler UA that sites typically allow for og:image access.
+        "User-Agent": "facebookexternalhit/1.1",
+        Accept: "text/html",
+      },
+    });
+    if (pageResp.ok) {
+      const html = await pageResp.text();
+      const ogMatch =
+        html.match(/property=["']og:image["'][^>]*content=["']([^"']+)["']/i) ??
+        html.match(/content=["']([^"']+)["'][^>]*property=["']og:image["']/i);
+      if (ogMatch?.[1]) imageUrlCandidates.push(ogMatch[1]);
+    }
+  } catch {}
+
+  if (data.imageUrl) imageUrlCandidates.push(data.imageUrl);
+
+  for (const candidate of imageUrlCandidates) {
+    try {
+      const imgResp = await fetch(candidate, { headers: { Referer: url } });
+      if (!imgResp.ok) continue;
+      const buffer = await imgResp.arrayBuffer();
+      if (buffer.byteLength > 600_000) continue;
+      const bytes = new Uint8Array(buffer);
+      let binary = "";
+      const chunkSize = 8192;
+      for (let i = 0; i < bytes.length; i += chunkSize) {
+        binary += String.fromCharCode(...bytes.slice(i, i + chunkSize));
+      }
+      const base64 = btoa(binary);
+      const contentType = imgResp.headers.get("content-type") ?? "image/jpeg";
+      dishImage = `data:${contentType};base64,${base64}`;
+      break;
+    } catch {}
+  }
+
   if (!dishImage) {
     const generated = await generateImageDataUri(
       ai,

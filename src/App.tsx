@@ -967,10 +967,11 @@ export default function App() {
       });
       const r = result.recipe;
 
+      const imageToStore = r.dishImage && r.dishImage.length <= 800_000 ? r.dishImage : null;
       const recipeData = {
         title: r.title,
         author: r.author ?? "",
-        image: r.dishImage ?? null,
+        image: imageToStore,
         sourceUrl: r.sourceUrl ?? recipeLink,
         time: r.time,
         servings: r.servings,
