@@ -44,6 +44,11 @@ describe('recipeAllergens', () => {
     const recipe = makeRecipe(['молоко', 'сахар']);
     expect(recipeAllergens(recipe, ['Молоко'])).toEqual(['Молоко']);
   });
+
+  it('returns allergen when allergy appears as substring within a compound ingredient name', () => {
+    const recipe = makeRecipe(['молоко цельное', 'рис']);
+    expect(recipeAllergens(recipe, ['молоко'])).toEqual(['молоко']);
+  });
 });
 
 describe('recipeHasAllergens', () => {
