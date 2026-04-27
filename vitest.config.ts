@@ -9,7 +9,13 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reporter: ['text', 'lcov'],
-      include: ['src/shared/domain/**', 'src/features/cart/services/**'],
+      include: [
+        'src/shared/domain/**',
+        'src/features/cart/services/**',
+        'src/infrastructure/firestore/converters.ts',
+        'src/infrastructure/testing/**',
+        'src/infrastructure/LocalStorageNutritionPlanRepository.ts',
+      ],
       exclude: ['**/__tests__/**'],
     },
   },
