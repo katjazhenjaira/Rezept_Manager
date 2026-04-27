@@ -49,7 +49,8 @@ import { twMerge } from 'tailwind-merge';
 import { collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, getDoc, setDoc } from "firebase/firestore";
 import { db } from "./infrastructure/firebaseApp";
 import { aiClient } from "./services/ai/aiClient";
-import { 
+import { isStaple } from "@/features/cart/services/staples";
+import {
   format, 
   addDays, 
   startOfWeek, 
@@ -590,17 +591,15 @@ export default function App() {
   });
 
   const addProductsToCart = async (products: string[]) => {
-    const BASIC_KEYWORDS = ['соль', 'сахар', 'перец', 'лук', 'чеснок', 'масло', 'мука', 'сода', 'уксус', 'вода', 'специи', 'приправа'];
-    
     try {
       for (const product of products) {
         if (!product.trim()) continue;
-        
+
         // Try to separate name and amount if possible (e.g. "Яблоки 1кг")
         const parts = product.trim().split(' ');
         let name = product;
         let amount = '';
-        
+
         if (parts.length > 1) {
           const lastPart = parts[parts.length - 1];
           if (lastPart && /\d/.test(lastPart)) {
@@ -609,7 +608,7 @@ export default function App() {
           }
         }
 
-        const isBasic = BASIC_KEYWORDS.some(k => name.toLowerCase().includes(k));
+        const isBasic = isStaple(name);
 
         await addDoc(collection(db, "cart"), {
           name,
@@ -1942,19 +1941,17 @@ export default function App() {
                     });
                 
                 const ingredientMap: Record<string, { amount: string, dishes: Set<string>, isBasic: boolean }> = {};
-                
-                const BASIC_KEYWORDS = ['соль', 'сахар', 'перец', 'лук', 'чеснок', 'масло', 'мука', 'сода', 'уксус', 'вода', 'специи', 'приправа'];
 
                 entries.forEach(e => {
                   const recipe = getRecipeById(e.recipeId);
                   if (recipe) {
                     recipe.ingredients.forEach(ing => {
+                      const isBasic = isStaple(ing);
                       const lowerIng = ing.toLowerCase();
-                      const isBasic = BASIC_KEYWORDS.some(k => lowerIng.includes(k));
-                      
+
                       // Try to find if we already have this ingredient (very basic fuzzy match)
                       let key = ing;
-                      const existingKey = Object.keys(ingredientMap).find(k => 
+                      const existingKey = Object.keys(ingredientMap).find(k =>
                         k.toLowerCase().includes(lowerIng) || lowerIng.includes(k.toLowerCase())
                       );
                       if (existingKey) key = existingKey;
@@ -3477,9 +3474,8 @@ export default function App() {
     const handleAddManualCartItem = async (e: React.FormEvent) => {
       e.preventDefault();
       if (!newCartItemName.trim()) return;
-      
-      const BASIC_KEYWORDS = ['соль', 'сахар', 'перец', 'лук', 'чеснок', 'масло', 'мука', 'сода', 'уксус', 'вода', 'специи', 'приправа'];
-      const isBasic = BASIC_KEYWORDS.some(k => newCartItemName.toLowerCase().includes(k));
+
+      const isBasic = isStaple(newCartItemName);
 
       await addDoc(collection(db, "cart"), {
         name: newCartItemName,
