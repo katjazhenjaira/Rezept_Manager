@@ -1,4 +1,5 @@
 import { BookOpen, Calendar, ShoppingCart, Activity, Users } from 'lucide-react';
+import type { ReactNode } from 'react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import type { Tab } from '@/shared/domain/types';
@@ -10,7 +11,7 @@ function cn(...inputs: ClassValue[]) {
 type NavItemProps = {
   active: boolean;
   onClick: () => void;
-  icon: React.ReactNode;
+  icon: ReactNode;
   label: string;
 };
 
