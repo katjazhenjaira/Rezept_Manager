@@ -64,11 +64,23 @@ describe('FakeCartRepository', () => {
     expect(calls[0]).toEqual([]);
   });
 
+  it('deleteAll on empty list is a no-op', async () => {
+    await expect(repo.deleteAll()).resolves.toBeUndefined();
+  });
+
   it('unsubscribe stops notifications', async () => {
     const calls: CartItem[][] = [];
     const unsub = repo.subscribeAll(i => calls.push(i));
     unsub();
     await repo.add(item());
     expect(calls).toHaveLength(1);
+  });
+
+  it('reset clears all state', async () => {
+    await repo.add(item());
+    repo.reset();
+    const calls: CartItem[][] = [];
+    repo.subscribeAll(i => calls.push(i));
+    expect(calls[0]).toEqual([]);
   });
 });

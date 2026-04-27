@@ -32,4 +32,10 @@ describe('FakeNutritionPlanRepository', () => {
     await repo.set(null);
     expect(await repo.get()).toBeNull();
   });
+
+  it('reset clears the plan', async () => {
+    await repo.set(plan());
+    repo.reset();
+    expect(await repo.get()).toBeNull();
+  });
 });

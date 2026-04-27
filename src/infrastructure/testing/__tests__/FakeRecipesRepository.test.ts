@@ -81,4 +81,14 @@ describe('FakeRecipesRepository', () => {
     await repo.add(recipe());
     expect(calls).toHaveLength(1);
   });
+
+  it('reset clears all state and restarts ids from 1', async () => {
+    await repo.add(recipe());
+    const calls: Recipe[][] = [];
+    repo.subscribeAll(r => calls.push(r));
+    repo.reset();
+    expect(calls).toHaveLength(1); // only initial emit, not triggered by reset
+    const id = await repo.add(recipe());
+    expect(id).toBe('1');
+  });
 });

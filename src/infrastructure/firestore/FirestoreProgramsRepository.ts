@@ -5,7 +5,7 @@ import {
 import { db } from '@/infrastructure/firebaseApp';
 import type { Program } from '@/shared/domain/types';
 import type { ProgramsRepository } from '@/services/ProgramsRepository';
-import { timestampToISO } from './converters';
+import { timestampToISO, type TimestampLike } from './converters';
 
 function fromFirestore(id: string, data: Record<string, unknown>): Program {
   return {
@@ -15,7 +15,7 @@ function fromFirestore(id: string, data: Record<string, unknown>): Program {
     creator: data['creator'] as string,
     link: data['link'] as string,
     recipeIds: (data['recipeIds'] as string[]) ?? [],
-    createdAt: timestampToISO(data['createdAt'] as never),
+    createdAt: timestampToISO(data['createdAt'] as TimestampLike | string | null | undefined),
     image: data['image'] as string | undefined,
     pdfUrl: data['pdfUrl'] as string | undefined,
     subfolders: data['subfolders'] as Program['subfolders'],

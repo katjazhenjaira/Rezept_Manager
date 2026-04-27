@@ -5,7 +5,7 @@ import {
 import { db } from '@/infrastructure/firebaseApp';
 import type { CartItem } from '@/shared/domain/types';
 import type { CartRepository } from '@/services/CartRepository';
-import { timestampToISO } from './converters';
+import { timestampToISO, type TimestampLike } from './converters';
 
 function fromFirestore(id: string, data: Record<string, unknown>): CartItem {
   return {
@@ -15,7 +15,7 @@ function fromFirestore(id: string, data: Record<string, unknown>): CartItem {
     sourceDishes: (data['sourceDishes'] as string[]) ?? [],
     checked: data['checked'] as boolean,
     isBasic: data['isBasic'] as boolean | undefined,
-    createdAt: timestampToISO(data['createdAt'] as never),
+    createdAt: timestampToISO(data['createdAt'] as TimestampLike | string | null | undefined),
   };
 }
 

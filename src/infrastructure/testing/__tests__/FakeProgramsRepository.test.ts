@@ -64,4 +64,12 @@ describe('FakeProgramsRepository', () => {
     await repo.add(program());
     expect(calls).toHaveLength(1);
   });
+
+  it('reset clears all state', async () => {
+    await repo.add(program());
+    repo.reset();
+    const calls: Program[][] = [];
+    repo.subscribeAll(p => calls.push(p));
+    expect(calls[0]).toEqual([]);
+  });
 });

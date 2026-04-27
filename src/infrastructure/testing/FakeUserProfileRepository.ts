@@ -6,7 +6,8 @@ export class FakeUserProfileRepository implements UserProfileRepository {
   private listeners = new Set<(profile: UserProfile | null) => void>();
 
   private emit(): void {
-    this.listeners.forEach(cb => cb(this.current));
+    const snapshot = this.current ? { ...this.current } : null;
+    this.listeners.forEach(cb => cb(snapshot));
   }
 
   subscribe(callback: (profile: UserProfile | null) => void): () => void {

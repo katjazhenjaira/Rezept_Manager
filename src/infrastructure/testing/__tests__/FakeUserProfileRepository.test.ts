@@ -52,4 +52,12 @@ describe('FakeUserProfileRepository', () => {
     await repo.save(profile());
     expect(calls).toHaveLength(1);
   });
+
+  it('reset clears the profile', async () => {
+    await repo.save(profile());
+    repo.reset();
+    const calls: (UserProfile | null)[] = [];
+    repo.subscribe(p => calls.push(p));
+    expect(calls[0]).toBeNull();
+  });
 });

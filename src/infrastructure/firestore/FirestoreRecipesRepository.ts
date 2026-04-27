@@ -5,7 +5,7 @@ import {
 import { db } from '@/infrastructure/firebaseApp';
 import type { Recipe } from '@/shared/domain/types';
 import type { RecipesRepository } from '@/services/RecipesRepository';
-import { timestampToISO } from './converters';
+import { timestampToISO, type TimestampLike } from './converters';
 
 function fromFirestore(id: string, data: Record<string, unknown>): Recipe {
   return {
@@ -22,7 +22,7 @@ function fromFirestore(id: string, data: Record<string, unknown>): Recipe {
     macros: data['macros'] as Recipe['macros'],
     substitutions: data['substitutions'] as string | undefined,
     isFavorite: data['isFavorite'] as boolean | undefined,
-    createdAt: timestampToISO(data['createdAt'] as never),
+    createdAt: timestampToISO(data['createdAt'] as TimestampLike | string | null | undefined),
   };
 }
 

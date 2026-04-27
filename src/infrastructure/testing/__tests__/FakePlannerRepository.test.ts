@@ -49,4 +49,12 @@ describe('FakePlannerRepository', () => {
     await repo.add(entry());
     expect(calls).toHaveLength(1);
   });
+
+  it('reset clears all state', async () => {
+    await repo.add(entry());
+    repo.reset();
+    const calls: PlannerEntry[][] = [];
+    repo.subscribeAll(e => calls.push(e));
+    expect(calls[0]).toEqual([]);
+  });
 });
