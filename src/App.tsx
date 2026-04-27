@@ -69,6 +69,8 @@ import { ru } from 'date-fns/locale';
 
 import * as pdfjs from 'pdfjs-dist';
 import pdfjsWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
+import { useNutritionPlan } from '@/app/providers/UserProfileContext';
+import { TabBar } from '@/app/layout/TabBar';
 
 pdfjs.GlobalWorkerOptions.workerSrc = pdfjsWorker;
 
@@ -510,19 +512,7 @@ export default function App() {
   const [isCategoryDeleteConfirmOpen, setIsCategoryDeleteConfirmOpen] = useState(false);
   const [categoryToDelete, setCategoryToDelete] = useState<string | null>(null);
   const [isProgramSelectionOpen, setIsProgramSelectionOpen] = useState(false);
-  const [activeNutritionPlan, setActiveNutritionPlan] = useState<{
-    name: string;
-    subfolderName?: string;
-    calories: number;
-    proteins: number;
-    fats: number;
-    carbs: number;
-    isCustom: boolean;
-    programId?: string;
-    subfolderId?: string;
-    allowedProducts?: string[];
-    forbiddenProducts?: string[];
-  } | null>(null);
+  const { activeNutritionPlan, setActivePlan } = useNutritionPlan();
   const [customPlanForm, setCustomPlanForm] = useState({
     name: '',
     calories: 0,
@@ -711,15 +701,6 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    const savedPlan = localStorage.getItem('activeNutritionPlan');
-    if (savedPlan) {
-      try {
-        setActiveNutritionPlan(JSON.parse(savedPlan));
-      } catch (e) {
-        console.error("Error parsing saved plan:", e);
-      }
-    }
-
     const savedCategories = localStorage.getItem('availableCategories');
     if (savedCategories) {
       try {
@@ -6409,41 +6390,7 @@ export default function App() {
         )}
       </AnimatePresence>
 
-      {/* Navigation - Always at the bottom */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-lg border-t border-zinc-200 px-4 py-3 z-50">
-        <div className="max-w-lg mx-auto flex justify-between items-center">
-          <NavItem 
-            active={activeTab === 'recipes'} 
-            onClick={() => setActiveTab('recipes')} 
-            icon={<BookOpen className="w-6 h-6" />} 
-            label="Рецепты" 
-          />
-          <NavItem 
-            active={activeTab === 'planner'} 
-            onClick={() => setActiveTab('planner')} 
-            icon={<Calendar className="w-6 h-6" />} 
-            label="Планер" 
-          />
-          <NavItem 
-            active={activeTab === 'cart'} 
-            onClick={() => setActiveTab('cart')} 
-            icon={<ShoppingCart className="w-6 h-6" />} 
-            label="Корзина" 
-          />
-          <NavItem 
-            active={activeTab === 'tracker'} 
-            onClick={() => setActiveTab('tracker')} 
-            icon={<Activity className="w-6 h-6" />} 
-            label="Трекер" 
-          />
-          <NavItem 
-            active={activeTab === 'programs'} 
-            onClick={() => setActiveTab('programs')} 
-            icon={<Users className="w-6 h-6" />} 
-            label="Программы" 
-          />
-        </div>
-      </nav>
+      <TabBar activeTab={activeTab} onTabChange={setActiveTab} />
 
       {/* Recipe Selection Bar */}
       <AnimatePresence>
@@ -7103,12 +7050,12 @@ export default function App() {
                         
                         const docRef = await addDoc(collection(db, "programs"), newProgram);
 
-                        setActiveNutritionPlan({
+                        void setActivePlan({
                           ...customPlanForm,
                           isCustom: true,
                           programId: docRef.id,
                           allowedProducts: [],
-                          forbiddenProducts: []
+                          forbiddenProducts: [],
                         });
                         
                         setCustomPlanForm({ name: '', calories: 0, proteins: 0, fats: 0, carbs: 0 });
@@ -7128,8 +7075,7 @@ export default function App() {
 {/* Default Option */}
 <button 
   onClick={() => {
-    setActiveNutritionPlan(null);
-    localStorage.removeItem('activeNutritionPlan');
+    void setActivePlan(null);
     setIsProgramSelectionOpen(false);
   }}
                     className={cn(
@@ -7161,8 +7107,7 @@ export default function App() {
                             allowedProducts: program.allowedProducts,
                             forbiddenProducts: program.forbiddenProducts
                           };
-                          setActiveNutritionPlan(plan);
-                          localStorage.setItem('activeNutritionPlan', JSON.stringify(plan));
+                          void setActivePlan(plan);
                           setIsProgramSelectionOpen(false);
                         }}
                         className={cn(
@@ -7204,8 +7149,7 @@ export default function App() {
                                   allowedProducts: subfolder.allowedProducts || program.allowedProducts,
                                   forbiddenProducts: subfolder.forbiddenProducts || program.forbiddenProducts
                                 };
-                                setActiveNutritionPlan(plan);
-                                localStorage.setItem('activeNutritionPlan', JSON.stringify(plan));
+                                void setActivePlan(plan);
                                 setIsProgramSelectionOpen(false);
                               }}
                               className={cn(
@@ -7270,27 +7214,6 @@ function SidebarItem({ active, onClick, icon, label, count }: { active: boolean,
   );
 }
 
-function NavItem({ active, onClick, icon, label }: { active: boolean, onClick: () => void, icon: React.ReactNode, label: string }) {
-  return (
-    <button 
-      onClick={onClick}
-      className={cn(
-        "flex flex-col items-center gap-1 px-2 py-1 rounded-xl transition-all duration-200 min-w-[64px]",
-        active 
-          ? "text-emerald-600" 
-          : "text-zinc-400 hover:text-zinc-600"
-      )}
-    >
-      <div className={cn(
-        "p-1 rounded-lg transition-colors",
-        active ? "bg-emerald-50" : "bg-transparent"
-      )}>
-        {icon}
-      </div>
-      <span className="text-[10px] font-bold uppercase tracking-wider">{label}</span>
-    </button>
-  );
-}
 
 function ActionButton({ icon, label, onClick }: { icon: React.ReactNode, label: string, onClick: () => void }) {
   return (
