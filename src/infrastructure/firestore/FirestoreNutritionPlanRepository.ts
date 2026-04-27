@@ -8,7 +8,19 @@ const planRef = () => doc(db, 'settings', 'plan');
 export class FirestoreNutritionPlanRepository implements NutritionPlanRepository {
   async get(): Promise<ActiveNutritionPlan | null> {
     const snap = await getDoc(planRef());
-    return snap.exists() ? (snap.data() as ActiveNutritionPlan) : null;
+    if (!snap.exists()) return null;
+    const data = snap.data() as Omit<
+      ActiveNutritionPlan,
+      'allowedProducts' | 'forbiddenProducts'
+    > & {
+      allowedProducts?: string[];
+      forbiddenProducts?: string[];
+    };
+    return {
+      ...data,
+      allowedProducts: data.allowedProducts ?? [],
+      forbiddenProducts: data.forbiddenProducts ?? [],
+    };
   }
 
   async set(plan: ActiveNutritionPlan | null): Promise<void> {
