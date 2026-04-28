@@ -1,0 +1,19 @@
+{
+  "tabs": {
+    "recipes": "Recipes",
+    "planner": "Planner",
+    "cart": "Cart",
+    "tracker": "Tracker",
+    "programs": "Programs"
+  },
+  "settings": {
+    "title": "Profile Settings",
+    "language": "Interface Language",
+    "save": "Save"
+  },
+  "common": {
+    "close": "Close",
+    "cancel": "Cancel",
+    "loading": "Loading..."
+  }
+}

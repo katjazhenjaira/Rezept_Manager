@@ -71,6 +71,8 @@ import * as pdfjs from 'pdfjs-dist';
 import pdfjsWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 import { useNutritionPlan } from '@/app/providers/UserProfileContext';
 import { TabBar } from '@/app/layout/TabBar';
+import { useTranslation } from 'react-i18next';
+import { changeLanguage, type AppLanguage } from '@/app/providers/I18nProvider';
 
 pdfjs.GlobalWorkerOptions.workerSrc = pdfjsWorker;
 
@@ -293,6 +295,7 @@ interface CartItem {
 }
 
 export default function App() {
+  const { i18n } = useTranslation();
   const [activeTab, setActiveTab] = useState<Tab>('recipes');
   const [recipeView, setRecipeView] = useState<RecipeView>('all');
   const [recipes, setRecipes] = useState<Recipe[]>([]);
@@ -4750,12 +4753,32 @@ export default function App() {
                     <span className="text-2xl font-bold text-blue-600">
                       {Math.round(userProfile.currentWeight * 35)} мл
                     </span>
-                    <button 
+                    <button
                       onClick={() => setUserProfile({...userProfile, waterGoal: Math.round(userProfile.currentWeight * 35)})}
                       className="text-xs font-bold bg-blue-600 text-white px-4 py-2 rounded-xl hover:bg-blue-700 transition-all"
                     >
                       Установить как цель
                     </button>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <h3 className="text-sm font-bold text-zinc-900 border-b border-zinc-100 pb-2">Язык интерфейса</h3>
+                  <div className="flex gap-2">
+                    {(['ru', 'de', 'en'] as AppLanguage[]).map((lang) => (
+                      <button
+                        key={lang}
+                        onClick={() => changeLanguage(lang)}
+                        className={cn(
+                          'flex-1 py-2 rounded-xl text-sm font-bold border transition-all',
+                          i18n.language === lang
+                            ? 'bg-emerald-600 border-emerald-600 text-white shadow-sm'
+                            : 'bg-zinc-50 border-zinc-100 text-zinc-500 hover:border-emerald-200'
+                        )}
+                      >
+                        {lang === 'ru' ? '🇷🇺 RU' : lang === 'de' ? '🇩🇪 DE' : '🇬🇧 EN'}
+                      </button>
+                    ))}
                   </div>
                 </div>
               </div>
