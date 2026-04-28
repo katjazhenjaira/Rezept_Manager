@@ -7,8 +7,8 @@
 ## Текущий статус
 
 - **Активная фаза:** Phase 1 — разбор монолита (в работе, Phase 1a + 1b + 3a завершены)
-- **Следующий шаг:** Phase 1 Step 3b — i18n (i18next + react-i18next, I18nProvider, ru/de/en локали, переключатель языка в Settings)
-- **Обновлено:** 2026-04-27
+- **Следующий шаг:** Phase 1 Step 4 — вынос вкладки Cart из App.tsx в `src/features/cart/`
+- **Обновлено:** 2026-04-28
 - **Blocker:** нет
 
 ---
@@ -121,15 +121,15 @@
 - [ ] **TODO (known):** В Step 4 убрать дублирующие `onSnapshot` подписки в App.tsx (recipes/planner/cart/programs), заменить на чтение из DataContext
 - [ ] **BUG:** PDF-импорт для программ распознаёт только 1 рецепт вместо всех. Причина: для больших PDF (>15 МБ) текст извлекается через pdfjs-dist и передаётся в воркер как plain text — Gemini обрабатывает только первый рецепт. Возможные решения: (1) чанковать текст по страницам и делать несколько запросов, (2) ужесточить промпт "extract ALL recipes, not just the first".
 
-**3b. i18n:**
-- [ ] `npm install i18next react-i18next`
-- [ ] `src/app/providers/I18nProvider.tsx`
-- [ ] `src/locales/ru.json`, `de.json`, `en.json` — начальный набор ключей (все хардкоженные строки Shell/TabBar + критические UI-строки)
-- [ ] Переключатель языка в Settings (ru/de/en)
-- [ ] Все строки в Shell.tsx и TabBar.tsx через `t()` хук
+**3b. i18n:** ✅ завершена (2026-04-28)
+- [x] `npm install i18next react-i18next`
+- [x] `src/app/providers/I18nProvider.tsx`
+- [x] `src/locales/ru.json`, `de.json`, `en.json` — начальный набор ключей (все хардкоженные строки Shell/TabBar + критические UI-строки)
+- [x] Переключатель языка в Settings (ru/de/en)
+- [x] Все строки в Shell.tsx и TabBar.tsx через `t()` хук
 
 **4. По одной вкладке (от простого к сложному):**
-- [ ] Settings
+- [x] Settings → `src/features/settings/SettingsModal.tsx` (2026-04-28)
 - [ ] Cart
 - [ ] Recipes (с 5 методами импорта)
 - [ ] Programs (иерархия subfolders)
