@@ -7,7 +7,7 @@
 ## Текущий статус
 
 - **Активная фаза:** Phase 1 — разбор монолита (в работе, Phase 1a + 1b + 3a завершены)
-- **Следующий шаг:** Phase 1 Step 4 — вынос вкладки Programs из App.tsx в `src/features/programs/`
+- **Следующий шаг:** Phase 1 Step 4 — имплементация Programs по готовому плану `docs/superpowers/plans/2026-04-28-programs-extraction.md`
 - **Обновлено:** 2026-04-28
 - **Blocker:** нет
 
