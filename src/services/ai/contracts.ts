@@ -34,7 +34,8 @@ export type ImportFromUrlRequest = {
 export type ImportFromUrlResponse = { recipe: ImportedRecipe };
 
 export type ImportFromPdfRequest = {
-  pdfBase64: string;
+  pdfBase64?: string;
+  pdfText?: string; // large PDFs: text extracted on client via pdfjs-dist
   availableCategories: string[];
 };
 export type ImportFromPdfResponse = { recipes: ImportedRecipe[] };

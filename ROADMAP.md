@@ -119,6 +119,7 @@
 - [ ] **TODO (code review):** Усилить тест unmount в DataProvider — добавить проверку `listeners.size === 0` для всех 4 репозиториев после `unmount()`
 - [ ] **TODO (code review):** Добавить bottom-padding в Shell.tsx перед пошаговым разбиением вкладок в Step 4 (иначе фиксированный TabBar перекроет контент)
 - [ ] **TODO (known):** В Step 4 убрать дублирующие `onSnapshot` подписки в App.tsx (recipes/planner/cart/programs), заменить на чтение из DataContext
+- [ ] **BUG:** PDF-импорт для программ распознаёт только 1 рецепт вместо всех. Причина: для больших PDF (>15 МБ) текст извлекается через pdfjs-dist и передаётся в воркер как plain text — Gemini обрабатывает только первый рецепт. Возможные решения: (1) чанковать текст по страницам и делать несколько запросов, (2) ужесточить промпт "extract ALL recipes, not just the first".
 
 **3b. i18n:**
 - [ ] `npm install i18next react-i18next`

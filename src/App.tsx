@@ -153,6 +153,21 @@ const extractImageFromPDF = async (pdfData: string, pageNumber: number, box: { y
   }
 };
 
+const extractTextFromPDF = async (pdfData: string): Promise<string> => {
+  const binaryString = atob(pdfData);
+  const bytes = new Uint8Array(binaryString.length);
+  for (let i = 0; i < binaryString.length; i++) bytes[i] = binaryString.charCodeAt(i);
+  const pdf = await pdfjs.getDocument({ data: bytes }).promise;
+  const parts: string[] = [];
+  for (let i = 1; i <= pdf.numPages; i++) {
+    const page = await pdf.getPage(i);
+    const content = await page.getTextContent();
+    parts.push(`--- Page ${i} ---`);
+    parts.push(content.items.map((item: any) => item.str).join(' '));
+  }
+  return parts.join('\n');
+};
+
 const AddRecipeOption = ({ icon, label, onClick }: { icon: React.ReactNode, label: string, onClick: () => void }) => (
   <button 
     onClick={onClick}
@@ -1058,12 +1073,68 @@ export default function App() {
 
   const handleProgramPdfUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      // In a real app we'd upload to storage, here we'll use a data URL or just a mock
-      // For simplicity in this environment, we'll store the name or a dummy URL
-      setProgramFormData({ ...programFormData, pdfUrl: file.name });
-      alert(`Файл ${file.name} выбран`);
-    }
+    if (!file) return;
+
+    setIsScanning(true);
+    const reader = new FileReader();
+    reader.onloadend = async () => {
+      const base64 = (reader.result as string).split(',')[1] ?? '';
+      try {
+        // Large PDFs (> ~15 MB raw) can't be sent inline — extract text on client instead
+        const isLarge = base64.length > 20_000_000;
+        const request = isLarge
+          ? { pdfText: await extractTextFromPDF(base64), availableCategories }
+          : { pdfBase64: base64, availableCategories };
+        const result = await aiClient.importFromPdf(request);
+
+        const recipeIds: string[] = [];
+        for (const r of result.recipes) {
+          let dishImage: string | null = null;
+
+          if (r.pageNumber && r.dishBoundingBox) {
+            const extracted = await extractImageFromPDF(base64, r.pageNumber, r.dishBoundingBox);
+            if (extracted) dishImage = extracted;
+          }
+
+          if (!dishImage) {
+            const generated = await aiClient.generateImage({ title: r.title, ingredients: r.ingredients });
+            if (generated?.imageDataUri) dishImage = generated.imageDataUri;
+          }
+
+          const imageToStore = dishImage && dishImage.length <= 800_000 ? dishImage : null;
+          const docRef = await addDoc(collection(db, "recipes"), {
+            title: r.title,
+            author: r.author ?? "",
+            image: imageToStore,
+            time: r.time,
+            servings: r.servings,
+            categories: r.categories,
+            ingredients: r.ingredients,
+            steps: r.steps,
+            macros: r.macros,
+            isFavorite: false,
+            createdAt: new Date().toISOString(),
+          });
+          recipeIds.push(docRef.id);
+        }
+
+        const inferredName = file.name.replace(/\.pdf$/i, '');
+        setProgramFormData(prev => ({
+          ...prev,
+          name: prev.name || inferredName,
+          recipeIds,
+          pdfUrl: file.name,
+        }));
+
+        alert(`Извлечено рецептов: ${result.recipes.length}. Проверьте название и сохраните программу.`);
+      } catch (error) {
+        console.error("Error analyzing PDF for program:", error);
+        alert("Не удалось распознать PDF. Попробуйте другой файл.");
+      } finally {
+        setIsScanning(false);
+      }
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleSubfolderPdfUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
