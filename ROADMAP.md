@@ -7,7 +7,7 @@
 ## Текущий статус
 
 - **Активная фаза:** Phase 1 — разбор монолита (в работе, Phase 1a + 1b + 3a завершены)
-- **Следующий шаг:** Phase 1 Step 4 — вынос вкладки Cart из App.tsx в `src/features/cart/`
+- **Следующий шаг:** Phase 1 Step 4 — вынос вкладки Programs из App.tsx в `src/features/programs/`
 - **Обновлено:** 2026-04-28
 - **Blocker:** нет
 
@@ -130,8 +130,8 @@
 
 **4. По одной вкладке (от простого к сложному):**
 - [x] Settings → `src/features/settings/SettingsModal.tsx` (2026-04-28)
-- [ ] Cart
-- [ ] Recipes (с 5 методами импорта)
+- [x] Cart → `src/features/cart/CartView.tsx` (2026-04-28)
+- [x] Recipes → `src/features/recipes/RecipesView.tsx` (2026-04-28, 5 методов импорта, cross-tab state lifted to App.tsx)
 - [ ] Programs (иерархия subfolders)
 - [ ] Planner (calendar day/week/month)
 - [ ] Tracker (KBZHU + AI suggestions)
