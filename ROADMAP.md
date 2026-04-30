@@ -6,9 +6,9 @@
 
 ## Текущий статус
 
-- **Активная фаза:** Phase 1 — разбор монолита (в работе, Phase 1a + 1b + 3a завершены)
-- **Следующий шаг:** Phase 1 Step 4 — имплементация Programs по готовому плану `docs/superpowers/plans/2026-04-28-programs-extraction.md`
-- **Обновлено:** 2026-04-28
+- **Активная фаза:** Phase 1 — разбор монолита (в работе, Phase 1a + 1b + 3a + Programs завершены)
+- **Следующий шаг:** Phase 1 Step 4 — вынос вкладки Planner из App.tsx в `src/features/planner/`
+- **Обновлено:** 2026-04-30
 - **Blocker:** нет
 
 ---
@@ -132,7 +132,7 @@
 - [x] Settings → `src/features/settings/SettingsModal.tsx` (2026-04-28)
 - [x] Cart → `src/features/cart/CartView.tsx` (2026-04-28)
 - [x] Recipes → `src/features/recipes/RecipesView.tsx` (2026-04-28, 5 методов импорта, cross-tab state lifted to App.tsx)
-- [ ] Programs (иерархия subfolders)
+- [x] Programs (иерархия subfolders) → `src/features/programs/ProgramsView.tsx` + `ProgramDetailModal.tsx` (2026-04-30)
 - [ ] Planner (calendar day/week/month)
 - [ ] Tracker (KBZHU + AI suggestions)
 
@@ -240,6 +240,7 @@
 - **2026-04-19** — Phase 0b слайсы 3–4: роуты `import-from-url` и `import-from-pdf` портированы на воркер. Ключевые решения: (1) `ImportedRecipe.ingredients/steps` переведены с `string` на `string[]` — Gemini возвращает массивы, App.tsx всегда использовал их как массивы; (2) Добавлено поле `sourceUrl?: string` в `ImportedRecipe`; (3) `generateImageDataUri` вынесен в хелпер `worker/src/helpers/generateImageDataUri.ts` (переиспользуется в `import-from-url` для fallback-изображений); (4) Для PDF `extractImageFromPDF` остаётся на клиенте (Canvas API недоступен в Workers) — клиент извлекает изображение из PDF по `pageNumber`+`dishBoundingBox`, при неудаче вызывает `aiClient.generateImage()`; (5) Все новые воркер-роуты используют try/catch вокруг Gemini + JSON.parse (возвращают 502), валидируют `availableCategories` через `Array.isArray`, применяют case-insensitive category filter с возвратом original-cased значения через `.find()`.
 - **2026-04-21** — Phase 0b деплой: Worker задеплоен на Cloudflare с `GEMINI_API_KEY` секретом; Pages задеплоен с кастомным доменом `rezept-manager.flowgence.de` (CNAME у HostEurope, основной домен `flowgence.de` остаётся там). `aiClient.ts` обновлён: `API_BASE` берёт `VITE_AI_WORKER_URL` из env, в dev fallback на `""` (Vite proxy работает как прежде).
 - **2026-04-20** — Phase 0b слайсы 5–6: роуты `import-from-photo` и `fill-remaining` портированы на воркер. Все 6 маршрутов активны, `new GoogleGenAI` полностью удалён из `App.tsx`. `FillRemainingOption` в contracts.ts приведён в соответствие с реальным форматом ответа Gemini (поля `id`, `type`, `description` вместо `title`/`portion`/`rationale`). `FillRemainingRequest` дополнен полем `planName`. Для photo-импорта: cropping по `dishBoundingBox` остаётся на клиенте (Canvas API недоступен в Worker); изображение из фото не проходит через воркер, только КБЖУ и метаданные.
+- **2026-04-30** — Phase 1 Step 4 (Programs) завершена. `ProgramsView` + `ProgramDetailModal` извлечены в `src/features/programs/`. Дублирующий `onSnapshot` для programs удалён из App.tsx — programs читается через `useData()` из DataContext. `openProgramId` поднят в App.tsx как controlled prop (паттерн как у `selectedRecipe` в RecipesView). Агент добавил два props сверх плана: `userProfile` (для allergy-check в карточках рецептов) и `onSelectRecipe` (для открытия рецепта из Programs). `photoInputRef` тип обновлён до `RefObject<HTMLInputElement | null>` для совместимости с React 19. App.tsx: 4538 → 2482 строк (−45%). 0 TS-ошибок, 97/97 тестов.
 - **2026-04-28** — Phase 1 Step 4 (Programs): дизайн и план готовы, имплементация отложена на следующую сессию. Ключевые решения: (1) programs читается из DataContext (`useData()`), дублирующий onSnapshot в App.tsx удаляется; (2) `openProgramId` как controlled prop в App.tsx (паттерн как у `selectedRecipe`); (3) два файла: `ProgramsView.tsx` + `ProgramDetailModal.tsx`; (4) `isProgramSelectionOpen` остаётся в App.tsx (Tracker-фича); (5) `onRecipeTargetSet` добавлен в ProgramsViewProps для сигнала из ProgramDetailModal при добавлении рецепта через photo/PDF/link/manual. Spec: `docs/superpowers/specs/2026-04-28-programs-extraction-design.md`. Plan: `docs/superpowers/plans/2026-04-28-programs-extraction.md`.
 - **2026-04-28** — Phase 1 Step 4 (Cart + Recipes) завершена. `CartView` извлечён в `src/features/cart/CartView.tsx` без cross-tab зависимостей — чистый controlled компонент. `RecipesView` извлечён в `src/features/recipes/RecipesView.tsx` (~2661 строк, 5 методов импорта). Ключевое архитектурное решение: `selectedRecipe`, `isAddingManual/Link/PDF`, `isScanning` подняты как controlled props из RecipesView в App.tsx — Programs и Planner обращаются к этим состояниям напрямую (открыть рецепт из Programs, вызвать импорт из другой вкладки). `extractImageFromPDF`, `extractTextFromPDF`, `AddRecipeOption` продублированы на уровне App.tsx для Programs PDF upload — временное состояние до выноса Programs в Step 4. App.tsx: 6753 → 4538 строк (−33%). 0 TS-ошибок.
 - **2026-04-27** — Phase 1 Step 3a завершена: провайдеры и Shell. `RepositoryContext/Provider` — инъекция 6 Firestore-реализаций. `DataContext/Provider` — реактивные подписки на 4 коллекции. `UserProfileContext/Provider` — userProfile + activeNutritionPlan (два отдельных хука из одного контекста). `Shell` и `TabBar` (извлечён из App.tsx). `activeNutritionPlan` мигрирован из localStorage в Firestore `settings/plan` (выбран `settings/plan`, а не `settings/profile`, чтобы не смешивать два домена в одном документе). App.tsx сохраняет свои собственные `onSnapshot`-подписки до Step 4 — двойные подписки это ожидаемое временное состояние. 97 тестов, 0 TS-ошибок. @testing-library/react добавлен как dev dependency.
