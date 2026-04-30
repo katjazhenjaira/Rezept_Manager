@@ -106,7 +106,7 @@ export type ProgramsViewProps = {
   recipeTarget: { programId: string; subfolderId: string | 'main' } | null;
   onRecipeTargetCleared: () => void;
   onRecipeTargetSet: (target: { programId: string; subfolderId: string | 'main' }) => void;
-  photoInputRef: React.RefObject<HTMLInputElement>;
+  photoInputRef: React.RefObject<HTMLInputElement | null>;
   isAddingManual: boolean; onIsAddingManualChange: (v: boolean) => void;
   isAddingLink: boolean;   onIsAddingLinkChange: (v: boolean) => void;
   isAddingPDF: boolean;    onIsAddingPDFChange: (v: boolean) => void;
