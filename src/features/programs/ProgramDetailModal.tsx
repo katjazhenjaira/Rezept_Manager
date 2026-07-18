@@ -7,8 +7,9 @@ import {
 import { motion, AnimatePresence } from 'motion/react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import { updateDoc, doc } from 'firebase/firestore';
+import { updateDoc, doc, addDoc, collection } from 'firebase/firestore';
 import { db } from '@/infrastructure/firebaseApp';
+import { isStaple } from '@/features/cart/services/staples';
 import type { Program, Recipe, Resource, Subfolder, UserProfile } from '@/shared/domain/types';
 
 function cn(...inputs: ClassValue[]) {
@@ -53,7 +54,6 @@ export type ProgramDetailModalProps = {
   isAddingLink: boolean;   onIsAddingLinkChange: (v: boolean) => void;
   isAddingPDF: boolean;    onIsAddingPDFChange: (v: boolean) => void;
   isScanning: boolean;     onIsScanningChange: (v: boolean) => void;
-  onAddProductsToCart: (products: string[]) => void;
   onSelectRecipe: (recipe: Recipe) => void;
 };
 
@@ -65,8 +65,39 @@ export function ProgramDetailModal(props: ProgramDetailModalProps) {
     isAddingManual, onIsAddingManualChange,
     isAddingLink, onIsAddingLinkChange,
     isAddingPDF, onIsAddingPDFChange,
-    onAddProductsToCart, onSelectRecipe,
+    onSelectRecipe,
   } = props;
+
+  const addProductsToCart = async (products: string[]) => {
+    try {
+      for (const product of products) {
+        if (!product.trim()) continue;
+        const parts = product.trim().split(' ');
+        let name = product;
+        let amount = '';
+        if (parts.length > 1) {
+          const lastPart = parts[parts.length - 1];
+          if (lastPart && /\d/.test(lastPart)) {
+            amount = lastPart;
+            name = parts.slice(0, -1).join(' ');
+          }
+        }
+        const isBasic = isStaple(name);
+        await addDoc(collection(db, 'cart'), {
+          name,
+          amount,
+          sourceDishes: ['Из программы'],
+          checked: false,
+          isBasic,
+          createdAt: new Date().toISOString(),
+        });
+      }
+      alert('Продукты добавлены в корзину!');
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+      alert('Ошибка при добавлении в корзину');
+    }
+  };
 
   const [openSubfolderId, setOpenSubfolderId] = useState<string | null>(null);
   const [editingSubfolderId, setEditingSubfolderId] = useState<string | null>(null);
@@ -362,7 +393,7 @@ export function ProgramDetailModal(props: ProgramDetailModalProps) {
 
                                 <div className="flex items-center gap-2">
                                   <button
-                                    onClick={() => onAddProductsToCart([...(program.allowedProducts || []), ...(program.forbiddenProducts || [])])}
+                                    onClick={() => void addProductsToCart([...(program.allowedProducts || []), ...(program.forbiddenProducts || [])])}
                                     className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 text-emerald-600 rounded-lg text-[10px] font-bold hover:bg-emerald-100 transition-colors"
                                   >
                                     <ShoppingCart className="w-3.5 h-3.5" />
@@ -618,7 +649,7 @@ export function ProgramDetailModal(props: ProgramDetailModalProps) {
                                           <p className="text-[10px] font-bold text-zinc-500 uppercase">Ограничения подпапки</p>
                                           <div className="flex items-center gap-2">
                                             <button
-                                              onClick={(e) => { e.stopPropagation(); onAddProductsToCart([...(subfolder.allowedProducts || []), ...(subfolder.forbiddenProducts || [])]); }}
+                                              onClick={(e) => { e.stopPropagation(); void addProductsToCart([...(subfolder.allowedProducts || []), ...(subfolder.forbiddenProducts || [])]); }}
                                               className="flex items-center gap-1 px-2 py-1 bg-emerald-50 text-emerald-600 rounded-md text-[8px] font-bold hover:bg-emerald-100 transition-colors"
                                             >
                                               <ShoppingCart className="w-3 h-3" />

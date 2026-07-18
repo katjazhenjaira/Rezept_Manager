@@ -376,7 +376,6 @@ export default function App() {
             isAddingLink={isAddingLink} onIsAddingLinkChange={setIsAddingLink}
             isAddingPDF={isAddingPDF} onIsAddingPDFChange={setIsAddingPDF}
             isScanning={isScanning} onIsScanningChange={setIsScanning}
-            onAddProductsToCart={addProductsToCart}
             onSelectRecipe={setSelectedRecipe}
           />
         );

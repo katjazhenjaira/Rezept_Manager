@@ -58,7 +58,6 @@ export type ProgramsViewProps = {
   isAddingLink: boolean;   onIsAddingLinkChange: (v: boolean) => void;
   isAddingPDF: boolean;    onIsAddingPDFChange: (v: boolean) => void;
   isScanning: boolean;     onIsScanningChange: (v: boolean) => void;
-  onAddProductsToCart: (products: string[]) => void;
   onSelectRecipe: (recipe: Recipe) => void;
 };
 
@@ -76,7 +75,7 @@ export function ProgramsView(props: ProgramsViewProps) {
     onStartRecipeSelection, recipeTarget, onRecipeTargetCleared, onRecipeTargetSet,
     photoInputRef, isAddingManual, onIsAddingManualChange,
     isAddingLink, onIsAddingLinkChange, isAddingPDF, onIsAddingPDFChange,
-    isScanning, onIsScanningChange, onAddProductsToCart, onSelectRecipe,
+    isScanning, onIsScanningChange, onSelectRecipe,
   } = props;
 
   const { programs } = useData();
@@ -929,7 +928,6 @@ export function ProgramsView(props: ProgramsViewProps) {
             isAddingLink={isAddingLink} onIsAddingLinkChange={onIsAddingLinkChange}
             isAddingPDF={isAddingPDF} onIsAddingPDFChange={onIsAddingPDFChange}
             isScanning={isScanning} onIsScanningChange={onIsScanningChange}
-            onAddProductsToCart={onAddProductsToCart}
             onSelectRecipe={onSelectRecipe}
             userProfile={userProfile}
           />
