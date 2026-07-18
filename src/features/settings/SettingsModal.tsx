@@ -41,9 +41,12 @@ export function SettingsModal({
   const { userProfile: contextProfile, saveUserProfile } = useUserProfile();
   const [userProfile, setUserProfile] = useState<UserProfile>(contextProfile ?? DEFAULT_PROFILE);
 
+  // Sync form from context only when the modal opens — prevents Firestore snapshot
+  // updates from clobbering in-progress edits while the modal is visible.
   useEffect(() => {
-    if (contextProfile) setUserProfile(contextProfile);
-  }, [contextProfile]);
+    if (isOpen && contextProfile) setUserProfile(contextProfile);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen]);
 
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [newCategoryInput, setNewCategoryInput] = useState('');
