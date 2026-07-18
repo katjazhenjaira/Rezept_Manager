@@ -1,5 +1,5 @@
 // src/features/tracker/ProgramSelectionModal.tsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Plus, Check, Edit3 } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
@@ -39,34 +39,51 @@ export function ProgramSelectionModal({ isOpen, onClose }: ProgramSelectionModal
     fats: 0,
     carbs: 0,
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (!isOpen) {
+      setCustomPlanForm({ name: '', calories: 0, proteins: 0, fats: 0, carbs: 0 });
+    }
+  }, [isOpen]);
 
   const handleApplyCustomPlan = async () => {
     if (!customPlanForm.name) return;
+    setIsSubmitting(true);
+    try {
+      const newProgram = {
+        name: customPlanForm.name,
+        description: 'Свой план питания',
+        creator: userProfile?.name ?? 'Я',
+        targetCalories: customPlanForm.calories,
+        targetProteins: customPlanForm.proteins,
+        targetFats: customPlanForm.fats,
+        targetCarbs: customPlanForm.carbs,
+        recipeIds: [],
+        subfolders: [],
+        link: '',
+        createdAt: new Date().toISOString(),
+      };
+      const docRef = await addDoc(collection(db, 'programs'), newProgram);
+      await setActivePlan({
+        ...customPlanForm,
+        isCustom: true,
+        programId: docRef.id,
+        allowedProducts: [],
+        forbiddenProducts: [],
+      });
+      setCustomPlanForm({ name: '', calories: 0, proteins: 0, fats: 0, carbs: 0 });
+      onClose();
+    } catch (error) {
+      console.error('Error saving custom plan:', error);
+      alert('Не удалось сохранить план питания');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
-    const newProgram = {
-      name: customPlanForm.name,
-      description: 'Свой план питания',
-      creator: userProfile?.name ?? 'Я',
-      targetCalories: customPlanForm.calories,
-      targetProteins: customPlanForm.proteins,
-      targetFats: customPlanForm.fats,
-      targetCarbs: customPlanForm.carbs,
-      recipeIds: [],
-      subfolders: [],
-      createdAt: new Date().toISOString(),
-    };
-
-    const docRef = await addDoc(collection(db, 'programs'), newProgram);
-
-    await setActivePlan({
-      ...customPlanForm,
-      isCustom: true,
-      programId: docRef.id,
-      allowedProducts: [],
-      forbiddenProducts: [],
-    });
-
-    setCustomPlanForm({ name: '', calories: 0, proteins: 0, fats: 0, carbs: 0 });
+  const handleSetDefault = async () => {
+    await setActivePlan(null);
     onClose();
   };
 
@@ -146,9 +163,10 @@ export function ProgramSelectionModal({ isOpen, onClose }: ProgramSelectionModal
                   </div>
                   <button
                     onClick={() => void handleApplyCustomPlan()}
-                    className="w-full py-2.5 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 transition-colors shadow-sm"
+                    disabled={isSubmitting}
+                    className="w-full py-2.5 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    Применить свой план
+                    {isSubmitting ? 'Сохраняем...' : 'Применить свой план'}
                   </button>
                 </div>
               </div>
@@ -158,7 +176,7 @@ export function ProgramSelectionModal({ isOpen, onClose }: ProgramSelectionModal
                 <h4 className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Доступные программы</h4>
 
                 <button
-                  onClick={() => { void setActivePlan(null); onClose(); }}
+                  onClick={() => void handleSetDefault()}
                   className={cn(
                     'w-full p-4 rounded-2xl border text-left transition-all flex items-center justify-between group',
                     !activeNutritionPlan
@@ -245,6 +263,7 @@ export function ProgramSelectionModal({ isOpen, onClose }: ProgramSelectionModal
                             }
                             className={cn(
                               'w-full p-3 rounded-xl border text-left transition-all flex items-center justify-between group',
+                              activeNutritionPlan?.programId === program.id &&
                               activeNutritionPlan?.subfolderId === subfolder.id
                                 ? 'bg-emerald-50 border-emerald-200 shadow-sm'
                                 : 'bg-white border-zinc-50 hover:border-emerald-100',
@@ -261,7 +280,8 @@ export function ProgramSelectionModal({ isOpen, onClose }: ProgramSelectionModal
                                 )}
                               </div>
                             </div>
-                            {activeNutritionPlan?.subfolderId === subfolder.id && (
+                            {activeNutritionPlan?.programId === program.id &&
+                              activeNutritionPlan?.subfolderId === subfolder.id && (
                               <Check className="w-4 h-4 text-emerald-600" />
                             )}
                           </button>
