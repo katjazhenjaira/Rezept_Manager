@@ -33,7 +33,7 @@ import { db } from '@/infrastructure/firebaseApp';
 import { aiClient } from '@/services/ai/aiClient';
 import { format } from 'date-fns';
 import type { Recipe, UserProfile, Program, RecipeView, Subfolder } from '@/shared/domain/types';
-import { extractImageFromPDF, extractTextFromPDF } from '@/shared/utils/pdfUtils';
+import { extractImageFromPDF } from '@/shared/utils/pdfUtils';
 
 // ─── Utility ─────────────────────────────────────────────────────────────────
 
