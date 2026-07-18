@@ -124,7 +124,7 @@ export function AISuggestModal({
                 <div className="flex flex-col gap-3">
                   <button
                     disabled={selectedIds.length === 0}
-                    onClick={onAddSelected}
+                    onClick={() => void onAddSelected()}
                     className={cn(
                       'w-full py-4 rounded-xl font-bold transition-all flex items-center justify-center gap-2 shadow-lg',
                       selectedIds.length > 0
