@@ -528,8 +528,6 @@ export default function App() {
       <SettingsModal
         isOpen={isSettingsOpen}
         onClose={() => setIsSettingsOpen(false)}
-        userProfile={userProfile}
-        setUserProfile={setUserProfile}
         availableCategories={availableCategories}
         setAvailableCategories={setAvailableCategories}
         onCategoryRemoved={() => {}}

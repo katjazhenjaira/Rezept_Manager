@@ -1,13 +1,12 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Settings, Plus, Trash2, Droplets } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import { setDoc, doc } from 'firebase/firestore';
 import { useTranslation } from 'react-i18next';
-import { db } from '@/infrastructure/firebaseApp';
 import type { UserProfile } from '@/shared/domain/types';
 import { changeLanguage, type AppLanguage } from '@/app/providers/I18nProvider';
+import { useUserProfile } from '@/app/providers/UserProfileContext';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -16,11 +15,16 @@ function cn(...inputs: ClassValue[]) {
 const DEFAULT_CATEGORIES = ['Завтрак', 'Обед', 'Ужин', 'Перекус', 'Десерт', 'Мясо', 'Рыба', 'Веган', 'Вегетарианское', 'Напитки', 'Основное блюдо', 'Гарниры', 'Салаты', 'Супы'];
 const PRESET_ALLERGIES = ['Глютен', 'Лактоза', 'Орехи', 'Морепродукты', 'Яйца', 'Соя', 'Мед', 'Цитрусовые'];
 
+const DEFAULT_PROFILE: UserProfile = {
+  name: '', age: 30, gender: 'female',
+  currentWeight: 65, targetWeight: 60,
+  targetCalories: 1800, targetProteins: 100, targetFats: 60, targetCarbs: 200,
+  waterGoal: 2000, allergies: [],
+};
+
 type Props = {
   isOpen: boolean;
   onClose: () => void;
-  userProfile: UserProfile;
-  setUserProfile: (p: UserProfile) => void;
   availableCategories: string[];
   setAvailableCategories: (setter: (prev: string[]) => string[]) => void;
   onCategoryRemoved: (cat: string) => void;
@@ -29,13 +33,18 @@ type Props = {
 export function SettingsModal({
   isOpen,
   onClose,
-  userProfile,
-  setUserProfile,
   availableCategories,
   setAvailableCategories,
   onCategoryRemoved,
 }: Props) {
   const { i18n } = useTranslation();
+  const { userProfile: contextProfile, saveUserProfile } = useUserProfile();
+  const [userProfile, setUserProfile] = useState<UserProfile>(contextProfile ?? DEFAULT_PROFILE);
+
+  useEffect(() => {
+    if (contextProfile) setUserProfile(contextProfile);
+  }, [contextProfile]);
+
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [newCategoryInput, setNewCategoryInput] = useState('');
   const [isCategoryDeleteConfirmOpen, setIsCategoryDeleteConfirmOpen] = useState(false);
@@ -43,7 +52,7 @@ export function SettingsModal({
 
   const handleSaveSettings = async () => {
     try {
-      await setDoc(doc(db, 'settings', 'profile'), userProfile);
+      await saveUserProfile(userProfile);
       onClose();
     } catch (error) {
       console.error('Error saving settings:', error);
