@@ -112,10 +112,6 @@ export default function App() {
         if (programDoc.exists()) {
           const programData = programDoc.data() as Program;
           if (confirm(`Добавить программу "${programData.name}"?`)) {
-            // Since we removed collections, we just open it or something?
-            // Actually, the user wants to remove collections altogether.
-            // If someone shares a program, maybe we should just show it?
-            // For now, let's just clear the URL.
             setOpenProgramId(programId);
             setActiveTab('programs');
             window.history.replaceState({}, document.title, window.location.pathname);
