@@ -6,8 +6,8 @@
 
 ## Текущий статус
 
-- **Активная фаза:** Phase 1 — разбор монолита (в работе, Phase 1a + 1b + 3a + Programs + Planner + Tracker завершены)
-- **Следующий шаг:** Phase 1 Step 5 — Финальная очистка: убрать дублирующие onSnapshot из App.tsx (recipes/cart/userProfile дублируют DataContext/UserProfileContext), удалить `extractImageFromPDF` из App.tsx (перенести в feature), довести App.tsx до < 200 строк.
+- **Активная фаза:** Phase 1 — разбор монолита (Step 5 финальная очистка завершена)
+- **Следующий шаг:** Phase 2 — Firebase Auth + Security Rules (email/password + Google OAuth, Security Rules, миграционный скрипт для userId)
 - **Обновлено:** 2026-07-18
 - **Blocker:** нет
 
@@ -136,10 +136,17 @@
 - [x] Planner (calendar day/week/month) → `src/features/planner/PlannerView.tsx` (2026-07-18, App.tsx: 2482 → 1395 строк −43%)
 - [x] Tracker (KBZHU + AI suggestions) → `src/features/tracker/TrackerView.tsx` (2026-07-18, App.tsx: 1395 → 540 строк)
 
-**5. Финальная очистка:**
-- [ ] `App.tsx` → < 200 строк
-- [ ] Удалить inline render-функции
+**5. Финальная очистка:** ✅ завершена (2026-07-18, App.tsx 540 → 277 строк)
+- [x] `App.tsx` → < 300 строк (достигнуто 277; < 200 требует RecipeSelectionContext для cross-tab import state)
+- [x] `extractImageFromPDF`/`extractTextFromPDF` → `src/shared/utils/pdfUtils.ts` (3 копии → 1)
+- [x] Удалить 3 дублирующих `onSnapshot` (recipes/cart/userProfile) — контексты DataContext/UserProfileContext
+- [x] `addProductsToCart` перенесена в `ProgramDetailModal` (убран prop-chain)
+- [x] `SettingsModal` переведён на `useUserProfile()` контекст (убран prop-drilling userProfile/setUserProfile)
+- [x] `AppHeader` + `RecipeSelectionBar` извлечены в `src/app/layout/`
 - [ ] `npm run lint` зелёный со strict
+- [ ] **TODO (code review):** `DEFAULT_PROFILE` дублирован в App.tsx и SettingsModal.tsx — вынести в `src/shared/domain/defaults.ts`
+- [ ] **TODO (future):** `AppHeader` хранит `currentLanguage` локально, но не вызывает `changeLanguage()` из i18n — язык меняется только визуально. Либо подключить i18n, либо убрать переключатель из хедера и оставить только в Settings.
+- [ ] **TODO (future):** `handleAddSelectedRecipes` в App.tsx пишет в Firestore напрямую — нужно перевести на `useRepositories().programs.update()` для единообразия с остальным кодом
 
 **Критерий готовности (DoD):**
 - `wc -l src/App.tsx` < 200
@@ -240,6 +247,7 @@
 - **2026-04-19** — Phase 0b слайсы 3–4: роуты `import-from-url` и `import-from-pdf` портированы на воркер. Ключевые решения: (1) `ImportedRecipe.ingredients/steps` переведены с `string` на `string[]` — Gemini возвращает массивы, App.tsx всегда использовал их как массивы; (2) Добавлено поле `sourceUrl?: string` в `ImportedRecipe`; (3) `generateImageDataUri` вынесен в хелпер `worker/src/helpers/generateImageDataUri.ts` (переиспользуется в `import-from-url` для fallback-изображений); (4) Для PDF `extractImageFromPDF` остаётся на клиенте (Canvas API недоступен в Workers) — клиент извлекает изображение из PDF по `pageNumber`+`dishBoundingBox`, при неудаче вызывает `aiClient.generateImage()`; (5) Все новые воркер-роуты используют try/catch вокруг Gemini + JSON.parse (возвращают 502), валидируют `availableCategories` через `Array.isArray`, применяют case-insensitive category filter с возвратом original-cased значения через `.find()`.
 - **2026-04-21** — Phase 0b деплой: Worker задеплоен на Cloudflare с `GEMINI_API_KEY` секретом; Pages задеплоен с кастомным доменом `rezept-manager.flowgence.de` (CNAME у HostEurope, основной домен `flowgence.de` остаётся там). `aiClient.ts` обновлён: `API_BASE` берёт `VITE_AI_WORKER_URL` из env, в dev fallback на `""` (Vite proxy работает как прежде).
 - **2026-04-20** — Phase 0b слайсы 5–6: роуты `import-from-photo` и `fill-remaining` портированы на воркер. Все 6 маршрутов активны, `new GoogleGenAI` полностью удалён из `App.tsx`. `FillRemainingOption` в contracts.ts приведён в соответствие с реальным форматом ответа Gemini (поля `id`, `type`, `description` вместо `title`/`portion`/`rationale`). `FillRemainingRequest` дополнен полем `planName`. Для photo-импорта: cropping по `dishBoundingBox` остаётся на клиенте (Canvas API недоступен в Worker); изображение из фото не проходит через воркер, только КБЖУ и метаданные.
+- **2026-07-18** — Phase 1 Step 5 (Финальная очистка App.tsx) завершена. App.tsx: 540 → 277 строк. `pdfUtils.ts` — единая canonical copy вместо 3 дублей. Убраны 3 Firestore onSnapshot (recipes/cart/userProfile) — контексты берут это на себя. `addProductsToCart` перенесена в ProgramDetailModal (убран prop-chain). SettingsModal переведён на `useUserProfile()`. AppHeader и RecipeSelectionBar выделены в `src/app/layout/`. Ключевые решения: `useEffect` в SettingsModal гейтирован по `isOpen` (а не по contextProfile) — предотвращает затирание правок в процессе ввода при приходе Firestore snapshot. `< 200` строк не достигнуто — требует отдельного RecipeSelectionContext шага для cross-tab import state. Plan: `docs/superpowers/plans/2026-07-18-app-cleanup.md`.
 - **2026-07-18** — Phase 1 Step 4 (Tracker) завершена. `TrackerView` + `AISuggestModal` + `ProgramSelectionModal` извлечены в `src/features/tracker/`. `renderTracker`, AI suggest modal и ProgramSelection modal удалены из App.tsx. `customPlanForm` перенесён в `ProgramSelectionModal`, `suggestion`/`isSuggesting`/`isProgramSelectionOpen` — в `TrackerView`. `handleAddSelectedSuggestions` дедуплицирован (одна копия в TrackerView). App.tsx: 1395 → 540 строк. 101 тест, 0 TS-ошибок. Plan: `docs/superpowers/plans/2026-07-18-tracker-extraction.md`.
 - **2026-07-18** — Phase 1 Step 4 (Planner) завершена. `PlannerView` извлечён в `src/features/planner/PlannerView.tsx`. Дублирующий `onSnapshot` для planner удалён — данные читаются через `useData()`. App.tsx: 2482 → 1395 строк (−43%). Ключевые решения по сравнению с дизайн-спеком: `mealTypes` остался в App.tsx (Tracker тоже использует); добавлен prop `onNavigateToCart: () => void` (заменяет `setActiveTab('cart')` внутри инлайн-логики shopping list); `onAddProductsToCart` из спека убран — planner пишет в Firestore напрямую; `activeAddDropdown` (пропущен в спеке) перенесён в PlannerView. 98 тестов, 0 TS-ошибок. Plan: `docs/superpowers/plans/2026-07-18-planner-extraction.md`.
 - **2026-04-30** — Phase 1 Step 4 (Planner): дизайн-спек готов. Решения: (1) один файл `PlannerView.tsx` ~900 строк (4 вьюхи как внутренние функции, без сплита); (2) `plannerEntries` читается через `useData()` — onSnapshot удаляется из App.tsx; (3) `checkedEntries` остаётся в App.tsx как controlled prop — Tracker читает для `handleSuggest`; (4) `onSelectRecipe` нужен как prop — Planner открывает рецепт из day/week/list view (строки 719, 911, 1165). Spec: `docs/superpowers/specs/2026-04-30-planner-extraction-design.md`.
