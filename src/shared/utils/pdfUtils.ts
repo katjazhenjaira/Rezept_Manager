@@ -43,17 +43,21 @@ export async function extractImageFromPDF(
 }
 
 export async function extractTextFromPDF(pdfData: string): Promise<string> {
-  const binaryString = atob(pdfData);
-  const bytes = new Uint8Array(binaryString.length);
-  for (let i = 0; i < binaryString.length; i++) bytes[i] = binaryString.charCodeAt(i);
-  const pdf = await pdfjs.getDocument({ data: bytes }).promise;
-  const parts: string[] = [];
-  for (let i = 1; i <= pdf.numPages; i++) {
-    const page = await pdf.getPage(i);
-    const content = await page.getTextContent();
-    parts.push(`--- Page ${i} ---`);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    parts.push(content.items.map((item: any) => item.str).join(' '));
+  try {
+    const binaryString = atob(pdfData);
+    const bytes = new Uint8Array(binaryString.length);
+    for (let i = 0; i < binaryString.length; i++) bytes[i] = binaryString.charCodeAt(i);
+    const pdf = await pdfjs.getDocument({ data: bytes }).promise;
+    const parts: string[] = [];
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i);
+      const content = await page.getTextContent();
+      parts.push(`--- Page ${i} ---`);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      parts.push(content.items.map((item: any) => item.str).join(' '));
+    }
+    return parts.join('\n');
+  } catch {
+    return '';
   }
-  return parts.join('\n');
 }
