@@ -18,8 +18,7 @@ import { collection, addDoc } from 'firebase/firestore';
 import { db } from '@/infrastructure/firebaseApp';
 import { format } from 'date-fns';
 import { useData } from '@/app/providers/DataContext';
-import { useNutritionPlan } from '@/app/providers/UserProfileContext';
-import { useUserProfile } from '@/app/providers/UserProfileContext';
+import { useNutritionPlan, useUserProfile } from '@/app/providers/UserProfileContext';
 import { aiClient } from '@/services/ai/aiClient';
 import type { Recipe } from '@/shared/domain/types';
 import { AISuggestModal, type SuggestionResult } from './AISuggestModal';
@@ -111,8 +110,8 @@ export function TrackerView({
         userRecipes: recipes.map((r) => ({ id: r.id, title: r.title, macros: r.macros })),
       });
 
-      if (isAlternative && suggestion) {
-        setSuggestion({ ...result, options: [...suggestion.options, ...result.options] });
+      if (isAlternative) {
+        setSuggestion((prev) => prev ? { ...result, options: [...prev.options, ...result.options] } : result);
       } else {
         setSuggestion(result);
       }
@@ -143,7 +142,6 @@ export function TrackerView({
       }
       setSuggestion(null);
       setSelectedSuggestionIds([]);
-      setIsSuggesting(false);
       alert('Выбранные варианты добавлены в ваш рацион на сегодня!');
     } catch (error) {
       console.error('Error adding suggestions:', error);

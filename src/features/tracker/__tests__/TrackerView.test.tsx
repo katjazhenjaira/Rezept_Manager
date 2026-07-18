@@ -5,6 +5,7 @@ import type { ReactNode } from 'react';
 import { DataContext } from '@/app/providers/DataContext';
 import { UserProfileContext } from '@/app/providers/UserProfileContext';
 import type { UserProfile, ActiveNutritionPlan, PlannerEntry, Recipe } from '@/shared/domain/types';
+import type { DataState } from '@/app/providers/DataContext';
 
 vi.mock('firebase/firestore', () => ({
   collection: vi.fn(),
@@ -71,8 +72,8 @@ const mockEntry: PlannerEntry = {
   recipeId: 'r1',
 };
 
-const emptyData = { recipes: [], plannerEntries: [], cartItems: [], programs: [] };
-const dataWithEntry = { recipes: [mockRecipe], plannerEntries: [mockEntry], cartItems: [], programs: [] };
+const emptyData: DataState = { recipes: [], plannerEntries: [], cartItems: [], programs: [] };
+const dataWithEntry: DataState = { recipes: [mockRecipe], plannerEntries: [mockEntry], cartItems: [], programs: [] };
 
 function makeWrapper(data: typeof emptyData) {
   return function Wrapper({ children }: { children: ReactNode }) {
