@@ -30,13 +30,17 @@ function fromFirestore(id: string, data: Record<string, unknown>): Recipe {
 export class FirestoreRecipesRepository implements RecipesRepository {
   constructor(private readonly uid: string) {}
 
-  subscribeAll(callback: (recipes: Recipe[]) => void): () => void {
+  subscribeAll(callback: (recipes: Recipe[]) => void, onError?: (error: Error) => void): () => void {
     return onSnapshot(
       query(collection(db, 'recipes'), where('userId', '==', this.uid)),
       snapshot => {
         const recipes: Recipe[] = [];
         snapshot.forEach(d => recipes.push(fromFirestore(d.id, d.data())));
         callback(recipes);
+      },
+      error => {
+        console.error('FirestoreRecipesRepository.subscribeAll failed:', error);
+        onError?.(error);
       }
     );
   }

@@ -22,7 +22,7 @@ function fromFirestore(id: string, data: Record<string, unknown>): CartItem {
 export class FirestoreCartRepository implements CartRepository {
   constructor(private readonly uid: string) {}
 
-  subscribeAll(callback: (items: CartItem[]) => void): () => void {
+  subscribeAll(callback: (items: CartItem[]) => void, onError?: (error: Error) => void): () => void {
     return onSnapshot(
       query(collection(db, 'cart'), where('userId', '==', this.uid)),
       snap => {
@@ -31,6 +31,10 @@ export class FirestoreCartRepository implements CartRepository {
         callback(
           items.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
         );
+      },
+      error => {
+        console.error('FirestoreCartRepository.subscribeAll failed:', error);
+        onError?.(error);
       }
     );
   }

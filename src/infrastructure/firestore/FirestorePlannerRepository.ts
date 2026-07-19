@@ -22,13 +22,17 @@ function fromFirestore(id: string, data: Record<string, unknown>): PlannerEntry 
 export class FirestorePlannerRepository implements PlannerRepository {
   constructor(private readonly uid: string) {}
 
-  subscribeAll(callback: (entries: PlannerEntry[]) => void): () => void {
+  subscribeAll(callback: (entries: PlannerEntry[]) => void, onError?: (error: Error) => void): () => void {
     return onSnapshot(
       query(collection(db, 'planner'), where('userId', '==', this.uid)),
       snapshot => {
         const entries: PlannerEntry[] = [];
         snapshot.forEach(d => entries.push(fromFirestore(d.id, d.data())));
         callback(entries);
+      },
+      error => {
+        console.error('FirestorePlannerRepository.subscribeAll failed:', error);
+        onError?.(error);
       }
     );
   }

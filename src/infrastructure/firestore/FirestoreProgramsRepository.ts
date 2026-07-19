@@ -46,13 +46,17 @@ function fromFirestore(id: string, data: Record<string, unknown>): Program {
 export class FirestoreProgramsRepository implements ProgramsRepository {
   constructor(private readonly uid: string) {}
 
-  subscribeAll(callback: (programs: Program[]) => void): () => void {
+  subscribeAll(callback: (programs: Program[]) => void, onError?: (error: Error) => void): () => void {
     return onSnapshot(
       query(collection(db, 'programs'), where('userId', '==', this.uid)),
       snapshot => {
         const programs: Program[] = [];
         snapshot.forEach(d => programs.push(fromFirestore(d.id, d.data())));
         callback(programs);
+      },
+      error => {
+        console.error('FirestoreProgramsRepository.subscribeAll failed:', error);
+        onError?.(error);
       }
     );
   }
