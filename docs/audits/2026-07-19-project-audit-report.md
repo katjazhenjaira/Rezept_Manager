@@ -87,6 +87,7 @@
 
 **[DOC-3]** `Technical_Project_Documentation.md:113` vs `src/services/RecipesRepository.ts:3-9`
 > Документация: `subscribe, add, update, delete, deleteAll`. Реально: `subscribeAll, add, update, delete, getById`. `deleteAll` не существует, `getById` не задокументирован.
+> ✅ Исправлено: таблица «Слой сервисов» обновлена на фактическую сигнатуру `subscribeAll, add, update, delete, getById`.
 
 **[DOC-4]** `Technical_Project_Documentation.md:114` vs `src/services/PlannerRepository.ts:3-7`
 > Документация обещает `update`, реально интерфейс — `subscribeAll, add, delete`. У `PlannerRepository` **нет метода `update()` вообще**.

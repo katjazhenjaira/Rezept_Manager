@@ -115,7 +115,7 @@ StrictMode
 ### `src/services/` — интерфейсы и AI contracts
 | Файл | Роль |
 |------|------|
-| `RecipesRepository.ts` | Интерфейс: subscribe, add, update, delete, deleteAll |
+| `RecipesRepository.ts` | Интерфейс: subscribeAll, add, update, delete, getById |
 | `PlannerRepository.ts` | Интерфейс: subscribe, add, update, delete |
 | `CartRepository.ts` | Интерфейс: subscribe, add, update, delete, deleteAll |
 | `ProgramsRepository.ts` | Интерфейс: subscribe, add, update, delete |
