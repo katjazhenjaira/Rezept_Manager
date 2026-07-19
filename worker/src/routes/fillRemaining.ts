@@ -14,6 +14,9 @@ export async function fillRemaining(c: Context<{ Bindings: Env }>) {
   if (
     !remaining ||
     typeof remaining.calories !== "number" ||
+    typeof remaining.proteins !== "number" ||
+    typeof remaining.fats !== "number" ||
+    typeof remaining.carbs !== "number" ||
     !Array.isArray(allergies) ||
     !Array.isArray(userRecipes)
   ) {
