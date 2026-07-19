@@ -47,7 +47,7 @@
 > **Проблема:** `app.use("*", cors())` — Hono по умолчанию резолвит это в `origin: "*"` (подтверждено в `node_modules/hono/dist/middleware/cors/index.js`).
 > **Почему важно:** Любой сторонний сайт может дёргать `/api/ai/*` из браузера пользователя — платный Gemini-прокси становится открытым для встраивания на чужих сайтах. Rate limit по IP не ограничивает суммарные расходы.
 > **Исправление:** `cors({ origin: [<прод-домен фронтенда>, "http://localhost:5173"] })`.
-> ✅ Исправлено (commit TBD): `worker/src/index.ts` — `cors({ origin: ["https://rezept-manager.flowgence.de", "http://localhost:5173"] })`.
+> ✅ Исправлено (commit 7f88a84): `worker/src/index.ts` — `cors({ origin: ["https://rezept-manager.flowgence.de", "http://localhost:5173"] })`.
 
 **[CRIT-5]** `worker/src/routes/importFromUrl.ts:88, 114`
 > **Проблема:** Worker делает server-side `fetch()` на URL, полностью заданный клиентом (сам `url`, а также `og:image`/`imageUrl` со страницы), без allowlist протокола/хоста.
