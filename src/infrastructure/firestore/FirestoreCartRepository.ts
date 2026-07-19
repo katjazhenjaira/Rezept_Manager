@@ -1,6 +1,6 @@
 import {
   collection, addDoc, updateDoc, deleteDoc, doc,
-  onSnapshot, query, getDocs,
+  onSnapshot, query, getDocs, where,
 } from 'firebase/firestore';
 import { db } from '@/infrastructure/firebaseApp';
 import type { CartItem } from '@/shared/domain/types';
@@ -20,18 +20,23 @@ function fromFirestore(id: string, data: Record<string, unknown>): CartItem {
 }
 
 export class FirestoreCartRepository implements CartRepository {
+  constructor(private readonly uid: string) {}
+
   subscribeAll(callback: (items: CartItem[]) => void): () => void {
-    return onSnapshot(query(collection(db, 'cart')), snap => {
-      const items: CartItem[] = [];
-      snap.forEach(d => items.push(fromFirestore(d.id, d.data())));
-      callback(
-        items.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-      );
-    });
+    return onSnapshot(
+      query(collection(db, 'cart'), where('userId', '==', this.uid)),
+      snap => {
+        const items: CartItem[] = [];
+        snap.forEach(d => items.push(fromFirestore(d.id, d.data())));
+        callback(
+          items.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+        );
+      }
+    );
   }
 
   async add(data: Omit<CartItem, 'id'>): Promise<string> {
-    const ref = await addDoc(collection(db, 'cart'), data);
+    const ref = await addDoc(collection(db, 'cart'), { ...data, userId: this.uid });
     return ref.id;
   }
 
@@ -44,7 +49,7 @@ export class FirestoreCartRepository implements CartRepository {
   }
 
   async deleteAll(): Promise<void> {
-    const snap = await getDocs(query(collection(db, 'cart')));
+    const snap = await getDocs(query(collection(db, 'cart'), where('userId', '==', this.uid)));
     await Promise.all(snap.docs.map(d => deleteDoc(doc(db, 'cart', d.id))));
   }
 }
