@@ -15,26 +15,31 @@ export async function calculateKbzhu(c: Context<{ Bindings: Env }>) {
   }
 
   const ai = new GoogleGenAI({ apiKey: c.env.GEMINI_API_KEY });
-  const response = await ai.models.generateContent({
-    model: "gemini-3-flash-preview",
-    contents: `Calculate KBJU (calories, proteins, fats, carbs) for these ingredients: ${ingredients}. Return JSON with fields: calories, proteins, fats, carbs. Return ONLY JSON.`,
-    config: {
-      responseMimeType: "application/json",
-      responseSchema: {
-        type: Type.OBJECT,
-        properties: {
-          calories: { type: Type.NUMBER },
-          proteins: { type: Type.NUMBER },
-          fats: { type: Type.NUMBER },
-          carbs: { type: Type.NUMBER },
-        },
-        required: ["calories", "proteins", "fats", "carbs"],
-      },
-    },
-  });
 
-  const text = response.text ?? "{}";
-  const parsed = JSON.parse(text) as Partial<CalculateKbzhuResponse>;
+  let parsed: Partial<CalculateKbzhuResponse>;
+  try {
+    const response = await ai.models.generateContent({
+      model: "gemini-3-flash-preview",
+      contents: `Calculate KBJU (calories, proteins, fats, carbs) for these ingredients: ${ingredients}. Return JSON with fields: calories, proteins, fats, carbs. Return ONLY JSON.`,
+      config: {
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            calories: { type: Type.NUMBER },
+            proteins: { type: Type.NUMBER },
+            fats: { type: Type.NUMBER },
+            carbs: { type: Type.NUMBER },
+          },
+          required: ["calories", "proteins", "fats", "carbs"],
+        },
+      },
+    });
+    parsed = JSON.parse(response.text ?? "{}") as Partial<CalculateKbzhuResponse>;
+  } catch (err) {
+    console.error("[calculateKbzhu] error:", err);
+    return c.json({ error: "Failed to calculate KBJU" }, 502);
+  }
 
   const payload: CalculateKbzhuResponse = {
     calories: Number(parsed.calories ?? 0),

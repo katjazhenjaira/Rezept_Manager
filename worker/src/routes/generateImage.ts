@@ -16,7 +16,14 @@ export async function generateImage(c: Context<{ Bindings: Env }>) {
   }
 
   const ai = new GoogleGenAI({ apiKey: c.env.GEMINI_API_KEY });
-  const dataUri = await generateImageDataUri(ai, title, ingredients);
+
+  let dataUri: string | null;
+  try {
+    dataUri = await generateImageDataUri(ai, title, ingredients);
+  } catch (err) {
+    console.error("[generateImage] error:", err);
+    return c.json({ error: "Failed to generate image" }, 502);
+  }
 
   if (!dataUri) {
     return c.json({ error: "Gemini returned no inline image data" }, 502);
