@@ -95,6 +95,7 @@
 
 **[DOC-5]** `Technical_Project_Documentation.md:116` vs `src/services/ProgramsRepository.ts:3-9`
 > `getById` присутствует в коде, но не упомянут в документации.
+> ✅ Исправлено: таблица «Слой сервисов» обновлена на `subscribeAll, add, update, delete, getById`.
 
 **[DOC-6]** `Technical_Project_Documentation.md:118` vs `src/services/NutritionPlanRepository.ts:3-6`
 > Документация: `subscribe, save`. Реальность: `get(): Promise<ActiveNutritionPlan | null>` / `set(plan): Promise<void>`. Похоже на copy-paste из строки `UserProfileRepository` выше.

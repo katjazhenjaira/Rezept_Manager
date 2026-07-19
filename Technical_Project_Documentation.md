@@ -118,7 +118,7 @@ StrictMode
 | `RecipesRepository.ts` | Интерфейс: subscribeAll, add, update, delete, getById |
 | `PlannerRepository.ts` | Интерфейс: subscribeAll, add, delete (нет update) |
 | `CartRepository.ts` | Интерфейс: subscribe, add, update, delete, deleteAll |
-| `ProgramsRepository.ts` | Интерфейс: subscribe, add, update, delete |
+| `ProgramsRepository.ts` | Интерфейс: subscribeAll, add, update, delete, getById |
 | `UserProfileRepository.ts` | Интерфейс: subscribe, save |
 | `NutritionPlanRepository.ts` | Интерфейс: subscribe, save |
 | `ai/contracts.ts` | DTO для 6 AI-маршрутов (Request/Response пары) |
