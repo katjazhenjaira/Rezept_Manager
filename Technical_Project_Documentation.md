@@ -311,7 +311,7 @@ npm run coverage      # с coverage report
 
 | Ограничение | Причина | Как обойти |
 |------------|---------|-----------|
-| Firestore: не хранить base64-картинки | Лимит документа ~1 МБ; AI-generated images ~700 КБ+ | Cloudflare R2 / Firebase Storage → писать только URL в Firestore (Phase 1 TODO) |
+| Firestore: не хранить base64-картинки | Лимит документа ~1 МБ; AI-generated images ~700 КБ+ | Решено (CRIT-1): `resolveImageField()` (`src/infrastructure/firebaseStorage.ts`) грузит `data:` URI в Firebase Storage, в Firestore пишется только URL |
 | `GEMINI_API_KEY` только в Cloudflare secret | Безопасность — ключ не должен попасть в клиентский бандл | Всегда через Worker proxy `/api/ai/*` |
 | Canvas API недоступен в Cloudflare Worker | Workers runtime не поддерживает Canvas | PDF-операции (`extractImageFromPDF`) только на клиенте через `pdfjs-dist` |
 | `App.tsx` < 300 строк (не < 200) | Достигнуто 277; < 200 требует отдельного RecipeSelectionContext | Запланировано как future TODO |

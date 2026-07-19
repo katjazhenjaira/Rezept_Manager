@@ -79,6 +79,7 @@
 
 **[DOC-1]** `Technical_Project_Documentation.md:312` vs `STATUS.md`
 > Base64-картинки в Firestore помечены «Phase 1 TODO», но STATUS.md говорит «Phase 1 DoD закрыт». Констрейнт фактически не закрыт (см. CRIT-1) — документация вводит в заблуждение.
+> ✅ Исправлено: строка в таблице «Технические ограничения» (`Technical_Project_Documentation.md:314`) обновлена — вместо «Phase 1 TODO» указано решение CRIT-1 (`resolveImageField()` в `src/infrastructure/firebaseStorage.ts`, пишет в Firestore только URL).
 
 **[DOC-2]** `Technical_Project_Documentation.md:141`
 > `LocalStorageNutritionPlanRepository.ts` описан как активно используемый «localStorage fallback», но в реальности нигде не подключён (см. DEAD-1) — мёртвый код, а не рабочий fallback.
