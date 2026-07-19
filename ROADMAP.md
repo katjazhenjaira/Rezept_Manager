@@ -149,7 +149,7 @@
 - [x] Shell.tsx: добавлен `pb-20` для fixed TabBar
 - [x] DataProvider unmount тест усилён: проверяет `listenerCount === 0` для всех 4 репозиториев
 - [ ] **TODO (future):** `AppHeader` хранит `currentLanguage` локально, но не вызывает `changeLanguage()` из i18n — язык меняется только визуально. Либо подключить i18n, либо убрать переключатель из хедера и оставить только в Settings.
-- [ ] **TODO (future):** `handleAddSelectedRecipes` в App.tsx пишет в Firestore напрямую — нужно перевести на `useRepositories().programs.update()` для единообразия с остальным кодом
+- [x] `handleAddSelectedRecipes` и URL share handler в App.tsx переведены на `programsRepo` — `firebase/firestore` полностью удалён из src/ (кроме `src/infrastructure/`)
 
 **Критерий готовности (DoD):**
 - `wc -l src/App.tsx` < 200
