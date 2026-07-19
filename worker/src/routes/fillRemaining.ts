@@ -79,8 +79,13 @@ ${forbiddenText}
     return c.json({ error: `Gemini error: ${message}` }, 502);
   }
 
+  if (!Array.isArray(data.options) || data.options.length !== 3) {
+    console.error("fillRemaining: Gemini returned", data.options?.length ?? 0, "options instead of 3", data);
+    return c.json({ error: "AI response did not contain exactly 3 options" }, 502);
+  }
+
   const payload: FillRemainingResponse = {
-    options: data.options ?? [],
+    options: data.options,
     reason: data.reason ?? "",
   };
   return c.json(payload);
