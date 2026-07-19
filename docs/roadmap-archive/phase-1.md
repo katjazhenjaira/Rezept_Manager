@@ -23,7 +23,7 @@
 - [x] `src/app/providers/DataProvider.tsx`
 - [x] `src/app/providers/UserProfileProvider.tsx`
 - [x] `src/app/layout/Shell.tsx`, `TabBar.tsx`
-- [x] Перенос `activeNutritionPlan` из localStorage в Firestore `settings/plan`
+- [x] Перенос `activeNutritionPlan` из localStorage в Firestore `settings/plan` (позже переименовано в `nutritionPlans/{uid}` — актуальная коллекция закреплена в `firestore.rules`, путь `settings/*` сейчас deny-ится)
 - [x] Обновить `main.tsx` — обернуть App провайдерами
 - [x] Тесты провайдеров (11 тестов: 4 DataProvider + 7 UserProfileProvider)
 - [x] Shell.tsx: добавлен `pb-20` для fixed TabBar
