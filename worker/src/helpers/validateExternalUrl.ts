@@ -14,9 +14,14 @@ function isPrivateIPv4(hostname: string): boolean {
 
 function isPrivateIPv6(hostname: string): boolean {
   const h = hostname.replace(/^\[|\]$/g, "").toLowerCase();
-  if (h === "::1") return true;
+  if (h === "::" || h === "::1" || h === "::0") return true;
   if (h.startsWith("fc") || h.startsWith("fd")) return true; // fc00::/7 unique local
   if (/^fe[89ab]/.test(h)) return true; // fe80::/10 link-local
+
+  // IPv4-mapped/compatible addresses (::ffff:a.b.c.d or ::a.b.c.d) inherit the IPv4 address's privacy.
+  const mappedV4 = h.match(/^::(?:ffff:)?(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})$/)?.[1];
+  if (mappedV4 && isPrivateIPv4(mappedV4)) return true;
+
   return false;
 }
 
@@ -41,4 +46,37 @@ export function validateExternalUrl(rawUrl: string): URL | null {
   if (hostname.includes(":") && isPrivateIPv6(hostname)) return null;
 
   return parsed;
+}
+
+/**
+ * Fetches a client-supplied URL while re-validating every redirect hop, so a
+ * validated URL can't 30x its way to a private/link-local host. Follows
+ * redirects manually instead of letting `fetch` auto-follow them.
+ */
+export async function safeFetch(
+  rawUrl: string,
+  init: RequestInit = {},
+  maxRedirects = 5,
+): Promise<Response | null> {
+  let current = validateExternalUrl(rawUrl);
+  if (!current) return null;
+
+  for (let hop = 0; hop <= maxRedirects; hop++) {
+    const resp = await fetch(current.href, { ...init, redirect: "manual" });
+    if (resp.status >= 300 && resp.status < 400) {
+      const location = resp.headers.get("location");
+      if (!location) return null;
+      let next: URL | null;
+      try {
+        next = validateExternalUrl(new URL(location, current.href).href);
+      } catch {
+        next = null;
+      }
+      if (!next) return null;
+      current = next;
+      continue;
+    }
+    return resp;
+  }
+  return null;
 }

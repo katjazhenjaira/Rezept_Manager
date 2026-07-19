@@ -6,7 +6,7 @@ import type {
   ImportedRecipe,
 } from "../../../src/services/ai/contracts";
 import { generateImageDataUri } from "../helpers/generateImageDataUri";
-import { validateExternalUrl } from "../helpers/validateExternalUrl";
+import { safeFetch, validateExternalUrl } from "../helpers/validateExternalUrl";
 import type { Env } from "../types";
 
 export async function importFromUrl(c: Context<{ Bindings: Env }>) {
@@ -89,14 +89,14 @@ INSTRUCTIONS:
   const imageUrlCandidates: string[] = [];
 
   try {
-    const pageResp = await fetch(url, {
+    const pageResp = await safeFetch(url, {
       headers: {
         // Social-crawler UA that sites typically allow for og:image access.
         "User-Agent": "facebookexternalhit/1.1",
         Accept: "text/html",
       },
     });
-    if (pageResp.ok) {
+    if (pageResp?.ok) {
       const html = await pageResp.text();
       const ogMatch =
         html.match(/property=["']og:image["'][^>]*content=["']([^"']+)["']/i) ??
@@ -116,8 +116,8 @@ INSTRUCTIONS:
   for (const candidate of imageUrlCandidates) {
     if (!validateExternalUrl(candidate)) continue;
     try {
-      const imgResp = await fetch(candidate, { headers: { Referer: url } });
-      if (!imgResp.ok) continue;
+      const imgResp = await safeFetch(candidate, { headers: { Referer: url } });
+      if (!imgResp?.ok) continue;
       const buffer = await imgResp.arrayBuffer();
       if (buffer.byteLength > 600_000) continue;
       const bytes = new Uint8Array(buffer);
