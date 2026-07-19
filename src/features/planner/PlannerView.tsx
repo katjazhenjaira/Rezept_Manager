@@ -580,7 +580,7 @@ export function PlannerView({
           {days.map(day => {
             const dateStr = format(day, 'yyyy-MM-dd');
             const entries = plannerEntries.filter(e => e.date === dateStr);
-            const totalCals = entries.reduce((sum, e) => sum + (getRecipeById(e.recipeId)?.macros.calories || 0), 0);
+            const totalCals = sumMacros(entries, recipes).calories;
             const isCurrentMonth = day.getMonth() === selectedPlannerDate.getMonth();
 
             return (

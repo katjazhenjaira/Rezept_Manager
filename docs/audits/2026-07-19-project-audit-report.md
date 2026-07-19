@@ -163,6 +163,7 @@
 
 **[LOGIC-4]** `src/features/planner/PlannerView.tsx:647`
 > Месячный вид считает калории только по `type: 'recipe'`, entries с `type: 'product'` молча игнорируются — тот же день показывает разные суммы в разных видах планера (день/неделя vs месяц).
+> ✅ Исправлено (commit TBD): `totalCals` в `renderMonthView()` теперь считается через `sumMacros(entries, recipes).calories` — ту же функцию, что уже использует день/неделя (`PlannerView.tsx:152,230,415,533`), вместо ручного `reduce` по `getRecipeById(e.recipeId)`. Добавлен регрессионный тест в `PlannerView.test.tsx` на product-entry в месячном виде.
 
 **[LOGIC-5]** `src/features/recipes/RecipesView.tsx:2499-2526`
 > Степпер порций (+/-) меняет только `selectedRecipe.servings` в локальном state; макросы ниже (2436-2461) читаются нескейленными, `recipesRepo.update()` не вызывается — изменение чисто косметическое и теряется при повторном открытии.
