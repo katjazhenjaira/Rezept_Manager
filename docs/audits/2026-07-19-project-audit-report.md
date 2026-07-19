@@ -134,6 +134,7 @@
 
 **[DOC-15]** `.env.example` vs `Technical_Project_Documentation.md:212-225`
 > `.env.example` всё ещё содержит `GEMINI_API_KEY` и `APP_URL` — реликты старого AI Studio шаблона (собственный TODO-комментарий в файле призывает их убрать после перехода на Worker-прокси, который уже реализован). Технический документ описывает только `VITE_FIREBASE_*`/`VITE_AI_WORKER_URL`.
+> ✅ Исправлено: `GEMINI_API_KEY`/`APP_URL` убраны из `.env.example`, добавлен `VITE_AI_WORKER_URL` (реально используется в `aiClient.ts:16`, был описан в тех. документации, но отсутствовал в `.env.example`).
 
 ---
 
