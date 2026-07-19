@@ -32,6 +32,7 @@ import {
 } from 'date-fns';
 import { ru } from 'date-fns/locale';
 import { useData } from '@/app/providers/DataContext';
+import { recipeAllergens } from '@/shared/domain/allergies';
 import type {
   Recipe,
   UserProfile,
@@ -116,9 +117,7 @@ export function PlannerView({
   const handleAddToPlanner = async (date: string, mealType: string, recipeId: string) => {
     const recipe = recipes.find(r => r.id === recipeId);
     if (recipe) {
-      const allergens = userProfile.allergies.filter(allergy =>
-        recipe.ingredients.some(ing => ing.toLowerCase().includes(allergy.toLowerCase()))
-      );
+      const allergens = recipeAllergens(recipe, userProfile.allergies);
       if (allergens.length > 0) {
         if (!confirm(`Осторожно! Этот рецепт содержит ингредиенты, на которые у вас аллергия: ${allergens.join(', ')}. Все равно добавить?`)) {
           return;

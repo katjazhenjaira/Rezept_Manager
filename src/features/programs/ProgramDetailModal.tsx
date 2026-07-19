@@ -9,6 +9,7 @@ import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { useRepositories } from '@/app/providers/RepositoryContext';
 import { isStaple } from '@/features/cart/services/staples';
+import { recipeHasAllergens } from '@/shared/domain/allergies';
 import type { Program, Recipe, Resource, Subfolder, UserProfile } from '@/shared/domain/types';
 
 function cn(...inputs: ClassValue[]) {
@@ -758,9 +759,7 @@ export function ProgramDetailModal(props: ProgramDetailModalProps) {
                                                   e.dataTransfer.setData('sourceSubfolderId', subfolder.id);
                                                 }}
                                               >
-                                                {userProfile.allergies.some(allergy =>
-                                                  recipe.ingredients.some(ing => ing.toLowerCase().includes(allergy.toLowerCase()))
-                                                ) && (
+                                                {recipeHasAllergens(recipe, userProfile.allergies) && (
                                                   <div className="absolute -top-1 -right-1 z-10 bg-red-500 text-white p-1 rounded-full shadow-sm" title="Содержит аллергены!">
                                                     <AlertTriangle className="w-2.5 h-2.5" />
                                                   </div>
@@ -856,9 +855,7 @@ export function ProgramDetailModal(props: ProgramDetailModalProps) {
                                             e.dataTransfer.setData('sourceSubfolderId', 'main');
                                           }}
                                         >
-                                          {userProfile.allergies.some(allergy =>
-                                            recipe.ingredients.some(ing => ing.toLowerCase().includes(allergy.toLowerCase()))
-                                          ) && (
+                                          {recipeHasAllergens(recipe, userProfile.allergies) && (
                                             <div className="absolute top-3 right-3 z-10 bg-red-500 text-white p-1.5 rounded-lg shadow-lg" title="Содержит аллергены!">
                                               <AlertTriangle className="w-4 h-4" />
                                             </div>

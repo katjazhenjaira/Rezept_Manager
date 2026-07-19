@@ -31,6 +31,7 @@ import { twMerge } from 'tailwind-merge';
 import { useRepositories } from '@/app/providers/RepositoryContext';
 import { aiClient } from '@/services/ai/aiClient';
 import { format } from 'date-fns';
+import { recipeAllergens, recipeHasAllergens } from '@/shared/domain/allergies';
 import type { Recipe, UserProfile, Program, RecipeView, Subfolder } from '@/shared/domain/types';
 import { extractImageFromPDF } from '@/shared/utils/pdfUtils';
 
@@ -607,9 +608,7 @@ export function RecipesView({
   const handleAddToPlanner = async (date: string, mealType: string, recipeId: string) => {
     const recipe = recipes.find((r) => r.id === recipeId);
     if (recipe) {
-      const allergens = userProfile.allergies.filter((allergy) =>
-        recipe.ingredients.some((ing) => ing.toLowerCase().includes(allergy.toLowerCase())),
-      );
+      const allergens = recipeAllergens(recipe, userProfile.allergies);
       if (allergens.length > 0) {
         if (
           !confirm(
@@ -1188,11 +1187,7 @@ export function RecipesView({
                               : [...selectedRecipeIds, recipe.id],
                           );
                         } else {
-                          const allergens = userProfile.allergies.filter((allergy) =>
-                            recipe.ingredients.some((ing) =>
-                              ing.toLowerCase().includes(allergy.toLowerCase()),
-                            ),
-                          );
+                          const allergens = recipeAllergens(recipe, userProfile.allergies);
                           if (allergens.length > 0) {
                             alert(
                               `ВНИМАНИЕ! Этот рецепт содержит ваши аллергены: ${allergens.join(', ')}`,
@@ -1213,11 +1208,7 @@ export function RecipesView({
                         e.dataTransfer.setData('sourceSubfolderId', 'main');
                       }}
                     >
-                      {userProfile.allergies.some((allergy) =>
-                        recipe.ingredients.some((ing) =>
-                          ing.toLowerCase().includes(allergy.toLowerCase()),
-                        ),
-                      ) && (
+                      {recipeHasAllergens(recipe, userProfile.allergies) && (
                         <div
                           className="absolute top-3 right-3 z-10 bg-red-500 text-white p-1.5 rounded-lg shadow-lg"
                           title="Содержит аллергены!"
@@ -1269,11 +1260,7 @@ export function RecipesView({
                             <span className="text-[10px] opacity-70">Ккал</span>
                             <div className="flex items-center gap-1">
                               <span>{recipe.macros.calories}</span>
-                              {userProfile.allergies.some((allergy) =>
-                                recipe.ingredients.some((ing) =>
-                                  ing.toLowerCase().includes(allergy.toLowerCase()),
-                                ),
-                              ) && (
+                              {recipeHasAllergens(recipe, userProfile.allergies) && (
                                 <span className="text-red-500 font-black text-xs">!</span>
                               )}
                             </div>
@@ -1308,11 +1295,7 @@ export function RecipesView({
                         </div>
                         <h3 className="font-bold text-lg mb-4 group-hover:text-emerald-600 transition-colors line-clamp-2 leading-snug flex items-center justify-between gap-2">
                           {recipe.title}
-                          {userProfile.allergies.some((allergy) =>
-                            recipe.ingredients.some((ing) =>
-                              ing.toLowerCase().includes(allergy.toLowerCase()),
-                            ),
-                          ) && (
+                          {recipeHasAllergens(recipe, userProfile.allergies) && (
                             <span title="Содержит аллергены!">
                               <AlertTriangle className="w-4 h-4 text-red-500 flex-shrink-0" />
                             </span>

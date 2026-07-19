@@ -34,6 +34,7 @@
 > **Проблема:** Проверка аллергенов продублирована вручную (`allergies.filter(...ingredients.some(...includes...))`) в 7+ местах вместо вызова `recipeAllergens`/`recipeHasAllergens` из `src/shared/domain/allergies.ts`.
 > **Почему важно:** Прямое нарушение принципа единого источника истины для safety-critical constraint №1. Любое будущее изменение логики сопоставления (нормализация, границы слов) придётся синхронно вносить в 7+ местах — иначе проверка на разных вкладках начнёт расходиться незаметно.
 > **Исправление:** Заменить все инлайн-выражения на вызовы `recipeAllergens`/`recipeHasAllergens`.
+> **✅ Исправлено:** Все 8 найденных мест (`PlannerView.tsx:119`, `RecipesView.tsx` ×5 — `handleAddToPlanner` + 3 инлайн-проверки на бейджи карточки рецепта + селект-режим, `ProgramDetailModal.tsx` ×2) заменены на вызовы `recipeAllergens`/`recipeHasAllergens` из `src/shared/domain/allergies.ts`. Импорты добавлены во все 3 файла. Тесты: полный прогон 121/121 зелёный, `tsc --noEmit` и `vite build` чистые.
 
 **[CRIT-3]** `src/features/planner/PlannerView.tsx` (строки 150-169, 246-262, 447-463, 581-597); `src/features/tracker/TrackerView.tsx` (59-72, 74-80, 82-87)
 > **Проблема:** Суммирование КБЖУ реализовано вручную 7 раз вместо `sumMacros`/`remainingMacros`/`resolveActiveTargets` из `src/shared/domain/macros.ts`. Ни один из файлов не импортирует `shared/domain/macros.ts` (проверено grep). `TrackerView.tsx` даже копирует строку `'По умолчанию (из настроек)'` из `resolveActiveTargets` — явный copy-paste.
