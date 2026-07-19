@@ -4,13 +4,15 @@ import type { UserProfile } from '@/shared/domain/types';
 import type { UserProfileRepository } from '@/services/UserProfileRepository';
 
 export class FirestoreUserProfileRepository implements UserProfileRepository {
+  constructor(private readonly uid: string) {}
+
   subscribe(callback: (profile: UserProfile | null) => void): () => void {
-    return onSnapshot(doc(db, 'settings', 'profile'), snap => {
+    return onSnapshot(doc(db, 'userProfiles', this.uid), snap => {
       callback(snap.exists() ? (snap.data() as UserProfile) : null);
     });
   }
 
   async save(profile: UserProfile): Promise<void> {
-    await setDoc(doc(db, 'settings', 'profile'), profile);
+    await setDoc(doc(db, 'userProfiles', this.uid), profile);
   }
 }
