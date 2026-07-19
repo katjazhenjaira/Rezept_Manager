@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   BookOpen,
   Calendar,
@@ -242,6 +242,14 @@ export function RecipesView({
   const [recipeLink, setRecipeLink] = useState('');
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [isCollectionPickerOpen, setIsCollectionPickerOpen] = useState(false);
+  // Эфемерный калькулятор «на сколько порций считать КБЖУ» — не меняет и не сохраняет recipe.servings
+  const [portionCount, setPortionCount] = useState(1);
+
+  useEffect(() => {
+    if (selectedRecipe) {
+      setPortionCount(Math.max(1, selectedRecipe.servings));
+    }
+  }, [selectedRecipe?.id]);
 
   // ── Planning state ──────────────────────────────────────────────────────────
   const [isPlanning, setIsPlanning] = useState(false);
@@ -2410,34 +2418,45 @@ export function RecipesView({
 
                       <div className="p-6 bg-emerald-50 rounded-3xl border border-emerald-100">
                         <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-wider mb-4">
-                          КБЖУ (на порцию)
+                          КБЖУ (на {portionCount} {portionCount === 1 ? 'порцию' : 'порций'})
                         </p>
-                        <div className="grid grid-cols-2 gap-y-4 gap-x-6">
-                          <div>
-                            <p className="text-xs text-emerald-800/60 mb-0.5">Калории</p>
-                            <p className="font-bold text-lg text-emerald-900">
-                              {selectedRecipe.macros.calories} ккал
-                            </p>
-                          </div>
-                          <div>
-                            <p className="text-xs text-emerald-800/60 mb-0.5">Белки</p>
-                            <p className="font-bold text-lg text-emerald-900">
-                              {selectedRecipe.macros.proteins}г
-                            </p>
-                          </div>
-                          <div>
-                            <p className="text-xs text-emerald-800/60 mb-0.5">Жиры</p>
-                            <p className="font-bold text-lg text-emerald-900">
-                              {selectedRecipe.macros.fats}г
-                            </p>
-                          </div>
-                          <div>
-                            <p className="text-xs text-emerald-800/60 mb-0.5">Углеводы</p>
-                            <p className="font-bold text-lg text-emerald-900">
-                              {selectedRecipe.macros.carbs}г
-                            </p>
-                          </div>
-                        </div>
+                        {(() => {
+                          const servingsBase = Math.max(1, selectedRecipe.servings);
+                          const scaledMacros = {
+                            calories: Math.round((selectedRecipe.macros.calories * portionCount) / servingsBase),
+                            proteins: Math.round((selectedRecipe.macros.proteins * portionCount) / servingsBase),
+                            fats: Math.round((selectedRecipe.macros.fats * portionCount) / servingsBase),
+                            carbs: Math.round((selectedRecipe.macros.carbs * portionCount) / servingsBase),
+                          };
+                          return (
+                            <div className="grid grid-cols-2 gap-y-4 gap-x-6">
+                              <div>
+                                <p className="text-xs text-emerald-800/60 mb-0.5">Калории</p>
+                                <p className="font-bold text-lg text-emerald-900">
+                                  {scaledMacros.calories} ккал
+                                </p>
+                              </div>
+                              <div>
+                                <p className="text-xs text-emerald-800/60 mb-0.5">Белки</p>
+                                <p className="font-bold text-lg text-emerald-900">
+                                  {scaledMacros.proteins}г
+                                </p>
+                              </div>
+                              <div>
+                                <p className="text-xs text-emerald-800/60 mb-0.5">Жиры</p>
+                                <p className="font-bold text-lg text-emerald-900">
+                                  {scaledMacros.fats}г
+                                </p>
+                              </div>
+                              <div>
+                                <p className="text-xs text-emerald-800/60 mb-0.5">Углеводы</p>
+                                <p className="font-bold text-lg text-emerald-900">
+                                  {scaledMacros.carbs}г
+                                </p>
+                              </div>
+                            </div>
+                          );
+                        })()}
                         <button
                           onClick={async () => {
                             setIsRecalculatingKbzhu(true);
@@ -2505,37 +2524,34 @@ export function RecipesView({
                         </div>
                         <div className="p-5 bg-zinc-50 rounded-2xl border border-zinc-100">
                           <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-2">
-                            Масштабирование порций
+                            Расчёт КБЖУ на порций
                           </p>
                           <div className="flex items-center gap-3">
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
-                                setSelectedRecipe({
-                                  ...selectedRecipe,
-                                  servings: Math.max(1, selectedRecipe.servings - 1),
-                                });
+                                setPortionCount((c) => Math.max(1, c - 1));
                               }}
                               className="w-8 h-8 flex items-center justify-center bg-white border border-zinc-200 rounded-lg text-zinc-500 hover:bg-emerald-50 hover:text-emerald-600 transition-colors"
                             >
                               -
                             </button>
                             <p className="font-bold text-zinc-700 min-w-[20px] text-center">
-                              {selectedRecipe.servings}
+                              {portionCount}
                             </p>
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
-                                setSelectedRecipe({
-                                  ...selectedRecipe,
-                                  servings: selectedRecipe.servings + 1,
-                                });
+                                setPortionCount((c) => c + 1);
                               }}
                               className="w-8 h-8 flex items-center justify-center bg-white border border-zinc-200 rounded-lg text-zinc-500 hover:bg-emerald-50 hover:text-emerald-600 transition-colors"
                             >
                               +
                             </button>
                           </div>
+                          <p className="text-[10px] text-zinc-400 mt-2">
+                            Не меняет и не сохраняет рецепт — только пересчитывает КБЖУ
+                          </p>
                         </div>
                       </div>
 
