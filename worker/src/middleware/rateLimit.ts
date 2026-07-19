@@ -15,6 +15,10 @@ export async function rateLimit(c: Context<{ Bindings: Env }>, next: Next) {
   const minute = Math.floor(Date.now() / 60_000);
   const key = `rate:${ip}:${minute}`;
 
+  // KV eventually consistent, без compare-and-swap: get→put не атомарны, поэтому
+  // при параллельных запросах с одного IP лимит — мягкий (возможен overshoot на
+  // несколько запросов), а не строгий "11-й запрос → 429". Для абьюз-защиты
+  // Gemini API этого достаточно; строгая атомарность потребовала бы Durable Objects.
   const raw = await c.env.RATE_LIMIT_KV.get(key);
   const parsed = raw ? parseInt(raw, 10) : 0;
   const count = Number.isFinite(parsed) ? parsed : 0;
