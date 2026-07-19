@@ -32,6 +32,10 @@
 
 - [ ] Проработать отчёт аудита кода `docs/audits/2026-07-19-project-audit-report.md` (60 находок: 8 критических — дублирование allergy/КБЖУ-логики, base64-картинки в Firestore, открытый CORS и SSRF в Worker, отсутствие серверной валидации fillRemaining; плюс 15 расхождений с документацией и находки по остальным категориям)
 
+## Баги
+
+- [ ] Импорт рецепта по ссылке не работает (вкладка «Рецепты» → «Импорт по ссылке»). Требует диагностики: воспроизвести с конкретным URL, проверить цепочку `RecipesView.handleLinkSubmit` → `aiClient.importFromUrl()` → Worker `/api/ai/import-from-url` (`worker/src/routes/importFromUrl.ts`) → Gemini.
+
 ## Активные фазы
 
 ### Phase 3 — миграция на Supabase (3–4 недели)
