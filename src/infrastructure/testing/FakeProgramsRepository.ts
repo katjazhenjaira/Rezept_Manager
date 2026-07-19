@@ -11,6 +11,8 @@ export class FakeProgramsRepository implements ProgramsRepository {
     this.listeners.forEach(cb => cb(snapshot));
   }
 
+  get listenerCount(): number { return this.listeners.size; }
+
   subscribeAll(callback: (programs: Program[]) => void): () => void {
     this.listeners.add(callback);
     callback([...this.items]);

@@ -11,6 +11,8 @@ export class FakePlannerRepository implements PlannerRepository {
     this.listeners.forEach(cb => cb(snapshot));
   }
 
+  get listenerCount(): number { return this.listeners.size; }
+
   subscribeAll(callback: (entries: PlannerEntry[]) => void): () => void {
     this.listeners.add(callback);
     callback([...this.items]);

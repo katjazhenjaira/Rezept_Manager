@@ -79,10 +79,9 @@ describe('DataProvider', () => {
   it('unsubscribes from all repos on unmount', () => {
     const { unmount } = renderHook(() => useData(), { wrapper: makeWrapper(repos) });
     unmount();
-    expect(() => repos.recipes.add({
-      title: 'test', time: '10m', servings: 1, categories: [],
-      ingredients: [], steps: [], macros: { calories: 0, proteins: 0, fats: 0, carbs: 0 },
-      createdAt: '2026-01-01T00:00:00.000Z',
-    })).not.toThrow();
+    expect(repos.recipes.listenerCount).toBe(0);
+    expect(repos.planner.listenerCount).toBe(0);
+    expect(repos.cart.listenerCount).toBe(0);
+    expect(repos.programs.listenerCount).toBe(0);
   });
 });

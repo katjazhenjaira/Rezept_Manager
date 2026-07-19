@@ -14,8 +14,7 @@ import {
 import { motion, AnimatePresence } from 'motion/react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import { collection, addDoc, deleteDoc, doc } from 'firebase/firestore';
-import { db } from '@/infrastructure/firebaseApp';
+import { useRepositories } from '@/app/providers/RepositoryContext';
 import { isStaple } from '@/features/cart/services/staples';
 import {
   format,
@@ -69,6 +68,7 @@ export function PlannerView({
   onMealTypesChange,
 }: PlannerViewProps) {
   const { plannerEntries } = useData();
+  const { planner: plannerRepo, cart: cartRepo } = useRepositories();
 
   const [plannerViewScale, setPlannerViewScale] = useState<PlannerViewScale>('week');
   const [plannerViewMode, setPlannerViewMode] = useState<PlannerViewMode>('calendar');
@@ -91,7 +91,7 @@ export function PlannerView({
     if (!pickingMealInfo || !productFormData.name) return;
 
     try {
-      await addDoc(collection(db, "planner"), {
+      await plannerRepo.add({
         date: pickingMealInfo.date,
         mealType: pickingMealInfo.mealType,
         type: 'product',
@@ -126,12 +126,7 @@ export function PlannerView({
       }
     }
     try {
-      await addDoc(collection(db, "planner"), {
-        date,
-        mealType,
-        type: 'recipe',
-        recipeId,
-      });
+      await plannerRepo.add({ date, mealType, type: 'recipe', recipeId });
     } catch (error) {
       console.error("Error adding to planner:", error);
     }
@@ -139,7 +134,7 @@ export function PlannerView({
 
   const handleRemoveFromPlanner = async (entryId: string) => {
     try {
-      await deleteDoc(doc(db, "planner", entryId));
+      await plannerRepo.delete(entryId);
     } catch (error) {
       console.error("Error removing from planner:", error);
     }
@@ -920,7 +915,7 @@ export function PlannerView({
                 });
 
                 for (const [name, info] of Object.entries(ingredientMap)) {
-                  await addDoc(collection(db, "cart"), {
+                  await cartRepo.add({
                     name,
                     amount: info.amount || 'по вкусу',
                     sourceDishes: Array.from(info.dishes),

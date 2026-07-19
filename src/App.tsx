@@ -22,16 +22,10 @@ import type {
   UserProfile,
   Program,
 } from '@/shared/domain/types';
+import { DEFAULT_PROFILE } from '@/shared/domain/defaults';
 import { RecipesView } from '@/features/recipes/RecipesView';
 import { PlannerView } from '@/features/planner/PlannerView';
 import { TrackerView } from '@/features/tracker/TrackerView';
-
-const DEFAULT_PROFILE: UserProfile = {
-  name: '', age: 30, gender: 'female',
-  currentWeight: 65, targetWeight: 60,
-  targetCalories: 1800, targetProteins: 100, targetFats: 60, targetCarbs: 200,
-  waterGoal: 2000, allergies: [],
-};
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<Tab>('recipes');

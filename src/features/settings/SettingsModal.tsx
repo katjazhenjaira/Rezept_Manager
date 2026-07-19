@@ -5,6 +5,7 @@ import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { useTranslation } from 'react-i18next';
 import type { UserProfile } from '@/shared/domain/types';
+import { DEFAULT_PROFILE } from '@/shared/domain/defaults';
 import { changeLanguage, type AppLanguage } from '@/app/providers/I18nProvider';
 import { useUserProfile } from '@/app/providers/UserProfileContext';
 
@@ -14,13 +15,6 @@ function cn(...inputs: ClassValue[]) {
 
 const DEFAULT_CATEGORIES = ['Завтрак', 'Обед', 'Ужин', 'Перекус', 'Десерт', 'Мясо', 'Рыба', 'Веган', 'Вегетарианское', 'Напитки', 'Основное блюдо', 'Гарниры', 'Салаты', 'Супы'];
 const PRESET_ALLERGIES = ['Глютен', 'Лактоза', 'Орехи', 'Морепродукты', 'Яйца', 'Соя', 'Мед', 'Цитрусовые'];
-
-const DEFAULT_PROFILE: UserProfile = {
-  name: '', age: 30, gender: 'female',
-  currentWeight: 65, targetWeight: 60,
-  targetCalories: 1800, targetProteins: 100, targetFats: 60, targetCarbs: 200,
-  waterGoal: 2000, allergies: [],
-};
 
 type Props = {
   isOpen: boolean;

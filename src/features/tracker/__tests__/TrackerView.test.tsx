@@ -4,17 +4,15 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { DataContext } from '@/app/providers/DataContext';
 import { UserProfileContext } from '@/app/providers/UserProfileContext';
+import { RepositoryContext } from '@/app/providers/RepositoryContext';
+import { FakeRecipesRepository } from '@/infrastructure/testing/FakeRecipesRepository';
+import { FakePlannerRepository } from '@/infrastructure/testing/FakePlannerRepository';
+import { FakeCartRepository } from '@/infrastructure/testing/FakeCartRepository';
+import { FakeProgramsRepository } from '@/infrastructure/testing/FakeProgramsRepository';
+import { FakeUserProfileRepository } from '@/infrastructure/testing/FakeUserProfileRepository';
+import { FakeNutritionPlanRepository } from '@/infrastructure/testing/FakeNutritionPlanRepository';
 import type { UserProfile, ActiveNutritionPlan, PlannerEntry, Recipe } from '@/shared/domain/types';
 import type { DataState } from '@/app/providers/DataContext';
-
-vi.mock('firebase/firestore', () => ({
-  collection: vi.fn(),
-  addDoc: vi.fn().mockResolvedValue({ id: 'test-id' }),
-  deleteDoc: vi.fn().mockResolvedValue(undefined),
-  doc: vi.fn(),
-}));
-
-vi.mock('@/infrastructure/firebaseApp', () => ({ db: {} }));
 
 vi.mock('@/services/ai/aiClient', () => ({
   aiClient: {
@@ -75,21 +73,32 @@ const mockEntry: PlannerEntry = {
 const emptyData: DataState = { recipes: [], plannerEntries: [], cartItems: [], programs: [] };
 const dataWithEntry: DataState = { recipes: [mockRecipe], plannerEntries: [mockEntry], cartItems: [], programs: [] };
 
+const fakeRepos = {
+  recipes: new FakeRecipesRepository(),
+  planner: new FakePlannerRepository(),
+  cart: new FakeCartRepository(),
+  programs: new FakeProgramsRepository(),
+  userProfile: new FakeUserProfileRepository(),
+  nutritionPlan: new FakeNutritionPlanRepository(),
+};
+
 function makeWrapper(data: typeof emptyData) {
   return function Wrapper({ children }: { children: ReactNode }) {
     return (
-      <UserProfileContext.Provider
-        value={{
-          userProfile: mockProfile,
-          saveUserProfile: mockSaveUserProfile,
-          activeNutritionPlan: mockNutritionPlan,
-          setActivePlan: mockSetActivePlan,
-        }}
-      >
-        <DataContext.Provider value={data}>
-          {children}
-        </DataContext.Provider>
-      </UserProfileContext.Provider>
+      <RepositoryContext.Provider value={fakeRepos}>
+        <UserProfileContext.Provider
+          value={{
+            userProfile: mockProfile,
+            saveUserProfile: mockSaveUserProfile,
+            activeNutritionPlan: mockNutritionPlan,
+            setActivePlan: mockSetActivePlan,
+          }}
+        >
+          <DataContext.Provider value={data}>
+            {children}
+          </DataContext.Provider>
+        </UserProfileContext.Provider>
+      </RepositoryContext.Provider>
     );
   };
 }

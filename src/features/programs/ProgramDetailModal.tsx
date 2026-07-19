@@ -7,8 +7,7 @@ import {
 import { motion, AnimatePresence } from 'motion/react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import { updateDoc, doc, addDoc, collection } from 'firebase/firestore';
-import { db } from '@/infrastructure/firebaseApp';
+import { useRepositories } from '@/app/providers/RepositoryContext';
 import { isStaple } from '@/features/cart/services/staples';
 import type { Program, Recipe, Resource, Subfolder, UserProfile } from '@/shared/domain/types';
 
@@ -68,6 +67,8 @@ export function ProgramDetailModal(props: ProgramDetailModalProps) {
     onSelectRecipe,
   } = props;
 
+  const { cart: cartRepo, programs: programsRepo } = useRepositories();
+
   const addProductsToCart = async (products: string[]) => {
     try {
       for (const product of products) {
@@ -83,7 +84,7 @@ export function ProgramDetailModal(props: ProgramDetailModalProps) {
           }
         }
         const isBasic = isStaple(name);
-        await addDoc(collection(db, 'cart'), {
+        await cartRepo.add({
           name,
           amount,
           sourceDishes: ['Из программы'],
@@ -161,10 +162,7 @@ export function ProgramDetailModal(props: ProgramDetailModalProps) {
       );
     }
     try {
-      await updateDoc(doc(db, 'programs', program.id), {
-        recipeIds: newRecipeIds,
-        subfolders: newSubfolders,
-      });
+      await programsRepo.update(program.id, { recipeIds: newRecipeIds, subfolders: newSubfolders });
     } catch (error) {
       console.error('Error moving recipe:', error);
     }
@@ -187,7 +185,7 @@ export function ProgramDetailModal(props: ProgramDetailModalProps) {
     }
     if (activeResourceForm) {
       if (activeResourceForm.targetId === 'main') {
-        updateDoc(doc(db, 'programs', program.id), {
+        void programsRepo.update(program.id, {
           resources: [...(program.resources || []), newResource],
         });
       } else {
@@ -196,7 +194,7 @@ export function ProgramDetailModal(props: ProgramDetailModalProps) {
             ? { ...sf, resources: [...(sf.resources || []), newResource] }
             : sf
         );
-        updateDoc(doc(db, 'programs', program.id), { subfolders: newSubfolders });
+        void programsRepo.update(program.id, { subfolders: newSubfolders });
       }
       setActiveResourceForm(null);
       alert(`Файл ${file.name} загружен`);
@@ -207,7 +205,7 @@ export function ProgramDetailModal(props: ProgramDetailModalProps) {
     if (!editingEntity) return;
     try {
       if (editingEntity.type === 'program') {
-        await updateDoc(doc(db, 'programs', editingEntity.id), {
+        await programsRepo.update(editingEntity.id, {
           name: editFormData.name,
           description: editFormData.description,
           targetCalories: editFormData.targetCalories,
@@ -235,9 +233,7 @@ export function ProgramDetailModal(props: ProgramDetailModalProps) {
               }
             : sf
         );
-        await updateDoc(doc(db, 'programs', editingEntity.programId!), {
-          subfolders: newSubfolders,
-        });
+        await programsRepo.update(editingEntity.programId!, { subfolders: newSubfolders });
       }
       setEditingEntity(null);
     } catch (error) {
@@ -290,8 +286,8 @@ export function ProgramDetailModal(props: ProgramDetailModalProps) {
                                 description: "",
                                 recipeIds: []
                               };
-                              await updateDoc(doc(db, "programs", program.id), {
-                                subfolders: [...(program.subfolders || []), newSubfolder]
+                              await programsRepo.update(program.id, {
+                                subfolders: [...(program.subfolders || []), newSubfolder],
                               });
                               setOpenSubfolderId(newSubfolder.id);
                               setEditingSubfolderId(newSubfolder.id);
@@ -1216,14 +1212,14 @@ export function ProgramDetailModal(props: ProgramDetailModalProps) {
                       };
 
                       if (activeResourceForm.targetId === 'main') {
-                        await updateDoc(doc(db, "programs", program.id), {
-                          resources: [...(program.resources || []), newResource]
+                        await programsRepo.update(program.id, {
+                          resources: [...(program.resources || []), newResource],
                         });
                       } else {
                         const newSubfolders = program.subfolders?.map(sf =>
                           sf.id === activeResourceForm.targetId ? { ...sf, resources: [...(sf.resources || []), newResource] } : sf
                         );
-                        await updateDoc(doc(db, "programs", program.id), { subfolders: newSubfolders });
+                        await programsRepo.update(program.id, { subfolders: newSubfolders });
                       }
                       setActiveResourceForm(null);
                       setResourceFormData({ url: '', title: '', description: '' });
@@ -1272,8 +1268,8 @@ export function ProgramDetailModal(props: ProgramDetailModalProps) {
                 </button>
                 <button
                   onClick={async () => {
-                    await updateDoc(doc(db, "programs", subfolderToDelete.programId), {
-                      subfolders: program.subfolders?.filter(sf => sf.id !== subfolderToDelete.subfolderId)
+                    await programsRepo.update(subfolderToDelete.programId, {
+                      subfolders: program.subfolders?.filter(sf => sf.id !== subfolderToDelete.subfolderId),
                     });
                     setSubfolderToDelete(null);
                     setEditingSubfolderId(null);

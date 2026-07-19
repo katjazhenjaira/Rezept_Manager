@@ -14,9 +14,8 @@ import {
 import { motion, AnimatePresence } from 'motion/react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import { collection, addDoc } from 'firebase/firestore';
-import { db } from '@/infrastructure/firebaseApp';
 import { format } from 'date-fns';
+import { useRepositories } from '@/app/providers/RepositoryContext';
 import { useData } from '@/app/providers/DataContext';
 import { useNutritionPlan, useUserProfile } from '@/app/providers/UserProfileContext';
 import { aiClient } from '@/services/ai/aiClient';
@@ -46,6 +45,7 @@ export function TrackerView({
   const { plannerEntries, recipes } = useData();
   const { activeNutritionPlan } = useNutritionPlan();
   const { userProfile } = useUserProfile();
+  const { planner: plannerRepo } = useRepositories();
 
   const [isSuggesting, setIsSuggesting] = useState(false);
   const [suggestion, setSuggestion] = useState<SuggestionResult | null>(null);
@@ -130,14 +130,13 @@ export function TrackerView({
 
     try {
       for (const option of selectedOptions) {
-        await addDoc(collection(db, 'planner'), {
+        await plannerRepo.add({
           date: today,
           mealType: 'Перекус',
           type: option.type,
-          recipeId: option.type === 'recipe' ? (option.recipeId ?? null) : null,
-          productName: option.type === 'product' ? option.description : null,
+          ...(option.type === 'recipe' && option.recipeId ? { recipeId: option.recipeId } : {}),
+          ...(option.type === 'product' ? { productName: option.description } : {}),
           macros: option.macros,
-          createdAt: new Date().toISOString(),
         });
       }
       setSuggestion(null);

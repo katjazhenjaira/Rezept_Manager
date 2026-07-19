@@ -3,16 +3,14 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { DataContext } from '@/app/providers/DataContext';
+import { RepositoryContext } from '@/app/providers/RepositoryContext';
+import { FakeRecipesRepository } from '@/infrastructure/testing/FakeRecipesRepository';
+import { FakePlannerRepository } from '@/infrastructure/testing/FakePlannerRepository';
+import { FakeCartRepository } from '@/infrastructure/testing/FakeCartRepository';
+import { FakeProgramsRepository } from '@/infrastructure/testing/FakeProgramsRepository';
+import { FakeUserProfileRepository } from '@/infrastructure/testing/FakeUserProfileRepository';
+import { FakeNutritionPlanRepository } from '@/infrastructure/testing/FakeNutritionPlanRepository';
 import type { UserProfile, ActiveNutritionPlan } from '@/shared/domain/types';
-
-vi.mock('firebase/firestore', () => ({
-  collection: vi.fn(),
-  addDoc: vi.fn().mockResolvedValue({ id: 'test-id' }),
-  deleteDoc: vi.fn().mockResolvedValue(undefined),
-  doc: vi.fn(),
-}));
-
-vi.mock('@/infrastructure/firebaseApp', () => ({ db: {} }));
 
 const mockProfile: UserProfile = {
   name: 'Тест',
@@ -30,11 +28,22 @@ const mockProfile: UserProfile = {
 
 const emptyData = { recipes: [], plannerEntries: [], cartItems: [], programs: [] };
 
+const fakeRepos = {
+  recipes: new FakeRecipesRepository(),
+  planner: new FakePlannerRepository(),
+  cart: new FakeCartRepository(),
+  programs: new FakeProgramsRepository(),
+  userProfile: new FakeUserProfileRepository(),
+  nutritionPlan: new FakeNutritionPlanRepository(),
+};
+
 function Wrapper({ children }: { children: ReactNode }) {
   return (
-    <DataContext.Provider value={emptyData}>
-      {children}
-    </DataContext.Provider>
+    <RepositoryContext.Provider value={fakeRepos}>
+      <DataContext.Provider value={emptyData}>
+        {children}
+      </DataContext.Provider>
+    </RepositoryContext.Provider>
   );
 }
 

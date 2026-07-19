@@ -4,9 +4,8 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Plus, Check, Edit3 } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import { collection, addDoc } from 'firebase/firestore';
-import { db } from '@/infrastructure/firebaseApp';
 import { useData } from '@/app/providers/DataContext';
+import { useRepositories } from '@/app/providers/RepositoryContext';
 import { useNutritionPlan, useUserProfile } from '@/app/providers/UserProfileContext';
 import type { ActiveNutritionPlan } from '@/shared/domain/types';
 
@@ -31,6 +30,7 @@ export function ProgramSelectionModal({ isOpen, onClose }: ProgramSelectionModal
   const { programs } = useData();
   const { activeNutritionPlan, setActivePlan } = useNutritionPlan();
   const { userProfile } = useUserProfile();
+  const { programs: programsRepo } = useRepositories();
 
   const [customPlanForm, setCustomPlanForm] = useState<CustomPlanForm>({
     name: '',
@@ -64,11 +64,11 @@ export function ProgramSelectionModal({ isOpen, onClose }: ProgramSelectionModal
         link: '',
         createdAt: new Date().toISOString(),
       };
-      const docRef = await addDoc(collection(db, 'programs'), newProgram);
+      const id = await programsRepo.add(newProgram);
       await setActivePlan({
         ...customPlanForm,
         isCustom: true,
-        programId: docRef.id,
+        programId: id,
         allowedProducts: [],
         forbiddenProducts: [],
       });

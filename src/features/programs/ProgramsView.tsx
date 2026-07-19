@@ -6,8 +6,7 @@ import {
 import { motion, AnimatePresence } from 'motion/react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import { collection, addDoc, updateDoc, deleteDoc, doc } from 'firebase/firestore';
-import { db } from '@/infrastructure/firebaseApp';
+import { useRepositories } from '@/app/providers/RepositoryContext';
 import { aiClient } from '@/services/ai/aiClient';
 import { extractImageFromPDF, extractTextFromPDF } from '@/shared/utils/pdfUtils';
 import { useData } from '@/app/providers/DataContext';
@@ -79,6 +78,7 @@ export function ProgramsView(props: ProgramsViewProps) {
   } = props;
 
   const { programs } = useData();
+  const { recipes: recipesRepo, programs: programsRepo } = useRepositories();
 
   const [programFormData, setProgramFormData] = useState({ ...emptyProgramForm });
   const [editingProgramId, setEditingProgramId] = useState<string | null>(null);
@@ -146,14 +146,14 @@ export function ProgramsView(props: ProgramsViewProps) {
             const generated = await aiClient.generateImage({ title: r.title, ingredients: r.ingredients });
             if (generated?.imageDataUri) dishImage = generated.imageDataUri;
           }
-          const imageToStore = dishImage && dishImage.length <= 800_000 ? dishImage : null;
-          const docRef = await addDoc(collection(db, 'recipes'), {
+          const imageToStore = dishImage && dishImage.length <= 800_000 ? dishImage : undefined;
+          const id = await recipesRepo.add({
             title: r.title, author: r.author ?? '', image: imageToStore,
             time: r.time, servings: r.servings, categories: r.categories,
             ingredients: r.ingredients, steps: r.steps, macros: r.macros,
             isFavorite: false, createdAt: new Date().toISOString(),
           });
-          recipeIds.push(docRef.id);
+          recipeIds.push(id);
         }
         const inferredName = file.name.replace(/\.pdf$/i, '');
         setProgramFormData(prev => ({
@@ -178,16 +178,10 @@ export function ProgramsView(props: ProgramsViewProps) {
     if (!programFormData.name) return;
     try {
       if (editingProgramId) {
-        await updateDoc(doc(db, 'programs', editingProgramId), {
-          ...programFormData,
-          updatedAt: new Date().toISOString(),
-        });
+        await programsRepo.update(editingProgramId, programFormData);
         alert('Программа обновлена');
       } else {
-        await addDoc(collection(db, 'programs'), {
-          ...programFormData,
-          createdAt: new Date().toISOString(),
-        });
+        await programsRepo.add({ ...programFormData, createdAt: new Date().toISOString() });
         alert('Программа создана');
       }
       setIsCreatingProgram(false);
@@ -415,7 +409,7 @@ export function ProgramsView(props: ProgramsViewProps) {
                           onClick={async (e) => {
                             e.stopPropagation();
                             if (confirm('Удалить эту программу?')) {
-                              await deleteDoc(doc(db, 'programs', program.id));
+                              await programsRepo.delete(program.id);
                             }
                           }}
                           className="p-2 text-zinc-300 hover:text-red-500 transition-colors"
@@ -891,7 +885,7 @@ export function ProgramsView(props: ProgramsViewProps) {
                 <button
                   onClick={async () => {
                     try {
-                      await deleteDoc(doc(db, 'programs', programToDelete.id));
+                      await programsRepo.delete(programToDelete.id);
                       setProgramToDelete(null);
                       onOpenProgramIdChange(null);
                     } catch (err) {

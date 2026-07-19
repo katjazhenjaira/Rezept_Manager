@@ -1,9 +1,8 @@
 import { useState } from 'react';
 import { ShoppingCart, Plus, Edit2, Trash2, Check } from 'lucide-react';
-import { addDoc, updateDoc, deleteDoc, doc, collection } from 'firebase/firestore';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import { db } from '@/infrastructure/firebaseApp';
+import { useRepositories } from '@/app/providers/RepositoryContext';
 import { isStaple } from '@/features/cart/services/staples';
 import type { CartItem } from '@/shared/domain/types';
 
@@ -79,6 +78,7 @@ type Props = {
 };
 
 export function CartView({ cart }: Props) {
+  const { cart: cartRepo } = useRepositories();
   const [newCartItemName, setNewCartItemName] = useState('');
   const [newCartItemAmount, setNewCartItemAmount] = useState('');
 
@@ -86,7 +86,7 @@ export function CartView({ cart }: Props) {
     e.preventDefault();
     if (!newCartItemName.trim()) return;
 
-    await addDoc(collection(db, 'cart'), {
+    await cartRepo.add({
       name: newCartItemName,
       amount: newCartItemAmount,
       sourceDishes: [],
@@ -100,18 +100,16 @@ export function CartView({ cart }: Props) {
   };
 
   const toggleCartItem = (item: CartItem) =>
-    updateDoc(doc(db, 'cart', item.id), { checked: !item.checked });
+    cartRepo.update(item.id, { checked: !item.checked });
 
-  const deleteCartItem = (id: string) => deleteDoc(doc(db, 'cart', id));
+  const deleteCartItem = (id: string) => cartRepo.delete(id);
 
   const updateCartItemAmount = (id: string, amount: string) =>
-    updateDoc(doc(db, 'cart', id), { amount });
+    cartRepo.update(id, { amount });
 
   const clearCart = async () => {
     if (!confirm('Очистить всю корзину?')) return;
-    for (const item of cart) {
-      await deleteDoc(doc(db, 'cart', item.id));
-    }
+    await cartRepo.deleteAll();
   };
 
   const basicItems = cart.filter((item) => item.isBasic);

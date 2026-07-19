@@ -28,8 +28,7 @@ import {
 import { motion, AnimatePresence } from 'motion/react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import { collection, addDoc, updateDoc, deleteDoc, doc } from 'firebase/firestore';
-import { db } from '@/infrastructure/firebaseApp';
+import { useRepositories } from '@/app/providers/RepositoryContext';
 import { aiClient } from '@/services/ai/aiClient';
 import { format } from 'date-fns';
 import type { Recipe, UserProfile, Program, RecipeView, Subfolder } from '@/shared/domain/types';
@@ -220,6 +219,8 @@ export function RecipesView({
   isScanning,
   onIsScanningChange: setIsScanning,
 }: RecipesViewProps) {
+  const { recipes: recipesRepo, programs: programsRepo, planner: plannerRepo } = useRepositories();
+
   // ── View state ──────────────────────────────────────────────────────────────
   const [recipeView, setRecipeView] = useState<RecipeView>('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -285,14 +286,12 @@ export function RecipesView({
     if (!program) return;
 
     if (subfolderId === 'main') {
-      await updateDoc(doc(db, 'programs', programId), {
-        recipeIds: [...program.recipeIds, recipeId],
-      });
+      await programsRepo.update(programId, { recipeIds: [...program.recipeIds, recipeId] });
     } else {
       const newSubfolders = (program.subfolders ?? []).map((sf) =>
         sf.id === subfolderId ? { ...sf, recipeIds: [...sf.recipeIds, recipeId] } : sf,
       );
-      await updateDoc(doc(db, 'programs', programId), { subfolders: newSubfolders });
+      await programsRepo.update(programId, { subfolders: newSubfolders });
     }
     onRecipeTargetCleared();
   };
@@ -381,7 +380,7 @@ export function RecipesView({
     const recipe = recipes.find((r) => r.id === id);
     if (!recipe) return;
     try {
-      await updateDoc(doc(db, 'recipes', id), { isFavorite: !recipe.isFavorite });
+      await recipesRepo.update(id, { isFavorite: !recipe.isFavorite });
       if (selectedRecipe?.id === id) {
         setSelectedRecipe({ ...selectedRecipe, isFavorite: !selectedRecipe.isFavorite });
       }
@@ -429,7 +428,7 @@ export function RecipesView({
       title: formData.title,
       author: formData.author,
       sourceUrl: formData.sourceUrl,
-      image: imageUrl,
+      image: imageUrl ?? undefined,
       time: formData.time || '30 мин',
       servings: formData.servings,
       categories: formData.categories,
@@ -456,14 +455,14 @@ export function RecipesView({
 
     try {
       if (editingId) {
-        await updateDoc(doc(db, 'recipes', editingId), recipeData);
+        await recipesRepo.update(editingId, recipeData);
         if (selectedRecipe?.id === editingId) {
           setSelectedRecipe({ id: editingId, ...recipeData } as Recipe);
         }
       } else {
-        const docRef = await addDoc(collection(db, 'recipes'), recipeData);
+        const id = await recipesRepo.add(recipeData);
         if (recipeTarget) {
-          await addRecipeToTarget(docRef.id);
+          await addRecipeToTarget(id);
         }
       }
 
@@ -530,9 +529,9 @@ export function RecipesView({
           isFavorite: false,
           createdAt: new Date().toISOString(),
         };
-        const docRef = await addDoc(collection(db, 'recipes'), recipeToSave);
+        const id = await recipesRepo.add(recipeToSave);
         if (recipeTarget) {
-          await addRecipeToTarget(docRef.id);
+          await addRecipeToTarget(id);
         }
         setIsAddingManual(false);
         alert('Рецепт успешно распознан и сохранен!');
@@ -573,7 +572,7 @@ export function RecipesView({
       const r = result.recipe;
 
       const imageToStore =
-        r.dishImage && r.dishImage.length <= 800_000 ? r.dishImage : null;
+        r.dishImage && r.dishImage.length <= 800_000 ? r.dishImage : undefined;
       const recipeData = {
         title: r.title,
         author: r.author ?? '',
@@ -589,9 +588,9 @@ export function RecipesView({
         createdAt: new Date().toISOString(),
       };
 
-      const docRef = await addDoc(collection(db, 'recipes'), recipeData);
+      const id = await recipesRepo.add(recipeData);
       if (recipeTarget) {
-        await addRecipeToTarget(docRef.id);
+        await addRecipeToTarget(id);
       }
 
       setIsAddingLink(false);
@@ -625,12 +624,7 @@ export function RecipesView({
     }
 
     try {
-      await addDoc(collection(db, 'planner'), {
-        date,
-        mealType,
-        type: 'recipe',
-        recipeId,
-      });
+      await plannerRepo.add({ date, mealType, type: 'recipe', recipeId });
       setIsPlanning(false);
       alert('Добавлено в календарь');
     } catch (error) {
@@ -1427,7 +1421,7 @@ export function RecipesView({
                   onClick={async () => {
                     if (selectedRecipe) {
                       try {
-                        await deleteDoc(doc(db, 'recipes', selectedRecipe.id));
+                        await recipesRepo.delete(selectedRecipe.id);
                         setSelectedRecipe(null);
                         setIsDeleteConfirmOpen(false);
                       } catch (error) {
@@ -1627,10 +1621,10 @@ export function RecipesView({
                               // Firestore limit ~1MB per doc; base64 images can exceed it.
                               const imageToStore =
                                 dishImage && dishImage.length <= 800_000 ? dishImage : null;
-                              const docRef = await addDoc(collection(db, 'recipes'), {
+                              const id = await recipesRepo.add({
                                 title: r.title,
                                 author: r.author ?? '',
-                                image: imageToStore,
+                                image: imageToStore ?? undefined,
                                 time: r.time,
                                 servings: r.servings,
                                 categories: r.categories,
@@ -1642,7 +1636,7 @@ export function RecipesView({
                               });
 
                               if (recipeTarget) {
-                                await addRecipeToTarget(docRef.id);
+                                await addRecipeToTarget(id);
                               }
                             }
 
@@ -2223,9 +2217,7 @@ export function RecipesView({
                             reader.onloadend = async () => {
                               const base64 = reader.result as string;
                               try {
-                                await updateDoc(doc(db, 'recipes', selectedRecipe.id), {
-                                  image: base64,
-                                });
+                                await recipesRepo.update(selectedRecipe.id, { image: base64 });
                                 setSelectedRecipe({ ...selectedRecipe, image: base64 });
                                 setShowSaveSuccess(true);
                                 setTimeout(() => setShowSaveSuccess(false), 3000);
@@ -2331,9 +2323,7 @@ export function RecipesView({
                                         )
                                       : [...program.recipeIds, selectedRecipe.id];
                                     try {
-                                      await updateDoc(doc(db, 'programs', program.id), {
-                                        recipeIds: newRecipeIds,
-                                      });
+                                      await programsRepo.update(program.id, { recipeIds: newRecipeIds });
                                     } catch (err) {
                                       console.error('Error updating program:', err);
                                     }

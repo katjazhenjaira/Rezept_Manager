@@ -11,6 +11,8 @@ export class FakeRecipesRepository implements RecipesRepository {
     this.listeners.forEach(cb => cb(snapshot));
   }
 
+  get listenerCount(): number { return this.listeners.size; }
+
   subscribeAll(callback: (recipes: Recipe[]) => void): () => void {
     this.listeners.add(callback);
     callback([...this.items]);
