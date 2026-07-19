@@ -7,15 +7,20 @@ import { FirestoreUserProfileRepository } from '@/infrastructure/firestore/Fires
 import { FirestoreNutritionPlanRepository } from '@/infrastructure/firestore/FirestoreNutritionPlanRepository';
 import { RepositoryContext, type Repositories } from './RepositoryContext';
 
-export function RepositoryProvider({ children }: { children: ReactNode }) {
+type Props = {
+  uid: string;
+  children: ReactNode;
+};
+
+export function RepositoryProvider({ uid, children }: Props) {
   const repositories = useMemo<Repositories>(() => ({
-    recipes: new FirestoreRecipesRepository(),
-    planner: new FirestorePlannerRepository(),
-    cart: new FirestoreCartRepository(),
-    programs: new FirestoreProgramsRepository(),
-    userProfile: new FirestoreUserProfileRepository(),
-    nutritionPlan: new FirestoreNutritionPlanRepository(),
-  }), []);
+    recipes: new FirestoreRecipesRepository(uid),
+    planner: new FirestorePlannerRepository(uid),
+    cart: new FirestoreCartRepository(uid),
+    programs: new FirestoreProgramsRepository(uid),
+    userProfile: new FirestoreUserProfileRepository(uid),
+    nutritionPlan: new FirestoreNutritionPlanRepository(uid),
+  }), [uid]);
 
   return (
     <RepositoryContext.Provider value={repositories}>
