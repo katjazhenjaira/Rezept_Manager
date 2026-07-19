@@ -190,6 +190,7 @@
 
 **[DEAD-1]** `src/infrastructure/LocalStorageNutritionPlanRepository.ts` (весь файл)
 > Не используется нигде, кроме собственного теста (`grep` подтверждает). `RepositoryProvider.tsx` подключает только `FirestoreNutritionPlanRepository`. См. DOC-2. Удалить или осознанно подключить как задокументированный optimistic cache.
+> ✅ Исправлено (commit 74b440c, выбор пользователя — удалить): файл и его тест удалены полностью. Firebase/Supabase — единственный источник истины (CLAUDE.md), localStorage допустим только как optimistic cache поверх Firestore-репозитория, а не как его полноценная альтернативная реализация, чем этот класс фактически являлся. Тесты: 119/119 зелёные (было 123 — минус 4 из удалённого файла), `tsc --noEmit` чистый.
 
 **[DEAD-2]** `src/services/ai/contracts.ts:85`
 > `AiErrorResponse` экспортирован, но нигде не импортируется. `aiClient.ts:18-29` игнорирует структурированное тело ошибки от воркера, кидает generic `Error` с сырым текстом. Исправление: парсить как `AiErrorResponse` в `post()` либо удалить неиспользуемый тип.
