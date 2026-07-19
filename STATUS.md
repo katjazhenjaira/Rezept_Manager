@@ -4,10 +4,10 @@
 Phase 3 — миграция на Supabase (не начата); параллельно — проработка отчёта аудита кода
 
 ## Следующий шаг
-Продолжить проработку `docs/audits/2026-07-19-project-audit-report.md` (закрыто 3/60, начиная с CRIT-4 — открытый CORS в worker/src/index.ts). Phase 3 не начата, ждёт после аудита или по решению пользователя.
+Продолжить проработку `docs/audits/2026-07-19-project-audit-report.md` начиная с DOC-1 (закрыто 8/60 — все критические; осталось 52: DOC×15, UNDOC×1, LOGIC×9, DEAD×9, TS×7, CONV×3, PERF×8). Phase 3 не начата, ждёт после аудита или по решению пользователя.
 
 ## Blocker
-2 незапушенных коммита (CRIT-2, CRIT-3) — ждут отдельной команды на push
+Незапушенные коммиты (CRIT-2…CRIT-8 + доп. фикс редиректов/IPv6 для CRIT-5) — ждут отдельной команды на push
 
 ## Обновлено
 2026-07-19
@@ -15,15 +15,18 @@ Phase 3 — миграция на Supabase (не начата); параллел
 ---
 
 ## Итоги последней сессии
-- Полный аудит кода (`project-audit`): 60 находок по 9 категориям → `docs/audits/2026-07-19-project-audit-report.md`
-- Закрыты все 3 safety-critical находки: CRIT-1 (base64-картинки → Firebase Storage через `resolveImageField()`, подтверждено вручную), CRIT-2 (allergy-check дедуп на `recipeAllergens`/`recipeHasAllergens`), CRIT-3 (КБЖУ-суммирование дедуп на `sumMacros`/`remainingMacros`/`resolveActiveTargets`)
-- `ROADMAP.md`: разделы «Технический долг» (ссылка на отчёт) и «Баги» (импорт рецепта по ссылке не работает, не диагностирован)
-- `CLAUDE.md`: правило проработки отчётов аудита — по одной находке, коммит + отметка в отчёте на каждую, roadmap-пункт снимается только после полного закрытия отчёта
+- Закрыты все 8 критических находок аудита (`docs/audits/2026-07-19-project-audit-report.md`):
+  - CRIT-4: CORS worker'а ограничен `rezept-manager.flowgence.de` + `localhost:5173`
+  - CRIT-5: SSRF в `importFromUrl.ts` — новый `validateExternalUrl()`/`safeFetch()` в `worker/src/helpers/validateExternalUrl.ts` (блокирует private/link-local хосты, включая IPv4-mapped IPv6; ревалидирует каждый редирект-хоп, до 5 хопов) — фикс дополнен по итогам автоматического security-review коммита
+  - CRIT-6: серверная валидация `Array.isArray(allergies)`/`Array.isArray(userRecipes)` в `fillRemaining.ts`
+  - CRIT-7: `fillRemaining.ts` теперь требует ровно 3 варианта от Gemini (`data.options.length === 3`), иначе 502 с логированием
+  - CRIT-8: `err.message` больше не уходит клиенту — ни из глобального `onError` в `index.ts`, ни из catch-блоков `fillRemaining`/`importFromPdf`/`importFromPhoto`/`importFromUrl`
+- Каждая находка — отдельный коммит с указанием ID, отчёт обновлён `✅ Исправлено (commit ...)` после каждой (следуя правилу из `CLAUDE.md`)
 
 ## Ключевые решения, влияющие на следующий шаг
-- Проработка аудита идёт по одной находке за раз с отдельным коммитом на каждую — не пытаться закрывать пачками
-- CRIT-4…8 (осталось 5 критических) — все в `worker/src/`: открытый CORS, SSRF в `importFromUrl.ts`, отсутствие серверной валидации в `fillRemaining.ts`, утечка деталей ошибок клиенту
-- Найден недокументированный баг вне исходного отчёта: `PlannerView` не использует `activeNutritionPlan` для подсветки превышения лимита (constraint №3) — стоит завести отдельной находкой перед фиксом
+- Проработка аудита идёт по одной находке за раз с отдельным коммитом на каждую — правило подтвердило себя, продолжать так же для оставшихся 52
+- Автоматический security-review коммитов (background hook) может находить пробелы в только что закоммиченном security-фиксе (редиректы, IPv4-mapped IPv6 в CRIT-5) — реагировать сразу отдельным коммитом, не откладывать
+- Пользователь осознанно остановился после закрытия критических находок, не начиная не-critical часть (DOC/LOGIC/DEAD/TS/CONV/PERF) — следующая сессия начинает с DOC-1
 - Repository pattern уже реализован — для Supabase нужны только новые реализации интерфейсов из `src/services/`
 - Feature flag `VITE_BACKEND=firebase|supabase` переключает бэкенд в `src/infrastructure/createRepositories.ts`
 
