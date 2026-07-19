@@ -99,6 +99,7 @@
 
 **[DOC-6]** `Technical_Project_Documentation.md:118` vs `src/services/NutritionPlanRepository.ts:3-6`
 > Документация: `subscribe, save`. Реальность: `get(): Promise<ActiveNutritionPlan | null>` / `set(plan): Promise<void>`. Похоже на copy-paste из строки `UserProfileRepository` выше.
+> ✅ Исправлено: таблица «Слой сервисов» обновлена на фактическую сигнатуру `get()`/`set(plan)`.
 
 **[DOC-7]** `docs/roadmap-archive/phase-1.md:26` vs `firestore.rules:55-58`
 > Архивная запись описывает перенос `activeNutritionPlan` в `settings/plan`, но реальная коллекция — `nutritionPlans/{uid}`, а путь `settings/*` в rules явно `deny`-ится (устаревшие данные).

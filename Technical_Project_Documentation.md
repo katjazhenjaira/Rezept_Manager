@@ -120,7 +120,7 @@ StrictMode
 | `CartRepository.ts` | Интерфейс: subscribe, add, update, delete, deleteAll |
 | `ProgramsRepository.ts` | Интерфейс: subscribeAll, add, update, delete, getById |
 | `UserProfileRepository.ts` | Интерфейс: subscribe, save |
-| `NutritionPlanRepository.ts` | Интерфейс: subscribe, save |
+| `NutritionPlanRepository.ts` | Интерфейс: get(): Promise\<ActiveNutritionPlan \| null\>, set(plan) |
 | `ai/contracts.ts` | DTO для 6 AI-маршрутов (Request/Response пары) |
 | `ai/aiClient.ts` | Типизированный POST-клиент для Cloudflare Worker |
 
