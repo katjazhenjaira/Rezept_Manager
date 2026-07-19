@@ -7,7 +7,7 @@
 ## Текущий статус
 
 - **Активная фаза:** Phase 2 — Firebase Auth + Security Rules
-- **Следующий шаг:** Повторный security-review (`security-review` skill) → Phase 3 (Supabase) или Google OAuth (Phase 2b)
+- **Следующий шаг:** Google OAuth (`signInWithPopup` + `GoogleAuthProvider`) — Phase 2b, или начать Phase 3 (Supabase)
 - **Обновлено:** 2026-07-19
 - **Blocker:** нет
 
@@ -192,7 +192,7 @@
 - [x] `firestore.rules` — `request.auth.uid == resource.data.userId`
 - [x] Миграционный скрипт: `scripts/migrate-assign-user.ts` — все существующие документы получают `userId = <твой uid>`
 - [x] Тесты: `AuthProvider.test.tsx`, `LoginScreen.test.tsx`, `SignupScreen.test.tsx`, `FakeAuthProvider.tsx`
-- [ ] Повторный security-review
+- [x] Повторный security-review — найдена и исправлена уязвимость userId-overwrite в `firestore.rules`
 - [ ] **Google OAuth** (`signInWithPopup` + `GoogleAuthProvider`) — Phase 2b, после основного Auth
 
 **Критерий готовности:**
@@ -283,6 +283,7 @@
 - **2026-04-27** — Phase 1 Step 3a завершена: провайдеры и Shell. `RepositoryContext/Provider` — инъекция 6 Firestore-реализаций. `DataContext/Provider` — реактивные подписки на 4 коллекции. `UserProfileContext/Provider` — userProfile + activeNutritionPlan (два отдельных хука из одного контекста). `Shell` и `TabBar` (извлечён из App.tsx). `activeNutritionPlan` мигрирован из localStorage в Firestore `settings/plan` (выбран `settings/plan`, а не `settings/profile`, чтобы не смешивать два домена в одном документе). App.tsx сохраняет свои собственные `onSnapshot`-подписки до Step 4 — двойные подписки это ожидаемое временное состояние. 97 тестов, 0 TS-ошибок. @testing-library/react добавлен как dev dependency.
 - **2026-04-27** — Phase 1b завершена: сервисный слой с Repository pattern. 6 интерфейсов в `src/services/`, 5 Firestore-реализаций в `src/infrastructure/firestore/`, 6 fake in-memory реализаций с contract tests в `src/infrastructure/testing/`, `LocalStorageNutritionPlanRepository.ts`. Конвертер `timestampToISO` с `TimestampLike` структурным типом. `jsdom` добавлен как dev dependency для vitest jsdom-environment тестов. 86 тестов, 0 TS-ошибок. Ключевые дизайн-решения: defensive copy в emit(), emit only on actual mutation (before/after length guard), `value == null` guard вместо `!value` для timestampToISO, `deleteAll` через fresh getDocs (не кеш).
 - **2026-04-26** — Phase 1a завершена: доменный слой (types, macros, allergies, staples) вынесен из монолита в `src/shared/domain/` и `src/features/cart/services/`. Vitest 4.x с v8 coverage настроен, 32 теста, 100% покрытие всех новых файлов. App.tsx не тронут — дублирование типов временное, устраняется в Phase 1b. В процессе обнаружено: `BASIC_KEYWORDS` встречается в App.tsx **3 раза** (строки 593, 1946, 3481), а не 2 как планировалось — Phase 1b должна заменить все три вхождения. `vitest.config.ts` получил `exclude: ['**/.worktrees/**']` для корректного поведения при работе с git worktrees.
+- **2026-07-19** — Security review Phase 2: найдена HIGH-severity уязвимость в `firestore.rules` — правило `update` не проверяло иммутабельность поля `userId`, позволяя пользователю A переназначить свой документ на uid жертвы B (data poisoning, обход allergy check). Исправлено: `update` выделен в отдельное правило с предикатом `request.resource.data.userId == resource.data.userId` для всех 4 коллекций. Commit `aecde4a`.
 - **2026-07-19** — Firebase-проект сменён с `mein-app-25e08` (партнёрский аккаунт, доступ утерян) на `rezept-manager-62bd0` (личный аккаунт Evgeny). `.env` обновлён, переменные обновлены в Cloudflare Pages, задеплоены Firestore Security Rules, Application_description.md дополнен разделом Auth.
 - **2026-04-19** — Phase 0b слайс 2: роут 2 из 6 (`calculate-kbzhu`) перенесён на воркер. Модель и схема ответа сохранены 1-в-1 (`gemini-3-flash-preview`, responseSchema с calories/proteins/fats/carbs). `CalculateKbzhuRequest` упрощён до `{ ingredients: string }` — прежний черновик типа `{ title, ingredients: string[], servings }` не соответствовал реальному call-site (форма передаёт сырую строку). Проверено курлом и в браузере (200 OK, КБЖУ заполнилось корректно). Также добавлен `server.watch.ignored` в `vite.config.ts` для `.claude/`, `.playwright-mcp/`, `worker/` — без этого Claude Code писал `settings.local.json` каждые несколько секунд, и Vite reload-ил страницу, ломая browser-тесты модалок.
 
