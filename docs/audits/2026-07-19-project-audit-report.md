@@ -179,6 +179,7 @@
 
 **[LOGIC-8]** worker-маршруты в целом
 > Идентичные сбои (ошибка Gemini) дают разные коды/формат ответа: `calculateKbzhu.ts`/`generateImage.ts` падают в общий 500-обработчик без локального try/catch, остальные 4 маршрута ловят локально и возвращают 502 с `Gemini error: ...`. Исправление: унифицировать обработку ошибок по всем 6 маршрутам.
+> ✅ Исправлено (commit eaa08c0): вызовы Gemini в `calculateKbzhu.ts` и `generateImage.ts` обёрнуты в тот же try/catch → `console.error` + `c.json({ error: ... }, 502)`, что уже использовался в `importFromUrl.ts`/`importFromPdf.ts`/`importFromPhoto.ts`/`fillRemaining.ts`. Теперь все 6 маршрутов при сбое Gemini единообразно возвращают 502 с описательным сообщением вместо смеси 500 (`app.onError`) и 502. Бизнес-логика не менялась. `worker/tsc --noEmit` чистый, фронтенд-тесты 123/123 зелёные.
 
 **[LOGIC-9]** *(информационная, низкий приоритет)* Ни один репозиторий (`PlannerRepository.add()`, `FirestoreRecipesRepository.add()/update()` и т.д.) не выполняет проверку аллергенов при записи — это архитектурно нормально (проверка живёт в UI-слое), но означает отсутствие defense-in-depth для safety-critical constraint №1: если какой-то будущий вызов пропустит UI-проверку, на уровне хранения её никто не перехватит.
 
