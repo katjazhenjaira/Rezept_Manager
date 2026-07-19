@@ -26,7 +26,7 @@ import {
 } from '@/shared/domain/macros';
 import { DEFAULT_PROFILE } from '@/shared/domain/defaults';
 import type { Recipe } from '@/shared/domain/types';
-import { AISuggestModal, type SuggestionResult } from './AISuggestModal';
+import type { FillRemainingResponse } from '@/services/ai/contracts';
 import { ProgramSelectionModal } from './ProgramSelectionModal';
 
 function cn(...inputs: ClassValue[]) {
@@ -54,7 +54,7 @@ export function TrackerView({
   const { planner: plannerRepo } = useRepositories();
 
   const [isSuggesting, setIsSuggesting] = useState(false);
-  const [suggestion, setSuggestion] = useState<SuggestionResult | null>(null);
+  const [suggestion, setSuggestion] = useState<FillRemainingResponse | null>(null);
   const [selectedSuggestionIds, setSelectedSuggestionIds] = useState<string[]>([]);
   const [isProgramSelectionOpen, setIsProgramSelectionOpen] = useState(false);
 
@@ -413,24 +413,6 @@ export function TrackerView({
           </AnimatePresence>
         </div>
       </div>
-
-      <AISuggestModal
-        isOpen={isSuggesting}
-        onClose={() => {
-          setIsSuggesting(false);
-          setSuggestion(null);
-        }}
-        suggestion={suggestion}
-        isSuggesting={isSuggesting}
-        selectedIds={selectedSuggestionIds}
-        onToggleId={(id) =>
-          setSelectedSuggestionIds((prev) =>
-            prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
-          )
-        }
-        onAddSelected={handleAddSelectedSuggestions}
-        onRequestAlternative={() => void handleSuggest(true)}
-      />
 
       <ProgramSelectionModal
         isOpen={isProgramSelectionOpen}
