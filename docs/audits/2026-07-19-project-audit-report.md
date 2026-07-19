@@ -59,6 +59,7 @@
 > **Проблема:** Валидируется только `remaining.calories`. `allergies.length` и `userRecipes.map(...)` используются без проверки на `undefined` — упадёт с `TypeError`, если поля отсутствуют в теле запроса.
 > **Почему важно:** Constraint №5 требует, чтобы allergies и recipeLibrary ВСЕГДА присутствовали в fill-remaining запросе — сейчас это гарантируется только доверием к клиенту, на сервере защиты нет.
 > **Исправление:** Добавить `Array.isArray(allergies)` и `Array.isArray(userRecipes)` рядом с существующей проверкой, возвращать 400 при нарушении.
+> ✅ Исправлено (commit f2786e9): `worker/src/routes/fillRemaining.ts` — добавлены `Array.isArray(allergies)` и `Array.isArray(userRecipes)` в общую проверку входа, 400 при нарушении.
 
 **[CRIT-7]** `worker/src/routes/fillRemaining.ts:71-81`
 > **Проблема:** `data.options ?? []` возвращается клиенту без проверки, что Gemini вернул именно 3 варианта — только промпт (строка 34) просит об этом, не гарантия.
