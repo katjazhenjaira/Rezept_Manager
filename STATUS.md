@@ -1,13 +1,13 @@
 # Recipe Manager — Status
 
 ## Активная фаза
-Phase 3 — миграция на Supabase (не начата)
+Phase 3 — миграция на Supabase (не начата); параллельно — проработка отчёта аудита кода
 
 ## Следующий шаг
-Создать Supabase-проект, настроить Auth (email + Google OAuth)
+Продолжить проработку `docs/audits/2026-07-19-project-audit-report.md` (закрыто 3/60, начиная с CRIT-4 — открытый CORS в worker/src/index.ts). Phase 3 не начата, ждёт после аудита или по решению пользователя.
 
 ## Blocker
-нет
+2 незапушенных коммита (CRIT-2, CRIT-3) — ждут отдельной команды на push
 
 ## Обновлено
 2026-07-19
@@ -15,17 +15,17 @@ Phase 3 — миграция на Supabase (не начата)
 ---
 
 ## Итоги последней сессии
-- Phase 2 завершена: Auth email/password + Firestore Security Rules задеплоены, security-review пройден
-- Исправлена HIGH-уязвимость: userId-overwrite в firestore.rules (userId immutable при update, commit aecde4a)
-- Firebase-проект мигрирован с партнёрского аккаунта на личный (rezept-manager-62bd0, videnejev@gmail.com)
-- Phase 1 DoD закрыт: прямые firebase/firestore импорты удалены из всех feature-файлов → useRepositories()
-- Реструктурирована документация: STATUS.md, docs/roadmap-archive/, Technical_Project_Documentation.md
+- Полный аудит кода (`project-audit`): 60 находок по 9 категориям → `docs/audits/2026-07-19-project-audit-report.md`
+- Закрыты все 3 safety-critical находки: CRIT-1 (base64-картинки → Firebase Storage через `resolveImageField()`, подтверждено вручную), CRIT-2 (allergy-check дедуп на `recipeAllergens`/`recipeHasAllergens`), CRIT-3 (КБЖУ-суммирование дедуп на `sumMacros`/`remainingMacros`/`resolveActiveTargets`)
+- `ROADMAP.md`: разделы «Технический долг» (ссылка на отчёт) и «Баги» (импорт рецепта по ссылке не работает, не диагностирован)
+- `CLAUDE.md`: правило проработки отчётов аудита — по одной находке, коммит + отметка в отчёте на каждую, roadmap-пункт снимается только после полного закрытия отчёта
 
 ## Ключевые решения, влияющие на следующий шаг
+- Проработка аудита идёт по одной находке за раз с отдельным коммитом на каждую — не пытаться закрывать пачками
+- CRIT-4…8 (осталось 5 критических) — все в `worker/src/`: открытый CORS, SSRF в `importFromUrl.ts`, отсутствие серверной валидации в `fillRemaining.ts`, утечка деталей ошибок клиенту
+- Найден недокументированный баг вне исходного отчёта: `PlannerView` не использует `activeNutritionPlan` для подсветки превышения лимита (constraint №3) — стоит завести отдельной находкой перед фиксом
 - Repository pattern уже реализован — для Supabase нужны только новые реализации интерфейсов из `src/services/`
 - Feature flag `VITE_BACKEND=firebase|supabase` переключает бэкенд в `src/infrastructure/createRepositories.ts`
-- Миграция данных: dry-run на staging → валидация → prod (порядок: users → profiles → recipes → programs → entries → cart)
-- Auth migration: экспорт scrypt-хешей из Firebase, импорт в Supabase
 
 ---
 

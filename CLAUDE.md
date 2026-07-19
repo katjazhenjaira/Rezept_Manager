@@ -76,7 +76,7 @@
 
 Ограничения, выявленные в ходе разработки — учитывать автоматически:
 
-- **Firestore: не хранить base64-картинки.** Лимит документа — ~1 МБ. AI-generated images (~700 КБ+) превышают его. Правильный путь — Cloudflare R2 / Firebase Storage, в Firestore писать только URL. Фикс запланирован в Phase 1.
+- **Firestore: не хранить base64-картинки.** Лимит документа — ~1 МБ. Решено (2026-07-19, CRIT-1): `FirestoreRecipesRepository`/`FirestoreProgramsRepository` прогоняют `image`-поля через `resolveImageField()` (`src/infrastructure/firebaseStorage.ts`) — `data:` URI автоматически грузится в Firebase Storage, в Firestore пишется только URL. Новый код, пишущий `image`/`dishImage` напрямую в Firestore в обход этих репозиториев, нарушит constraint. `storage.rules` деплоится вручную через Firebase Console (CLI не настроен, как и для `firestore.rules`).
 - **Не хранить `GEMINI_API_KEY` на клиенте.** Все Gemini-вызовы идут через Cloudflare Worker (`/api/ai/*`). Прямой `new GoogleGenAI(process.env.GEMINI_API_KEY)` в коде фронтенда — ошибка.
 - **Cloudflare Worker: Canvas API недоступен.** Операции с PDF-изображениями (`extractImageFromPDF`) должны выполняться на клиенте через `pdfjs-dist`.
 
