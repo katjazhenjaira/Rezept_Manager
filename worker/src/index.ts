@@ -11,7 +11,12 @@ import type { Env } from "./types";
 
 const app = new Hono<{ Bindings: Env }>();
 
-app.use("*", cors());
+app.use(
+  "*",
+  cors({
+    origin: ["https://rezept-manager.flowgence.de", "http://localhost:5173"],
+  }),
+);
 app.use("/api/ai/*", rateLimit);
 
 app.get("/", (c) => c.text("Rezept Manager AI proxy"));
