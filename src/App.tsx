@@ -5,11 +5,9 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { updateDoc, doc, getDoc } from "firebase/firestore";
-import { db } from "./infrastructure/firebaseApp";
-
 import { useNutritionPlan, useUserProfile } from '@/app/providers/UserProfileContext';
 import { useData } from '@/app/providers/DataContext';
+import { useRepositories } from '@/app/providers/RepositoryContext';
 import { TabBar } from '@/app/layout/TabBar';
 import { AppHeader } from '@/app/layout/AppHeader';
 import { RecipeSelectionBar } from '@/app/layout/RecipeSelectionBar';
@@ -57,6 +55,7 @@ export default function App() {
   const { userProfile: contextProfile } = useUserProfile();
   const userProfile = contextProfile ?? DEFAULT_PROFILE;
   const { recipes, cartItems, programs } = useData();
+  const { programs: programsRepo } = useRepositories();
 
   const handleStartRecipeSelection = (programId: string, subfolderId: string | 'main') => {
     setSelectionTarget({ programId, subfolderId });
@@ -75,7 +74,7 @@ export default function App() {
     try {
       if (subfolderId === 'main') {
         const newRecipeIds = Array.from(new Set([...program.recipeIds, ...selectedRecipeIds]));
-        await updateDoc(doc(db, "programs", programId), { recipeIds: newRecipeIds });
+        await programsRepo.update(programId, { recipeIds: newRecipeIds });
       } else {
         const newSubfolders = program.subfolders?.map(sf => {
           if (sf.id === subfolderId) {
@@ -83,7 +82,7 @@ export default function App() {
           }
           return sf;
         });
-        await updateDoc(doc(db, "programs", programId), { subfolders: newSubfolders });
+        await programsRepo.update(programId, { subfolders: newSubfolders });
       }
 
       setIsRecipeSelectionMode(false);
@@ -101,11 +100,9 @@ export default function App() {
     const programId = urlParams.get('programId');
     if (programId) {
       const handleSharedProgram = async () => {
-        // Fetch program to verify it exists
-        const programDoc = await getDoc(doc(db, "programs", programId));
-        if (programDoc.exists()) {
-          const programData = programDoc.data() as Program;
-          if (confirm(`Добавить программу "${programData.name}"?`)) {
+        const program = await programsRepo.getById(programId);
+        if (program) {
+          if (confirm(`Добавить программу "${program.name}"?`)) {
             setOpenProgramId(programId);
             setActiveTab('programs');
             window.history.replaceState({}, document.title, window.location.pathname);
