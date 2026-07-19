@@ -6,6 +6,7 @@ import type {
   ImportedRecipe,
 } from "../../../src/services/ai/contracts";
 import { generateImageDataUri } from "../helpers/generateImageDataUri";
+import { validateExternalUrl } from "../helpers/validateExternalUrl";
 import type { Env } from "../types";
 
 export async function importFromUrl(c: Context<{ Bindings: Env }>) {
@@ -14,6 +15,9 @@ export async function importFromUrl(c: Context<{ Bindings: Env }>) {
 
   if (typeof url !== "string" || !url.trim() || !Array.isArray(availableCategories)) {
     return c.json({ error: "Expected { url: string, availableCategories: string[] }" }, 400);
+  }
+  if (!validateExternalUrl(url)) {
+    return c.json({ error: "URL must be http(s) and point to a public host" }, 400);
   }
 
   const ai = new GoogleGenAI({ apiKey: c.env.GEMINI_API_KEY });
@@ -110,6 +114,7 @@ INSTRUCTIONS:
   if (data.imageUrl) imageUrlCandidates.push(data.imageUrl);
 
   for (const candidate of imageUrlCandidates) {
+    if (!validateExternalUrl(candidate)) continue;
     try {
       const imgResp = await fetch(candidate, { headers: { Referer: url } });
       if (!imgResp.ok) continue;
