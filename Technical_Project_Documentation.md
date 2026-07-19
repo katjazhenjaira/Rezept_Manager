@@ -139,7 +139,7 @@ StrictMode
 | `firestore/converters.ts` | Timestamp ↔ ISO string |
 | `testing/Fake*.ts` | 6 in-memory реализаций для тестов |
 | `testing/FakeAuthProvider.tsx` | AuthProvider заглушка для тестов |
-| `LocalStorageNutritionPlanRepository.ts` | localStorage fallback |
+| `LocalStorageNutritionPlanRepository.ts` | Не подключён нигде (`RepositoryProvider` использует только `FirestoreNutritionPlanRepository`) — мёртвый код, см. DEAD-1 в отчёте аудита |
 
 ### `src/features/` — 6 feature-модулей
 | Папка | Ключевые файлы | Роль |

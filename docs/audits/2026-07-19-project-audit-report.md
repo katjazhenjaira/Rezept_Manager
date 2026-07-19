@@ -83,6 +83,7 @@
 
 **[DOC-2]** `Technical_Project_Documentation.md:141`
 > `LocalStorageNutritionPlanRepository.ts` описан как активно используемый «localStorage fallback», но в реальности нигде не подключён (см. DEAD-1) — мёртвый код, а не рабочий fallback.
+> ✅ Исправлено: описание в таблице «Структура файлов» заменено на факт («не подключён нигде... мёртвый код, см. DEAD-1»). Само удаление/подключение файла — отдельная находка DEAD-1, не тронуто здесь.
 
 **[DOC-3]** `Technical_Project_Documentation.md:113` vs `src/services/RecipesRepository.ts:3-9`
 > Документация: `subscribe, add, update, delete, deleteAll`. Реально: `subscribeAll, add, update, delete, getById`. `deleteAll` не существует, `getById` не задокументирован.
