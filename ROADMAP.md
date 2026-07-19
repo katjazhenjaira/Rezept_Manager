@@ -166,21 +166,27 @@
 
 **Статус:** [ ] не начата
 
-- [ ] Включить Firebase Auth (email/password + Google OAuth)
-- [ ] `src/features/auth/LoginScreen.tsx`, `SignupScreen.tsx`
-- [ ] `src/infrastructure/firebaseAuth.ts`, `useAuth()` hook
+- [ ] `src/infrastructure/firebaseAuth.ts` — `getAuth(app)` singleton
+- [ ] `src/features/auth/AuthContext.ts`, `AuthProvider.tsx`, `useAuth.ts`
+- [ ] `src/features/auth/LandingPage.tsx` — маркетинговый экран для гостей
+- [ ] `src/features/auth/LoginScreen.tsx`, `SignupScreen.tsx` — email/password
+- [ ] `AuthProvider` оборачивает `RepositoryProvider` в `main.tsx`; `RepositoryProvider` принимает `uid: string`
+- [ ] Обновить все `Firestore*.ts` (6 файлов): конструктор принимает `uid`, фильтр `where('userId', '==', uid)` в reads, `userId` в writes
+- [ ] `userId?: string` в типах `Recipe`, `PlannerEntry`, `CartItem`, `Program`, `UserProfile`
+- [ ] Кнопка «Выйти» в `SettingsModal` → `signOut(auth)`
+- [ ] `firestore.rules` — `request.auth.uid == resource.data.userId`
 - [ ] Миграционный скрипт: `scripts/migrate-assign-user.ts` — все существующие документы получают `userId = <твой uid>`
-- [ ] Добавить `userId` в типы и во все writes
-- [ ] Обновить все `*.firestore.ts`: фильтр `where('userId', '==', auth.uid())`
-- [ ] `firestore.rules` с `request.auth.uid == resource.data.userId`
-- [ ] Публичные программы: поле `isPublic`, отдельное правило
-- [ ] Logged-out landing + `/login` UX
+- [ ] Тесты: `AuthProvider.test.tsx`, `LoginScreen.test.tsx`, `SignupScreen.test.tsx`, `FakeAuthProvider.tsx`
 - [ ] Повторный security-review
+- [ ] **Google OAuth** (`signInWithPopup` + `GoogleAuthProvider`) — Phase 2b, после основного Auth
 
 **Критерий готовности:**
-- Firebase Rules Playground: неаутентифицированное чтение recipes → denied
-- Новый юзер видит пустое приложение (не чужие данные)
-- `?programId=` публичной программы работает без логина
+- Firebase Rules Playground: неаутентифицированное чтение `recipes` → denied
+- Новый пользователь после регистрации видит пустое приложение (не чужие данные)
+- После logout → LandingPage, все Firestore-подписки закрыты
+- Миграционный скрипт: все документы получили `userId` без ошибок
+- `npm run lint` и `npm test` зелёные
+- Spec: `docs/superpowers/specs/2026-07-19-phase2-firebase-auth-design.md`
 
 ---
 
