@@ -159,7 +159,7 @@
 
 **[LOGIC-3]** `src/features/tracker/AISuggestModal.tsx:74-147` + `TrackerView.tsx:89-124,351-433`
 > Из-за батчинга React `setSuggestion`/`setIsSuggesting(false)` результаты модалки практически недостижимы в обычном потоке — реальный UI выбора вариантов задублирован инлайн в `TrackerView.tsx`. Модалка — мёртвый вес, поддерживается два места с одинаковой логикой.
-> ✅ Исправлено (commit TBD): подтверждено, что модалка технически не может показать результат (isOpen привязан к isSuggesting, который синхронно становится false в том же батче, где приходит suggestion). Спросил пользователя — выбрано удаление мёртвого кода вместо починки. `AISuggestModal.tsx` удалён; в `TrackerView.tsx` тип `SuggestionResult` заменён на существующий `FillRemainingResponse` из `services/ai/contracts.ts`, работающий инлайн-UI сохранён без изменений.
+> ✅ Исправлено (commit 3326f8d): подтверждено, что модалка технически не может показать результат (isOpen привязан к isSuggesting, который синхронно становится false в том же батче, где приходит suggestion). Спросил пользователя — выбрано удаление мёртвого кода вместо починки. `AISuggestModal.tsx` удалён; в `TrackerView.tsx` тип `SuggestionResult` заменён на существующий `FillRemainingResponse` из `services/ai/contracts.ts`, работающий инлайн-UI сохранён без изменений.
 
 **[LOGIC-4]** `src/features/planner/PlannerView.tsx:647`
 > Месячный вид считает калории только по `type: 'recipe'`, entries с `type: 'product'` молча игнорируются — тот же день показывает разные суммы в разных видах планера (день/неделя vs месяц).
