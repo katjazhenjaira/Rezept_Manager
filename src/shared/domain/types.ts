@@ -9,6 +9,7 @@ export type Macros = {
 
 export interface Recipe {
   id: string;
+  userId?: string;
   title: string;
   image?: string;
   sourceUrl?: string;
@@ -67,6 +68,7 @@ export type Subfolder = {
 
 export type Program = {
   id: string;
+  userId?: string;
   name: string;
   description: string;
   creator: string;
@@ -87,6 +89,7 @@ export type Program = {
 
 export type PlannerEntry = {
   id: string;
+  userId?: string;
   date: string;
   mealType: string;
   type: 'recipe' | 'product';
@@ -101,6 +104,7 @@ export type PlannerViewMode = 'calendar' | 'list';
 
 export interface CartItem {
   id: string;
+  userId?: string;
   name: string;
   amount: string;
   sourceDishes: string[];
