@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { timestampToISO, type TimestampLike } from '../converters';
 
 describe('timestampToISO', () => {
@@ -32,5 +32,12 @@ describe('timestampToISO', () => {
 
   it('passes through empty string unchanged', () => {
     expect(timestampToISO('')).toBe('');
+  });
+
+  it('warns when defaulting a missing createdAt', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    timestampToISO(null);
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('missing createdAt'));
+    warn.mockRestore();
   });
 });

@@ -155,6 +155,7 @@
 
 **[LOGIC-2]** `src/infrastructure/firestore/converters.ts:6-7`
 > `timestampToISO(null|undefined)` тихо возвращает `new Date().toISOString()`. Документ с реально отсутствующим `createdAt` (артефакт миграции) молча выпрыгивает в начало списка, как будто только что создан, маскируя проблему данных. Исправление: логировать warning вместо тихого дефолта.
+> ✅ Исправлено (commit TBD): `timestampToISO` логирует `console.warn('timestampToISO: missing createdAt, defaulting to current time')` перед фолбэком на текущее время; поведение (сам фолбэк) не менялось — три вызывающих репозитория (`recipes`/`programs`/`cart`) по-прежнему получают валидную ISO-строку для сортировки. Добавлен тест на факт логирования.
 
 **[LOGIC-3]** `src/features/tracker/AISuggestModal.tsx:74-147` + `TrackerView.tsx:89-124,351-433`
 > Из-за батчинга React `setSuggestion`/`setIsSuggesting(false)` результаты модалки практически недостижимы в обычном потоке — реальный UI выбора вариантов задублирован инлайн в `TrackerView.tsx`. Модалка — мёртвый вес, поддерживается два места с одинаковой логикой.
