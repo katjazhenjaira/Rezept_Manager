@@ -3,11 +3,15 @@ import { db } from '@/infrastructure/firebaseApp';
 import type { NutritionPlanRepository } from '@/services/NutritionPlanRepository';
 import type { ActiveNutritionPlan } from '@/shared/domain/types';
 
-const planRef = () => doc(db, 'settings', 'plan');
-
 export class FirestoreNutritionPlanRepository implements NutritionPlanRepository {
+  constructor(private readonly uid: string) {}
+
+  private get ref() {
+    return doc(db, 'nutritionPlans', this.uid);
+  }
+
   async get(): Promise<ActiveNutritionPlan | null> {
-    const snap = await getDoc(planRef());
+    const snap = await getDoc(this.ref);
     if (!snap.exists()) return null;
     const data = snap.data() as Omit<
       ActiveNutritionPlan,
@@ -25,9 +29,9 @@ export class FirestoreNutritionPlanRepository implements NutritionPlanRepository
 
   async set(plan: ActiveNutritionPlan | null): Promise<void> {
     if (plan === null) {
-      await deleteDoc(planRef());
+      await deleteDoc(this.ref);
     } else {
-      await setDoc(planRef(), plan);
+      await setDoc(this.ref, plan);
     }
   }
 }
