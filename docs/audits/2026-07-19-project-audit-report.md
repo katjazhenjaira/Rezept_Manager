@@ -127,6 +127,7 @@
 
 **[DOC-13]** `Technical_Project_Documentation.md:190` (§5 «Firebase») vs `src/infrastructure/firestore/*.ts`, `firestore.rules`
 > Документация называет коллекции `planner_entries`, `cart_items`. Реальные имена — `planner`, `cart` (подтверждено кодом репозиториев, `firestore.rules` и `scripts/migrate-assign-user.ts`).
+> ✅ Исправлено попутно в рамках CRIT-1 (см. заметку там) — раздел «Firebase» уже указывает верные имена коллекций `recipes`, `planner`, `cart`, `programs`, `userProfiles`, `nutritionPlans` (строка 191).
 
 **[DOC-14]** `CLAUDE.md` («Development conventions») vs репозиторий
 > Указано «Prettier (format on save); ESLint», но нигде в репозитории нет ни конфига ESLint (`.eslintrc*`/`eslint.config*`), ни зависимости `eslint` в `package.json`. Заявленный процесс контроля качества фактически не существует.
