@@ -143,6 +143,7 @@
 **[UNDOC-1]** `scripts/migrate-assign-user.ts`
 > **Проблема:** Скрипт миграции (назначение `userId` на существующие документы + перенос `settings/profile`→`userProfiles`, `settings/plan`→`nutritionPlans`) нигде не упомянут в разделе «Структура файлов» `Technical_Project_Documentation.md`.
 > **Действие:** Добавить раздел `scripts/` в техдокументацию с описанием назначения и переменных окружения (`GOOGLE_APPLICATION_CREDENTIALS`, `MIGRATION_USER_UID`).
+> ✅ Исправлено (commit TBD)
 
 ---
 

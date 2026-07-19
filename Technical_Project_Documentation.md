@@ -181,6 +181,11 @@ StrictMode
 | `src/helpers/generateImageDataUri.ts` | Хелпер генерации data URI через Gemini |
 | `src/types.ts` | Env type: GEMINI_API_KEY (secret), RATE_LIMIT_KV (KV binding) |
 
+### `scripts/` — служебные скрипты (запускаются вручную, вне сборки приложения)
+| Файл | Роль |
+|------|------|
+| `migrate-assign-user.ts` | Одноразовая миграция Firestore: проставляет `userId` во всех документах `recipes`/`planner`/`cart`/`programs`, где поле отсутствует, и переносит singleton-документы `settings/profile` → `userProfiles/{uid}`, `settings/plan` → `nutritionPlans/{uid}`. Нужна была для перехода на uid-scoped данные (multi-user). Переменные окружения: `GOOGLE_APPLICATION_CREDENTIALS` (путь к service account JSON, firebase-admin), `MIGRATION_USER_UID` (uid, на который переносятся данные) |
+
 ---
 
 ## 5. Внешние сервисы
