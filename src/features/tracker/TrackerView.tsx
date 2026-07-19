@@ -19,6 +19,12 @@ import { useRepositories } from '@/app/providers/RepositoryContext';
 import { useData } from '@/app/providers/DataContext';
 import { useNutritionPlan, useUserProfile } from '@/app/providers/UserProfileContext';
 import { aiClient } from '@/services/ai/aiClient';
+import {
+  sumMacros,
+  remainingMacros as computeRemainingMacros,
+  resolveActiveTargets,
+} from '@/shared/domain/macros';
+import { DEFAULT_PROFILE } from '@/shared/domain/defaults';
 import type { Recipe } from '@/shared/domain/types';
 import { AISuggestModal, type SuggestionResult } from './AISuggestModal';
 import { ProgramSelectionModal } from './ProgramSelectionModal';
@@ -56,35 +62,9 @@ export function TrackerView({
   const todayEntries = plannerEntries.filter((e) => e.date === today);
   const checkedEntriesData = todayEntries.filter((e) => checkedEntries.includes(e.id));
 
-  const actualMacros = checkedEntriesData.reduce(
-    (acc, entry) => {
-      const macros =
-        entry.type === 'recipe' ? recipes.find((r) => r.id === entry.recipeId)?.macros : entry.macros;
-      if (macros) {
-        acc.calories += macros.calories;
-        acc.proteins += macros.proteins;
-        acc.fats += macros.fats;
-        acc.carbs += macros.carbs;
-      }
-      return acc;
-    },
-    { calories: 0, proteins: 0, fats: 0, carbs: 0 },
-  );
-
-  const currentTargets = activeNutritionPlan ?? {
-    name: 'По умолчанию (из настроек)',
-    calories: userProfile?.targetCalories ?? 0,
-    proteins: userProfile?.targetProteins ?? 0,
-    fats: userProfile?.targetFats ?? 0,
-    carbs: userProfile?.targetCarbs ?? 0,
-  };
-
-  const remainingMacros = {
-    calories: Math.max(0, currentTargets.calories - actualMacros.calories),
-    proteins: Math.max(0, currentTargets.proteins - actualMacros.proteins),
-    fats: Math.max(0, currentTargets.fats - actualMacros.fats),
-    carbs: Math.max(0, currentTargets.carbs - actualMacros.carbs),
-  };
+  const actualMacros = sumMacros(checkedEntriesData, recipes);
+  const currentTargets = resolveActiveTargets(activeNutritionPlan, userProfile ?? DEFAULT_PROFILE);
+  const remainingMacros = computeRemainingMacros(currentTargets, actualMacros);
 
   const handleSuggest = async (isAlternative = false) => {
     if (remainingMacros.calories < 50 && !isAlternative) {

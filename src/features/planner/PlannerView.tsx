@@ -33,6 +33,7 @@ import {
 import { ru } from 'date-fns/locale';
 import { useData } from '@/app/providers/DataContext';
 import { recipeAllergens } from '@/shared/domain/allergies';
+import { sumMacros } from '@/shared/domain/macros';
 import type {
   Recipe,
   UserProfile,
@@ -148,23 +149,7 @@ export function PlannerView({
 
   const getMacrosForDate = (date: Date) => {
     const entries = getEntriesForDate(date);
-    return entries.reduce((acc, entry) => {
-      if (entry.type === 'recipe' && entry.recipeId) {
-        const recipe = getRecipeById(entry.recipeId);
-        if (recipe) {
-          acc.calories += recipe.macros.calories;
-          acc.proteins += recipe.macros.proteins;
-          acc.fats += recipe.macros.fats;
-          acc.carbs += recipe.macros.carbs;
-        }
-      } else if (entry.type === 'product' && entry.macros) {
-        acc.calories += entry.macros.calories;
-        acc.proteins += entry.macros.proteins;
-        acc.fats += entry.macros.fats;
-        acc.carbs += entry.macros.carbs;
-      }
-      return acc;
-    }, { calories: 0, proteins: 0, fats: 0, carbs: 0 });
+    return sumMacros(entries, recipes);
   };
 
   const selectedDateMacros = getMacrosForDate(selectedPlannerDate);
@@ -242,23 +227,7 @@ export function PlannerView({
         <div className="grid grid-cols-1 gap-2">
           {mealTypes.map(meal => {
             const mealEntries = entries.filter(e => e.mealType === meal);
-            const mealMacros = mealEntries.reduce((acc, entry) => {
-              if (entry.type === 'recipe' && entry.recipeId) {
-                const recipe = getRecipeById(entry.recipeId);
-                if (recipe) {
-                  acc.calories += recipe.macros.calories;
-                  acc.proteins += recipe.macros.proteins;
-                  acc.fats += recipe.macros.fats;
-                  acc.carbs += recipe.macros.carbs;
-                }
-              } else if (entry.type === 'product' && entry.macros) {
-                acc.calories += entry.macros.calories;
-                acc.proteins += entry.macros.proteins;
-                acc.fats += entry.macros.fats;
-                acc.carbs += entry.macros.carbs;
-              }
-              return acc;
-            }, { calories: 0, proteins: 0, fats: 0, carbs: 0 });
+            const mealMacros = sumMacros(mealEntries, recipes);
 
             return (
               <div key={meal} className="bg-white rounded-2xl border border-zinc-100 overflow-hidden shadow-sm hover:shadow-md transition-all group">
@@ -443,23 +412,7 @@ export function PlannerView({
             {days.map(day => {
               const dateStr = format(day, 'yyyy-MM-dd');
               const dayMealEntries = plannerEntries.filter(e => e.date === dateStr && e.mealType === meal);
-              const cellMacros = dayMealEntries.reduce((acc, entry) => {
-                if (entry.type === 'recipe' && entry.recipeId) {
-                  const recipe = getRecipeById(entry.recipeId);
-                  if (recipe) {
-                    acc.calories += recipe.macros.calories;
-                    acc.proteins += recipe.macros.proteins;
-                    acc.fats += recipe.macros.fats;
-                    acc.carbs += recipe.macros.carbs;
-                  }
-                } else if (entry.type === 'product' && entry.macros) {
-                  acc.calories += entry.macros.calories;
-                  acc.proteins += entry.macros.proteins;
-                  acc.fats += entry.macros.fats;
-                  acc.carbs += entry.macros.carbs;
-                }
-                return acc;
-              }, { calories: 0, proteins: 0, fats: 0, carbs: 0 });
+              const cellMacros = sumMacros(dayMealEntries, recipes);
 
               return (
                 <div key={day.toString() + meal} className="p-1.5 border-r border-zinc-100 last:border-r-0 min-h-[100px] group relative flex flex-col gap-1.5">
@@ -577,23 +530,7 @@ export function PlannerView({
           {days.map(day => {
             const dateStr = format(day, 'yyyy-MM-dd');
             const dayEntries = plannerEntries.filter(e => e.date === dateStr);
-            const dayTotalMacros = dayEntries.reduce((acc, entry) => {
-              if (entry.type === 'recipe' && entry.recipeId) {
-                const recipe = getRecipeById(entry.recipeId);
-                if (recipe) {
-                  acc.calories += recipe.macros.calories;
-                  acc.proteins += recipe.macros.proteins;
-                  acc.fats += recipe.macros.fats;
-                  acc.carbs += recipe.macros.carbs;
-                }
-              } else if (entry.type === 'product' && entry.macros) {
-                acc.calories += entry.macros.calories;
-                acc.proteins += entry.macros.proteins;
-                acc.fats += entry.macros.fats;
-                acc.carbs += entry.macros.carbs;
-              }
-              return acc;
-            }, { calories: 0, proteins: 0, fats: 0, carbs: 0 });
+            const dayTotalMacros = sumMacros(dayEntries, recipes);
 
             return (
               <div key={day.toString() + 'total'} className="p-2 text-center border-r border-zinc-100 last:border-r-0">
