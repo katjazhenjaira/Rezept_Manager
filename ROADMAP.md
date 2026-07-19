@@ -7,7 +7,7 @@
 ## Текущий статус
 
 - **Активная фаза:** Phase 2 — Firebase Auth + Security Rules
-- **Следующий шаг:** Начать имплементацию по плану `docs/superpowers/plans/2026-07-19-phase2-firebase-auth.md` — Task 1 (auth singleton + vitest setup). Использовать `superpowers:subagent-driven-development` или `superpowers:executing-plans`.
+- **Следующий шаг:** Запустить миграционный скрипт (scripts/migrate-assign-user.ts) + задеплоить firestore.rules в Firebase Console → повторный security-review
 - **Обновлено:** 2026-07-19
 - **Blocker:** нет
 
@@ -179,19 +179,19 @@
 
 ### Phase 2 — Firebase Auth + Security Rules (1–2 недели)
 
-**Статус:** [ ] не начата
+**Статус:** [x] имплементация завершена (2026-07-19) — ожидает деплоя rules + миграции
 
-- [ ] `src/infrastructure/firebaseAuth.ts` — `getAuth(app)` singleton
-- [ ] `src/features/auth/AuthContext.ts`, `AuthProvider.tsx`, `useAuth.ts`
-- [ ] `src/features/auth/LandingPage.tsx` — маркетинговый экран для гостей
-- [ ] `src/features/auth/LoginScreen.tsx`, `SignupScreen.tsx` — email/password
-- [ ] `AuthProvider` оборачивает `RepositoryProvider` в `main.tsx`; `RepositoryProvider` принимает `uid: string`
-- [ ] Обновить все `Firestore*.ts` (6 файлов): конструктор принимает `uid`, фильтр `where('userId', '==', uid)` в reads, `userId` в writes
-- [ ] `userId?: string` в типах `Recipe`, `PlannerEntry`, `CartItem`, `Program`, `UserProfile`
-- [ ] Кнопка «Выйти» в `SettingsModal` → `signOut(auth)`
-- [ ] `firestore.rules` — `request.auth.uid == resource.data.userId`
-- [ ] Миграционный скрипт: `scripts/migrate-assign-user.ts` — все существующие документы получают `userId = <твой uid>`
-- [ ] Тесты: `AuthProvider.test.tsx`, `LoginScreen.test.tsx`, `SignupScreen.test.tsx`, `FakeAuthProvider.tsx`
+- [x] `src/infrastructure/firebaseAuth.ts` — `getAuth(app)` singleton
+- [x] `src/features/auth/AuthContext.ts`, `AuthProvider.tsx`, `useAuth.ts`
+- [x] `src/features/auth/LandingPage.tsx` — маркетинговый экран для гостей
+- [x] `src/features/auth/LoginScreen.tsx`, `SignupScreen.tsx` — email/password
+- [x] `AuthProvider` оборачивает `RepositoryProvider` в `main.tsx`; `RepositoryProvider` принимает `uid: string`
+- [x] Обновить все `Firestore*.ts` (6 файлов): конструктор принимает `uid`, фильтр `where('userId', '==', uid)` в reads, `userId` в writes
+- [x] `userId?: string` в типах `Recipe`, `PlannerEntry`, `CartItem`, `Program`, `UserProfile`
+- [x] Кнопка «Выйти» в `SettingsModal` → `signOut(auth)`
+- [x] `firestore.rules` — `request.auth.uid == resource.data.userId`
+- [x] Миграционный скрипт: `scripts/migrate-assign-user.ts` — все существующие документы получают `userId = <твой uid>`
+- [x] Тесты: `AuthProvider.test.tsx`, `LoginScreen.test.tsx`, `SignupScreen.test.tsx`, `FakeAuthProvider.tsx`
 - [ ] Повторный security-review
 - [ ] **Google OAuth** (`signInWithPopup` + `GoogleAuthProvider`) — Phase 2b, после основного Auth
 
@@ -271,6 +271,7 @@
 - **2026-04-19** — Phase 0b слайсы 3–4: роуты `import-from-url` и `import-from-pdf` портированы на воркер. Ключевые решения: (1) `ImportedRecipe.ingredients/steps` переведены с `string` на `string[]` — Gemini возвращает массивы, App.tsx всегда использовал их как массивы; (2) Добавлено поле `sourceUrl?: string` в `ImportedRecipe`; (3) `generateImageDataUri` вынесен в хелпер `worker/src/helpers/generateImageDataUri.ts` (переиспользуется в `import-from-url` для fallback-изображений); (4) Для PDF `extractImageFromPDF` остаётся на клиенте (Canvas API недоступен в Workers) — клиент извлекает изображение из PDF по `pageNumber`+`dishBoundingBox`, при неудаче вызывает `aiClient.generateImage()`; (5) Все новые воркер-роуты используют try/catch вокруг Gemini + JSON.parse (возвращают 502), валидируют `availableCategories` через `Array.isArray`, применяют case-insensitive category filter с возвратом original-cased значения через `.find()`.
 - **2026-04-21** — Phase 0b деплой: Worker задеплоен на Cloudflare с `GEMINI_API_KEY` секретом; Pages задеплоен с кастомным доменом `rezept-manager.flowgence.de` (CNAME у HostEurope, основной домен `flowgence.de` остаётся там). `aiClient.ts` обновлён: `API_BASE` берёт `VITE_AI_WORKER_URL` из env, в dev fallback на `""` (Vite proxy работает как прежде).
 - **2026-04-20** — Phase 0b слайсы 5–6: роуты `import-from-photo` и `fill-remaining` портированы на воркер. Все 6 маршрутов активны, `new GoogleGenAI` полностью удалён из `App.tsx`. `FillRemainingOption` в contracts.ts приведён в соответствие с реальным форматом ответа Gemini (поля `id`, `type`, `description` вместо `title`/`portion`/`rationale`). `FillRemainingRequest` дополнен полем `planName`. Для photo-импорта: cropping по `dishBoundingBox` остаётся на клиенте (Canvas API недоступен в Worker); изображение из фото не проходит через воркер, только КБЖУ и метаданные.
+- **2026-07-19** — Phase 2 имплементация завершена. AuthProvider + LoginScreen + SignupScreen + FakeAuthProvider + RepositoryProvider(uid) + 6 uid-scoped Firestore repos + Security Rules + migration script. 112 тестов. Ключевое решение: AuthProvider рендерит children во время loading (внутри AuthContext.Provider с loading:true), AuthenticatedApp добавляет guard `if (loading || !user) return null` для безопасного доступа к user.uid.
 - **2026-07-19** — Phase 1 DoD закрыт: убраны прямые `firebase/firestore` импорты из всех 8 feature-файлов (TrackerView, PlannerView, ProgramsView, ProgramDetailModal, ProgramSelectionModal, CartView, RecipesView + ProgramDetailModal) — заменены на `useRepositories()`. `DEFAULT_PROFILE` вынесен в `src/shared/domain/defaults.ts`. Shell.tsx получил `pb-20`. DataProvider unmount-тест усилён (listenerCount === 0). 101 тест, lint чистый.
 - **2026-07-18** — Phase 1 Step 5 (Финальная очистка App.tsx) завершена. App.tsx: 540 → 277 строк. `pdfUtils.ts` — единая canonical copy вместо 3 дублей. Убраны 3 Firestore onSnapshot (recipes/cart/userProfile) — контексты берут это на себя. `addProductsToCart` перенесена в ProgramDetailModal (убран prop-chain). SettingsModal переведён на `useUserProfile()`. AppHeader и RecipeSelectionBar выделены в `src/app/layout/`. Ключевые решения: `useEffect` в SettingsModal гейтирован по `isOpen` (а не по contextProfile) — предотвращает затирание правок в процессе ввода при приходе Firestore snapshot. `< 200` строк не достигнуто — требует отдельного RecipeSelectionContext шага для cross-tab import state. Plan: `docs/superpowers/plans/2026-07-18-app-cleanup.md`.
 - **2026-07-18** — Phase 1 Step 4 (Tracker) завершена. `TrackerView` + `AISuggestModal` + `ProgramSelectionModal` извлечены в `src/features/tracker/`. `renderTracker`, AI suggest modal и ProgramSelection modal удалены из App.tsx. `customPlanForm` перенесён в `ProgramSelectionModal`, `suggestion`/`isSuggesting`/`isProgramSelectionOpen` — в `TrackerView`. `handleAddSelectedSuggestions` дедуплицирован (одна копия в TrackerView). App.tsx: 1395 → 540 строк. 101 тест, 0 TS-ошибок. Plan: `docs/superpowers/plans/2026-07-18-tracker-extraction.md`.
