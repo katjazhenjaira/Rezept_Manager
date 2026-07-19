@@ -75,8 +75,8 @@ ${forbiddenText}
 
     data = JSON.parse(response.text ?? "{}") as typeof data;
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Unknown error";
-    return c.json({ error: `Gemini error: ${message}` }, 502);
+    console.error("[fillRemaining] error:", err);
+    return c.json({ error: "Failed to generate suggestions" }, 502);
   }
 
   if (!Array.isArray(data.options) || data.options.length !== 3) {

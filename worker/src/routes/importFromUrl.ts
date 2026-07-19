@@ -76,8 +76,8 @@ INSTRUCTIONS:
     });
     data = JSON.parse(response.text ?? "{}") as typeof data;
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Unknown error";
-    return c.json({ error: `Gemini error: ${message}` }, 502);
+    console.error("[importFromUrl] error:", err);
+    return c.json({ error: "Failed to import recipe from URL" }, 502);
   }
 
   let dishImage: string | undefined;

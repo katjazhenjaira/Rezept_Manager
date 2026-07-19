@@ -89,8 +89,8 @@ MUST include 'dishBoundingBox' with ymin, xmin, ymax, xmax for the main dish sho
 
     data = JSON.parse(response.text ?? "{}") as typeof data;
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Unknown error";
-    return c.json({ error: `Gemini error: ${message}` }, 502);
+    console.error("[importFromPhoto] error:", err);
+    return c.json({ error: "Failed to import recipe from photo" }, 502);
   }
 
   const recipe: ImportedRecipe = {

@@ -23,7 +23,7 @@ app.get("/", (c) => c.text("Rezept Manager AI proxy"));
 
 app.onError((err, c) => {
   console.error("AI proxy error:", err);
-  return c.json({ error: err.message || "Internal error" }, 500);
+  return c.json({ error: "Internal error" }, 500);
 });
 
 app.post("/api/ai/generate-image", generateImage);

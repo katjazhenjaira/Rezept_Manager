@@ -112,8 +112,7 @@ export async function importFromPdf(c: Context<{ Bindings: Env }>) {
     }
   } catch (err) {
     console.error("[importFromPdf] error:", err);
-    const message = err instanceof Error ? err.message : "Unknown error";
-    return c.json({ error: `Gemini error: ${message}` }, 502);
+    return c.json({ error: "Failed to import recipe from PDF" }, 502);
   }
 
   const recipes: ImportedRecipe[] = (data.recipes ?? []).map((r) => ({
