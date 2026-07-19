@@ -115,6 +115,7 @@
 
 **[DOC-10]** `src/app/layout/AppHeader.tsx:17-79` vs `src/features/settings/SettingsModal.tsx:324-341`
 > Два независимых, рассинхронизированных переключателя языка: в AppHeader — чисто визуальный (не вызывает `changeLanguage()`, известная проблема), в SettingsModal — рабочий, вызывает `changeLanguage()` из `I18nProvider`. Раз рабочая реализация уже есть, AppHeader — избыточный и вводящий в заблуждение дубль, а не просто «косметическая» проблема.
+> ✅ Исправлено (выбор пользователя — сделать AppHeader рабочим, а не удалять): `AppHeader.tsx` теперь использует `useTranslation()` для реактивного `i18n.language` вместо локального `useState`, и вызывает `changeLanguage()` из `I18nProvider` при выборе языка — синхронизирован с SettingsModal (общий источник состояния — i18next). Устаревшая строка про ограничение убрана из таблицы «Технические ограничения» в `Technical_Project_Documentation.md`. Тесты: 121/121 зелёные, `tsc --noEmit` чистый.
 
 **[DOC-11]** `Technical_Project_Documentation.md:204` vs 5 маршрутов worker
 > Документация: везде `gemini-2.5-flash`. Реально используется `gemini-3-flash-preview` в `calculateKbzhu.ts:19`, `importFromUrl.ts:37`, `importFromPdf.ts:94,104`, `importFromPhoto.ts:47`, `fillRemaining.ts:64` (комментарий в `importFromPdf.ts:3-6` объясняет осознанный переход). `generateImage.ts` по-прежнему верно использует `gemini-2.5-flash-image`.

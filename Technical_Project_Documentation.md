@@ -315,4 +315,3 @@ npm run coverage      # с coverage report
 | `GEMINI_API_KEY` только в Cloudflare secret | Безопасность — ключ не должен попасть в клиентский бандл | Всегда через Worker proxy `/api/ai/*` |
 | Canvas API недоступен в Cloudflare Worker | Workers runtime не поддерживает Canvas | PDF-операции (`extractImageFromPDF`) только на клиенте через `pdfjs-dist` |
 | `App.tsx` < 300 строк (не < 200) | Достигнуто 277; < 200 требует отдельного RecipeSelectionContext | Запланировано как future TODO |
-| AppHeader: язык меняется только визуально | `changeLanguage()` i18n не вызывается | Подключить i18n или убрать переключатель из хедера (future TODO) |
