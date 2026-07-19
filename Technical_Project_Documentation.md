@@ -203,7 +203,7 @@ StrictMode
 ### Google Gemini (AI Studio)
 - **Ключ:** Cloudflare secret `GEMINI_API_KEY` — **никогда не в клиентском коде**
 - **Модели:**
-  - `gemini-2.5-flash` — import-from-url, import-from-pdf, import-from-photo, calculate-kbzhu, fill-remaining
+  - `gemini-3-flash-preview` — import-from-url, import-from-pdf, import-from-photo, calculate-kbzhu, fill-remaining
   - `gemini-2.5-flash-image` — generate-image (aspectRatio 4:3, imageSize 1K)
 - **Rate limit:** 10 req/min на IP (token bucket в Cloudflare KV). 11-й запрос → 429 + Retry-After.
 

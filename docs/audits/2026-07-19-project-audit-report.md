@@ -119,6 +119,7 @@
 
 **[DOC-11]** `Technical_Project_Documentation.md:204` vs 5 маршрутов worker
 > Документация: везде `gemini-2.5-flash`. Реально используется `gemini-3-flash-preview` в `calculateKbzhu.ts:19`, `importFromUrl.ts:37`, `importFromPdf.ts:94,104`, `importFromPhoto.ts:47`, `fillRemaining.ts:64` (комментарий в `importFromPdf.ts:3-6` объясняет осознанный переход). `generateImage.ts` по-прежнему верно использует `gemini-2.5-flash-image`.
+> ✅ Исправлено: строка «Модели» в разделе «Google Gemini (AI Studio)» обновлена на `gemini-3-flash-preview` для 5 текстовых маршрутов; `gemini-2.5-flash-image` для generate-image оставлен без изменений (уже верен).
 
 **[DOC-12]** `Technical_Project_Documentation.md:179,206` vs `worker/src/middleware/rateLimit.ts:15-16`
 > Описано как «Token bucket», реально — счётчик по календарной минуте (`rate:${ip}:${Math.floor(Date.now()/60000)}`). Допускает всплеск до ~20 запросов за 2 секунды на границе минут, чего token bucket не допустил бы.
