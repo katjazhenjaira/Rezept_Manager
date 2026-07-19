@@ -1,0 +1,48 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Коллекции с полем userId
+    match /recipes/{docId} {
+      allow read, update, delete: if request.auth != null
+                                  && request.auth.uid == resource.data.userId;
+      allow create: if request.auth != null
+                    && request.auth.uid == request.resource.data.userId;
+    }
+
+    match /planner/{docId} {
+      allow read, update, delete: if request.auth != null
+                                  && request.auth.uid == resource.data.userId;
+      allow create: if request.auth != null
+                    && request.auth.uid == request.resource.data.userId;
+    }
+
+    match /cart/{docId} {
+      allow read, update, delete: if request.auth != null
+                                  && request.auth.uid == resource.data.userId;
+      allow create: if request.auth != null
+                    && request.auth.uid == request.resource.data.userId;
+    }
+
+    match /programs/{docId} {
+      allow read, update, delete: if request.auth != null
+                                  && request.auth.uid == resource.data.userId;
+      allow create: if request.auth != null
+                    && request.auth.uid == request.resource.data.userId;
+    }
+
+    // User-specific singleton documents — uid как путь документа
+    match /userProfiles/{uid} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+
+    match /nutritionPlans/{uid} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // Старые пути settings/* — deny всё (документы мигрированы)
+    match /settings/{docId} {
+      allow read, write: if false;
+    }
+  }
+}
