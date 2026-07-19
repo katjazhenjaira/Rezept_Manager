@@ -1,6 +1,6 @@
 import {
   collection, addDoc, updateDoc, deleteDoc, doc,
-  onSnapshot, query, getDoc,
+  onSnapshot, query, getDoc, where,
 } from 'firebase/firestore';
 import { db } from '@/infrastructure/firebaseApp';
 import type { Recipe } from '@/shared/domain/types';
@@ -27,16 +27,21 @@ function fromFirestore(id: string, data: Record<string, unknown>): Recipe {
 }
 
 export class FirestoreRecipesRepository implements RecipesRepository {
+  constructor(private readonly uid: string) {}
+
   subscribeAll(callback: (recipes: Recipe[]) => void): () => void {
-    return onSnapshot(query(collection(db, 'recipes')), snapshot => {
-      const recipes: Recipe[] = [];
-      snapshot.forEach(d => recipes.push(fromFirestore(d.id, d.data())));
-      callback(recipes);
-    });
+    return onSnapshot(
+      query(collection(db, 'recipes'), where('userId', '==', this.uid)),
+      snapshot => {
+        const recipes: Recipe[] = [];
+        snapshot.forEach(d => recipes.push(fromFirestore(d.id, d.data())));
+        callback(recipes);
+      }
+    );
   }
 
   async add(data: Omit<Recipe, 'id'>): Promise<string> {
-    const ref = await addDoc(collection(db, 'recipes'), data);
+    const ref = await addDoc(collection(db, 'recipes'), { ...data, userId: this.uid });
     return ref.id;
   }
 
