@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { ShoppingCart, Plus, Edit2, Trash2, Check } from 'lucide-react';
+import { ShoppingCart, Plus, Edit2, Trash2, Check, AlertTriangle } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { useRepositories } from '@/app/providers/RepositoryContext';
 import { isStaple } from '@/features/cart/services/staples';
+import { productAllergens } from '@/shared/domain/allergies';
 import type { CartItem } from '@/shared/domain/types';
 
 function cn(...inputs: ClassValue[]) {
@@ -13,14 +14,23 @@ function cn(...inputs: ClassValue[]) {
 type CartItemRowProps = {
   item: CartItem;
   isBasic?: boolean;
+  allergens: string[];
   onToggle: (item: CartItem) => void;
   onDelete: (id: string) => void;
   onUpdateAmount: (id: string, amount: string) => void;
 };
 
-function CartItemRow({ item, isBasic = false, onToggle, onDelete, onUpdateAmount }: CartItemRowProps) {
+function CartItemRow({ item, isBasic = false, allergens, onToggle, onDelete, onUpdateAmount }: CartItemRowProps) {
+  const hasAllergen = allergens.length > 0;
+
   return (
-    <div className={cn('p-3 flex items-center gap-3 hover:bg-zinc-50/50 transition-colors group', item.checked && 'opacity-50')}>
+    <div
+      className={cn(
+        'p-3 flex items-center gap-3 hover:bg-zinc-50/50 transition-colors group',
+        item.checked && 'opacity-50',
+        hasAllergen && !item.checked && 'bg-red-50/60 hover:bg-red-50'
+      )}
+    >
       <button
         onClick={() => onToggle(item)}
         className={cn(
@@ -37,7 +47,9 @@ function CartItemRow({ item, isBasic = false, onToggle, onDelete, onUpdateAmount
 
       <div className="flex-1 min-w-0">
         <div className="flex items-baseline gap-2">
-          <span className={cn('font-bold text-sm text-zinc-900', item.checked && 'line-through')}>{item.name}</span>
+          <span className={cn('font-bold text-sm', hasAllergen && !item.checked ? 'text-red-700' : 'text-zinc-900', item.checked && 'line-through')}>
+            {item.name}
+          </span>
           <span className={cn('text-xs font-medium', isBasic ? 'text-emerald-600/60' : 'text-zinc-400')}>
             {isBasic ? `Нужно: ${item.amount}` : item.amount}
           </span>
@@ -47,6 +59,12 @@ function CartItemRow({ item, isBasic = false, onToggle, onDelete, onUpdateAmount
         )}
         {isBasic && !item.checked && (
           <p className="text-[10px] text-emerald-600/40 font-medium">Есть в наличии или докупить?</p>
+        )}
+        {hasAllergen && !item.checked && (
+          <p className="flex items-center gap-1 text-[10px] text-red-600 font-bold">
+            <AlertTriangle className="w-3 h-3 flex-shrink-0" />
+            Осторожно: аллерген! ({allergens.join(', ')})
+          </p>
         )}
       </div>
 
@@ -75,9 +93,10 @@ function CartItemRow({ item, isBasic = false, onToggle, onDelete, onUpdateAmount
 
 type Props = {
   cart: CartItem[];
+  allergies: string[];
 };
 
-export function CartView({ cart }: Props) {
+export function CartView({ cart, allergies }: Props) {
   const { cart: cartRepo } = useRepositories();
   const [newCartItemName, setNewCartItemName] = useState('');
   const [newCartItemAmount, setNewCartItemAmount] = useState('');
@@ -174,6 +193,7 @@ export function CartView({ cart }: Props) {
                   <CartItemRow
                     key={item.id}
                     item={item}
+                    allergens={productAllergens(item.name, allergies)}
                     onToggle={toggleCartItem}
                     onDelete={deleteCartItem}
                     onUpdateAmount={updateCartItemAmount}
@@ -196,6 +216,7 @@ export function CartView({ cart }: Props) {
                     key={item.id}
                     item={item}
                     isBasic
+                    allergens={productAllergens(item.name, allergies)}
                     onToggle={toggleCartItem}
                     onDelete={deleteCartItem}
                     onUpdateAmount={updateCartItemAmount}

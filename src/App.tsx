@@ -177,7 +177,7 @@ export default function App() {
           />
         );
       case 'cart':
-        return <CartView cart={cartItems} />;
+        return <CartView cart={cartItems} allergies={userProfile.allergies} />;
       case 'tracker':
         return (
           <TrackerView
