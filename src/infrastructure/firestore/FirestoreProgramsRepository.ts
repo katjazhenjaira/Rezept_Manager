@@ -1,6 +1,6 @@
 import {
   collection, addDoc, updateDoc, deleteDoc, doc,
-  onSnapshot, query, getDoc,
+  onSnapshot, query, getDoc, where,
 } from 'firebase/firestore';
 import { db } from '@/infrastructure/firebaseApp';
 import type { Program } from '@/shared/domain/types';
@@ -30,16 +30,21 @@ function fromFirestore(id: string, data: Record<string, unknown>): Program {
 }
 
 export class FirestoreProgramsRepository implements ProgramsRepository {
+  constructor(private readonly uid: string) {}
+
   subscribeAll(callback: (programs: Program[]) => void): () => void {
-    return onSnapshot(query(collection(db, 'programs')), snapshot => {
-      const programs: Program[] = [];
-      snapshot.forEach(d => programs.push(fromFirestore(d.id, d.data())));
-      callback(programs);
-    });
+    return onSnapshot(
+      query(collection(db, 'programs'), where('userId', '==', this.uid)),
+      snapshot => {
+        const programs: Program[] = [];
+        snapshot.forEach(d => programs.push(fromFirestore(d.id, d.data())));
+        callback(programs);
+      }
+    );
   }
 
   async add(data: Omit<Program, 'id'>): Promise<string> {
-    const ref = await addDoc(collection(db, 'programs'), data);
+    const ref = await addDoc(collection(db, 'programs'), { ...data, userId: this.uid });
     return ref.id;
   }
 
