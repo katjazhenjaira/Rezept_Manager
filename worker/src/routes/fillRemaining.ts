@@ -11,7 +11,12 @@ export async function fillRemaining(c: Context<{ Bindings: Env }>) {
   const body = await c.req.json<FillRemainingRequest>();
   const { remaining, planName, allergies, activeProgramRules, userRecipes } = body;
 
-  if (!remaining || typeof remaining.calories !== "number") {
+  if (
+    !remaining ||
+    typeof remaining.calories !== "number" ||
+    !Array.isArray(allergies) ||
+    !Array.isArray(userRecipes)
+  ) {
     return c.json({ error: "Expected { remaining: Macros, planName: string, allergies: string[], userRecipes: [...] }" }, 400);
   }
 
