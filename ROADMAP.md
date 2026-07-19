@@ -7,9 +7,24 @@
 ## Текущий статус
 
 - **Активная фаза:** Phase 2 — Firebase Auth + Security Rules
-- **Следующий шаг:** Phase 2 — включить Firebase Auth, LoginScreen/SignupScreen, useAuth() hook
+- **Следующий шаг:** Начать имплементацию по плану `docs/superpowers/plans/2026-07-19-phase2-firebase-auth.md` — Task 1 (auth singleton + vitest setup). Использовать `superpowers:subagent-driven-development` или `superpowers:executing-plans`.
 - **Обновлено:** 2026-07-19
 - **Blocker:** нет
+
+### Готово в сессии 2026-07-19 (дизайн + план)
+
+- Спек: `docs/superpowers/specs/2026-07-19-phase2-firebase-auth-design.md`
+- План: `docs/superpowers/plans/2026-07-19-phase2-firebase-auth.md` (20 задач, TDD)
+- ROADMAP Phase 2 обновлён: детальный чеклист, Google OAuth добавлен как следующий шаг
+
+### Ключевые архитектурные решения Phase 2
+
+- **AuthProvider поверх RepositoryProvider** — репозитории создаются только с авторизованным uid
+- **UserProfile** → путь `userProfiles/{uid}` (не `settings/profile`)
+- **NutritionPlan** → путь `nutritionPlans/{uid}` (не `settings/plan`)
+- **recipes/planner/cart/programs** → `where('userId', '==', uid)` + `userId` в writes
+- **Миграционный скрипт** нужно запустить вручную перед деплоем Rules (один пользователь → все docs получают userId)
+- **Security Rules** запрещают `settings/*` после миграции
 
 ---
 
