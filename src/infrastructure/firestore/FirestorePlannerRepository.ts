@@ -1,6 +1,6 @@
 import {
   collection, addDoc, deleteDoc, doc,
-  onSnapshot, query,
+  onSnapshot, query, where,
 } from 'firebase/firestore';
 import { db } from '@/infrastructure/firebaseApp';
 import type { PlannerEntry } from '@/shared/domain/types';
@@ -20,16 +20,21 @@ function fromFirestore(id: string, data: Record<string, unknown>): PlannerEntry 
 }
 
 export class FirestorePlannerRepository implements PlannerRepository {
+  constructor(private readonly uid: string) {}
+
   subscribeAll(callback: (entries: PlannerEntry[]) => void): () => void {
-    return onSnapshot(query(collection(db, 'planner')), snapshot => {
-      const entries: PlannerEntry[] = [];
-      snapshot.forEach(d => entries.push(fromFirestore(d.id, d.data())));
-      callback(entries);
-    });
+    return onSnapshot(
+      query(collection(db, 'planner'), where('userId', '==', this.uid)),
+      snapshot => {
+        const entries: PlannerEntry[] = [];
+        snapshot.forEach(d => entries.push(fromFirestore(d.id, d.data())));
+        callback(entries);
+      }
+    );
   }
 
   async add(data: Omit<PlannerEntry, 'id'>): Promise<string> {
-    const ref = await addDoc(collection(db, 'planner'), data);
+    const ref = await addDoc(collection(db, 'planner'), { ...data, userId: this.uid });
     return ref.id;
   }
 
