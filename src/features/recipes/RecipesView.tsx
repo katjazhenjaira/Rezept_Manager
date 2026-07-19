@@ -237,6 +237,7 @@ export function RecipesView({
   // ── Recipe detail / editing state ──────────────────────────────────────────
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isUpdatingImage, setIsUpdatingImage] = useState(false);
+  const [isRecalculatingKbzhu, setIsRecalculatingKbzhu] = useState(false);
   const [showSaveSuccess, setShowSaveSuccess] = useState(false);
   const [recipeLink, setRecipeLink] = useState('');
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
@@ -2437,6 +2438,39 @@ export function RecipesView({
                             </p>
                           </div>
                         </div>
+                        <button
+                          onClick={async () => {
+                            setIsRecalculatingKbzhu(true);
+                            try {
+                              const data = await aiClient.calculateKbzhu({
+                                ingredients: selectedRecipe.ingredients.join('\n'),
+                              });
+                              const servings = Math.max(1, selectedRecipe.servings);
+                              const macros = {
+                                calories: Math.round((data.calories || 0) / servings),
+                                proteins: Math.round((data.proteins || 0) / servings),
+                                fats: Math.round((data.fats || 0) / servings),
+                                carbs: Math.round((data.carbs || 0) / servings),
+                              };
+                              await recipesRepo.update(selectedRecipe.id, { macros });
+                              setSelectedRecipe({ ...selectedRecipe, macros });
+                            } catch (e) {
+                              console.error(e);
+                              alert('Не удалось пересчитать КБЖУ. Проверьте список ингредиентов.');
+                            } finally {
+                              setIsRecalculatingKbzhu(false);
+                            }
+                          }}
+                          disabled={isRecalculatingKbzhu}
+                          className="mt-4 w-full flex items-center justify-center gap-2 text-xs font-bold text-emerald-700 hover:text-emerald-800 bg-white border border-emerald-200 px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50"
+                        >
+                          {isRecalculatingKbzhu ? (
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          ) : (
+                            <Activity className="w-3.5 h-3.5" />
+                          )}
+                          Пересчитать КБЖУ
+                        </button>
                       </div>
                     </div>
 
