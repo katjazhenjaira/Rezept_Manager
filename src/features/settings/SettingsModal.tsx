@@ -4,10 +4,12 @@ import { motion, AnimatePresence } from 'motion/react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { useTranslation } from 'react-i18next';
+import { signOut } from 'firebase/auth';
 import type { UserProfile } from '@/shared/domain/types';
 import { DEFAULT_PROFILE } from '@/shared/domain/defaults';
 import { changeLanguage, type AppLanguage } from '@/app/providers/I18nProvider';
 import { useUserProfile } from '@/app/providers/UserProfileContext';
+import { auth } from '@/infrastructure/firebaseAuth';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -55,6 +57,11 @@ export function SettingsModal({
       console.error('Error saving settings:', error);
       alert('Не удалось сохранить настройки');
     }
+  };
+
+  const handleSignOut = async () => {
+    await signOut(auth);
+    onClose();
   };
 
   const handleCreateCategory = () => {
@@ -340,6 +347,13 @@ export function SettingsModal({
                 className="w-full py-4 bg-emerald-600 text-white rounded-2xl font-bold hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-100"
               >
                 Сохранить настройки
+              </button>
+              <button
+                type="button"
+                onClick={handleSignOut}
+                className="w-full mt-2 py-2 text-sm text-red-600 hover:text-red-700 hover:underline"
+              >
+                Выйти из аккаунта
               </button>
             </div>
           </motion.div>
