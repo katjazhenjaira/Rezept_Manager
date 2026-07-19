@@ -127,12 +127,13 @@ StrictMode
 ### `src/infrastructure/` — реализации
 | Файл/папка | Роль |
 |-----------|------|
-| `firebaseApp.ts` | Firebase app singleton |
+| `firebaseApp.ts` | Firebase app singleton (Firestore, Auth, Storage) |
 | `firebaseAuth.ts` | Firebase Auth singleton |
-| `firestore/FirestoreRecipesRepository.ts` | Реализация, uid-scoped, userId в writes |
+| `firebaseStorage.ts` | `resolveImageField()` — загрузка base64 data URI в Firebase Storage (`users/{uid}/{folder}/`), возвращает Storage URL; используется репозиториями Recipes/Programs перед записью в Firestore (CRIT-1, `docs/audits/2026-07-19-project-audit-report.md`) |
+| `firestore/FirestoreRecipesRepository.ts` | Реализация, uid-scoped, userId в writes, image-поле прогоняется через `resolveImageField()` |
 | `firestore/FirestorePlannerRepository.ts` | То же для planner |
 | `firestore/FirestoreCartRepository.ts` | То же для cart |
-| `firestore/FirestoreProgramsRepository.ts` | То же для programs |
+| `firestore/FirestoreProgramsRepository.ts` | То же для programs; image и subfolders[].image прогоняются через `resolveImageField()` |
 | `firestore/FirestoreUserProfileRepository.ts` | userProfiles/{uid} |
 | `firestore/FirestoreNutritionPlanRepository.ts` | nutritionPlans/{uid} |
 | `firestore/converters.ts` | Timestamp ↔ ISO string |
@@ -187,9 +188,10 @@ StrictMode
 ### Firebase
 - **Проект:** `rezept-manager-62bd0` (личный аккаунт videnejev@gmail.com)
 - **Dashboard:** console.firebase.google.com → проект `rezept-manager-62bd0`
-- **Firestore:** данные пользователей — коллекции `recipes`, `planner_entries`, `cart_items`, `programs`, `userProfiles`, `nutritionPlans`. Все uid-scoped (`where('userId', '==', uid)`).
+- **Firestore:** данные пользователей — коллекции `recipes`, `planner`, `cart`, `programs`, `userProfiles`, `nutritionPlans`. Все uid-scoped (`where('userId', '==', uid)`).
 - **Auth:** email/password (Google OAuth — Phase 2b, не реализован)
 - **Security Rules:** `firestore.rules` — `request.auth.uid == resource.data.userId`, userId immutable при update
+- **Storage:** бакет `VITE_FIREBASE_STORAGE_BUCKET`, пути `users/{uid}/{recipeImages|programImages|subfolderImages}/{fileId}`. AI-generated/загруженные base64-изображения рецептов и программ хранятся здесь (не в Firestore) — см. `src/infrastructure/firebaseStorage.ts`. **Security Rules:** `storage.rules` — uid-scoped, лимит 5MB, только `image/*`. Деплоится вручную через Firebase Console → Storage → Rules (как и `firestore.rules`, CLI не настроен).
 
 ### Cloudflare
 - **Аккаунт:** связан с videnejev@gmail.com

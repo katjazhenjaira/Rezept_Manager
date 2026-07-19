@@ -571,12 +571,10 @@ export function RecipesView({
       const result = await aiClient.importFromUrl({ url: recipeLink, availableCategories });
       const r = result.recipe;
 
-      const imageToStore =
-        r.dishImage && r.dishImage.length <= 800_000 ? r.dishImage : undefined;
       const recipeData = {
         title: r.title,
         author: r.author ?? '',
-        image: imageToStore,
+        image: r.dishImage,
         sourceUrl: r.sourceUrl ?? recipeLink,
         time: r.time,
         servings: r.servings,
@@ -1618,13 +1616,10 @@ export function RecipesView({
                                 if (generated?.imageDataUri) dishImage = generated.imageDataUri;
                               }
 
-                              // Firestore limit ~1MB per doc; base64 images can exceed it.
-                              const imageToStore =
-                                dishImage && dishImage.length <= 800_000 ? dishImage : null;
                               const id = await recipesRepo.add({
                                 title: r.title,
                                 author: r.author ?? '',
-                                image: imageToStore ?? undefined,
+                                image: dishImage ?? undefined,
                                 time: r.time,
                                 servings: r.servings,
                                 categories: r.categories,

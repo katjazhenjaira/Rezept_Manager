@@ -3,6 +3,7 @@ import {
   onSnapshot, query, getDoc, where,
 } from 'firebase/firestore';
 import { db } from '@/infrastructure/firebaseApp';
+import { resolveImageField } from '@/infrastructure/firebaseStorage';
 import type { Recipe } from '@/shared/domain/types';
 import type { RecipesRepository } from '@/services/RecipesRepository';
 import { timestampToISO, type TimestampLike } from './converters';
@@ -41,12 +42,17 @@ export class FirestoreRecipesRepository implements RecipesRepository {
   }
 
   async add(data: Omit<Recipe, 'id'>): Promise<string> {
-    const ref = await addDoc(collection(db, 'recipes'), { ...data, userId: this.uid });
+    const image = await resolveImageField(this.uid, 'recipeImages', data.image);
+    const ref = await addDoc(collection(db, 'recipes'), { ...data, image, userId: this.uid });
     return ref.id;
   }
 
   async update(id: string, data: Partial<Omit<Recipe, 'id'>>): Promise<void> {
-    await updateDoc(doc(db, 'recipes', id), data);
+    const payload = { ...data };
+    if ('image' in data) {
+      payload.image = await resolveImageField(this.uid, 'recipeImages', data.image);
+    }
+    await updateDoc(doc(db, 'recipes', id), payload);
   }
 
   async delete(id: string): Promise<void> {

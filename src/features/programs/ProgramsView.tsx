@@ -146,9 +146,8 @@ export function ProgramsView(props: ProgramsViewProps) {
             const generated = await aiClient.generateImage({ title: r.title, ingredients: r.ingredients });
             if (generated?.imageDataUri) dishImage = generated.imageDataUri;
           }
-          const imageToStore = dishImage && dishImage.length <= 800_000 ? dishImage : undefined;
           const id = await recipesRepo.add({
-            title: r.title, author: r.author ?? '', image: imageToStore,
+            title: r.title, author: r.author ?? '', image: dishImage ?? undefined,
             time: r.time, servings: r.servings, categories: r.categories,
             ingredients: r.ingredients, steps: r.steps, macros: r.macros,
             isFavorite: false, createdAt: new Date().toISOString(),

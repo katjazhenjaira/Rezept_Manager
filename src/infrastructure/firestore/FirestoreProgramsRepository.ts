@@ -3,9 +3,23 @@ import {
   onSnapshot, query, getDoc, where,
 } from 'firebase/firestore';
 import { db } from '@/infrastructure/firebaseApp';
+import { resolveImageField } from '@/infrastructure/firebaseStorage';
 import type { Program } from '@/shared/domain/types';
 import type { ProgramsRepository } from '@/services/ProgramsRepository';
 import { timestampToISO, type TimestampLike } from './converters';
+
+async function resolveSubfolderImages(
+  uid: string,
+  subfolders: Program['subfolders']
+): Promise<Program['subfolders']> {
+  if (!subfolders) return subfolders;
+  return Promise.all(
+    subfolders.map(async (sf) => ({
+      ...sf,
+      image: await resolveImageField(uid, 'subfolderImages', sf.image),
+    }))
+  );
+}
 
 function fromFirestore(id: string, data: Record<string, unknown>): Program {
   return {
@@ -44,12 +58,23 @@ export class FirestoreProgramsRepository implements ProgramsRepository {
   }
 
   async add(data: Omit<Program, 'id'>): Promise<string> {
-    const ref = await addDoc(collection(db, 'programs'), { ...data, userId: this.uid });
+    const image = await resolveImageField(this.uid, 'programImages', data.image);
+    const subfolders = await resolveSubfolderImages(this.uid, data.subfolders);
+    const ref = await addDoc(collection(db, 'programs'), {
+      ...data, image, subfolders, userId: this.uid,
+    });
     return ref.id;
   }
 
   async update(id: string, data: Partial<Omit<Program, 'id'>>): Promise<void> {
-    await updateDoc(doc(db, 'programs', id), data);
+    const payload = { ...data };
+    if ('image' in data) {
+      payload.image = await resolveImageField(this.uid, 'programImages', data.image);
+    }
+    if ('subfolders' in data) {
+      payload.subfolders = await resolveSubfolderImages(this.uid, data.subfolders);
+    }
+    await updateDoc(doc(db, 'programs', id), payload);
   }
 
   async delete(id: string): Promise<void> {
