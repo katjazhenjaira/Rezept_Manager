@@ -123,6 +123,7 @@
 
 **[DOC-12]** `Technical_Project_Documentation.md:179,206` vs `worker/src/middleware/rateLimit.ts:15-16`
 > Описано как «Token bucket», реально — счётчик по календарной минуте (`rate:${ip}:${Math.floor(Date.now()/60000)}`). Допускает всплеск до ~20 запросов за 2 секунды на границе минут, чего token bucket не допустил бы.
+> ✅ Исправлено: обе строки (в таблице «Структура файлов» и в разделе «Google Gemini») переписаны с «Token bucket» на точное описание — счётчик по календарной минуте с указанием формата ключа KV и оговоркой про всплеск на границе минут.
 
 **[DOC-13]** `Technical_Project_Documentation.md:190` (§5 «Firebase») vs `src/infrastructure/firestore/*.ts`, `firestore.rules`
 > Документация называет коллекции `planner_entries`, `cart_items`. Реальные имена — `planner`, `cart` (подтверждено кодом репозиториев, `firestore.rules` и `scripts/migrate-assign-user.ts`).

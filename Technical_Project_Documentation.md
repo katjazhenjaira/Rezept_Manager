@@ -177,7 +177,7 @@ StrictMode
 | `src/routes/importFromPdf.ts` | Импорт рецепта из PDF (текст + изображение) |
 | `src/routes/importFromPhoto.ts` | Импорт рецепта из фото |
 | `src/routes/fillRemaining.ts` | AI fill remaining КБЖУ (3 варианта) |
-| `src/middleware/rateLimit.ts` | Token bucket: 10 req/min на IP через KV |
+| `src/middleware/rateLimit.ts` | Счётчик по календарной минуте: 10 req/min на IP через KV (ключ `rate:{ip}:{Math.floor(Date.now()/60000)}`) |
 | `src/helpers/generateImageDataUri.ts` | Хелпер генерации data URI через Gemini |
 | `src/types.ts` | Env type: GEMINI_API_KEY (secret), RATE_LIMIT_KV (KV binding) |
 
@@ -205,7 +205,7 @@ StrictMode
 - **Модели:**
   - `gemini-3-flash-preview` — import-from-url, import-from-pdf, import-from-photo, calculate-kbzhu, fill-remaining
   - `gemini-2.5-flash-image` — generate-image (aspectRatio 4:3, imageSize 1K)
-- **Rate limit:** 10 req/min на IP (token bucket в Cloudflare KV). 11-й запрос → 429 + Retry-After.
+- **Rate limit:** 10 req/min на IP (счётчик по календарной минуте в Cloudflare KV, не token bucket — допускает всплеск запросов на границе минут). 11-й запрос → 429 + Retry-After.
 
 ---
 
