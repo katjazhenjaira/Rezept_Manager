@@ -116,7 +116,7 @@ StrictMode
 | Файл | Роль |
 |------|------|
 | `RecipesRepository.ts` | Интерфейс: subscribeAll, add, update, delete, getById |
-| `PlannerRepository.ts` | Интерфейс: subscribe, add, update, delete |
+| `PlannerRepository.ts` | Интерфейс: subscribeAll, add, delete (нет update) |
 | `CartRepository.ts` | Интерфейс: subscribe, add, update, delete, deleteAll |
 | `ProgramsRepository.ts` | Интерфейс: subscribe, add, update, delete |
 | `UserProfileRepository.ts` | Интерфейс: subscribe, save |

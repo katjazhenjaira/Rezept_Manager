@@ -91,6 +91,7 @@
 
 **[DOC-4]** `Technical_Project_Documentation.md:114` vs `src/services/PlannerRepository.ts:3-7`
 > Документация обещает `update`, реально интерфейс — `subscribeAll, add, delete`. У `PlannerRepository` **нет метода `update()` вообще**.
+> ✅ Исправлено: таблица «Слой сервисов» обновлена на `subscribeAll, add, delete (нет update)`.
 
 **[DOC-5]** `Technical_Project_Documentation.md:116` vs `src/services/ProgramsRepository.ts:3-9`
 > `getById` присутствует в коде, но не упомянут в документации.
