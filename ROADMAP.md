@@ -179,7 +179,7 @@
 
 ### Phase 2 — Firebase Auth + Security Rules (1–2 недели)
 
-**Статус:** [x] имплементация завершена (2026-07-19) — ожидает деплоя rules + миграции
+**Статус:** [x] завершено (2026-07-19) — rules задеплоены, security-review пройден
 
 - [x] `src/infrastructure/firebaseAuth.ts` — `getAuth(app)` singleton
 - [x] `src/features/auth/AuthContext.ts`, `AuthProvider.tsx`, `useAuth.ts`
