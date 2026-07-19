@@ -53,7 +53,7 @@
 > **Проблема:** Worker делает server-side `fetch()` на URL, полностью заданный клиентом (сам `url`, а также `og:image`/`imageUrl` со страницы), без allowlist протокола/хоста.
 > **Почему важно:** Worker превращается в открытый fetch-прокси (SSRF) — можно заставить его слать запросы на произвольные хосты с IP/репутацией Cloudflare.
 > **Исправление:** Валидировать `http(s)`-протокол, добавить allowlist или блокировать private/link-local диапазоны.
-> ✅ Исправлено (commit b3a2dd6): `worker/src/helpers/validateExternalUrl.ts` — блокирует не-http(s) протоколы и literal loopback/private/link-local хосты; применена к `url` и обоим fetch кандидатов изображения в `importFromUrl.ts`. Не защищает от DNS rebinding (Workers не дают синхронный DNS lookup) — оставлено как известное ограничение.
+> ✅ Исправлено (commit b3a2dd6, доп. фикс 7f18feb): `worker/src/helpers/validateExternalUrl.ts` — блокирует не-http(s) протоколы и literal loopback/private/link-local хосты (включая IPv4-mapped IPv6); применена к `url` и обоим fetch кандидатов изображения в `importFromUrl.ts` через `safeFetch()`, который ревалидирует каждый редирект-хоп (`redirect: "manual"`, до 5 хопов) — обход через 3xx на private-хост закрыт. Не защищает от DNS rebinding (Workers не дают синхронный DNS lookup) — оставлено как известное ограничение.
 
 **[CRIT-6]** `worker/src/routes/fillRemaining.ts:14, 28-29`
 > **Проблема:** Валидируется только `remaining.calories`. `allergies.length` и `userRecipes.map(...)` используются без проверки на `undefined` — упадёт с `TypeError`, если поля отсутствуют в теле запроса.
