@@ -241,6 +241,8 @@
 **[TS-4]** `src/services/ai/contracts.ts:76-83`
 > `FillRemainingResponse.options` типизирован как открытый массив, без constraint «ровно 3». Компилятор не защищает от инварианта constraint №5 (см. CRIT-7 — рантайм-часть той же проблемы).
 
+> ✅ Исправлено (commit 9901b0f) — `FillRemainingResponse.options` типизирован как строгий tuple `[FillRemainingOption, FillRemainingOption, FillRemainingOption]`. В `worker/src/routes/fillRemaining.ts` сразу после рантайм-проверки `data.options.length === 3` (та самая проверка из CRIT-7) добавлен явный каст к tuple-типу — она и есть обоснование его безопасности. В `TrackerView.tsx` локальное состояние `suggestion` накапливает `options` из нескольких API-ответов при клике «ещё альтернативы» (может легитимно превышать 3 элемента), поэтому для него заведён отдельный тип `AccumulatedSuggestion` (`Omit<FillRemainingResponse, 'options'> & { options: FillRemainingOption[] }`) вместо строгого tuple. Тесты: 119/119 зелёные (18 файлов), `tsc --noEmit` чистый и в корне, и в `worker/`.
+
 **[TS-5]** `ProgramDetailModal.tsx:535,756,815,854`; `RecipesView.tsx:1213`
 > `(e: any)` для drag-and-drop обработчиков вместо `React.DragEvent<HTMLDivElement>` — теряется типобезопасность `e.dataTransfer`/`e.currentTarget`.
 
