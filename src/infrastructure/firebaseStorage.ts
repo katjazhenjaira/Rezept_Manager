@@ -8,7 +8,7 @@ export function isDataUri(value: string | null | undefined): value is string {
 export async function uploadDataUriToStorage(
   uid: string,
   folder: string,
-  dataUri: string
+  dataUri: string,
 ): Promise<string> {
   const contentType = dataUri.match(/^data:([^;,]+)/)?.[1] || 'image/jpeg';
   const storageRef = ref(storage, `users/${uid}/${folder}/${crypto.randomUUID()}`);
@@ -23,7 +23,7 @@ export async function uploadDataUriToStorage(
 export async function resolveImageField(
   uid: string,
   folder: string,
-  value: string | undefined
+  value: string | undefined,
 ): Promise<string | undefined> {
   if (!isDataUri(value)) return value;
   return uploadDataUriToStorage(uid, folder, value);

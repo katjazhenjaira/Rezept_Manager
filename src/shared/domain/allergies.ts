@@ -2,7 +2,7 @@ import type { Recipe } from './types';
 
 function matchingAllergens(texts: string[], allergies: string[]): string[] {
   return allergies.filter((allergy) =>
-    texts.some((text) => text.toLowerCase().includes(allergy.toLowerCase()))
+    texts.some((text) => text.toLowerCase().includes(allergy.toLowerCase())),
   );
 }
 

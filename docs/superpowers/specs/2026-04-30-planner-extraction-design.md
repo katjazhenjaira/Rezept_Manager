@@ -44,14 +44,14 @@ export type PlannerViewProps = {
 };
 ```
 
-| Prop | Why in App.tsx, not internal |
-|---|---|
-| `recipes` | Needed for recipe picker and per-entry macro calculation |
-| `userProfile` | Allergy check in `handleAddToPlanner`; target KBZHU limits |
-| `activeNutritionPlan` | Active plan overrides profile KBZHU goals (safety-critical constraint) |
-| `checkedEntries` / `onCheckedEntriesChange` | Shared with Tracker — `handleSuggest` (Tracker-feature) reads it; Planner day view toggles it |
-| `onAddProductsToCart` | Day view has "add to cart" buttons |
-| `onSelectRecipe` | Recipe cards in day/week/list views open the recipe detail (all three view modes, App.tsx lines 719, 911, 1165) |
+| Prop                                        | Why in App.tsx, not internal                                                                                    |
+| ------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `recipes`                                   | Needed for recipe picker and per-entry macro calculation                                                        |
+| `userProfile`                               | Allergy check in `handleAddToPlanner`; target KBZHU limits                                                      |
+| `activeNutritionPlan`                       | Active plan overrides profile KBZHU goals (safety-critical constraint)                                          |
+| `checkedEntries` / `onCheckedEntriesChange` | Shared with Tracker — `handleSuggest` (Tracker-feature) reads it; Planner day view toggles it                   |
+| `onAddProductsToCart`                       | Day view has "add to cart" buttons                                                                              |
+| `onSelectRecipe`                            | Recipe cards in day/week/list views open the recipe detail (all three view modes, App.tsx lines 719, 911, 1165) |
 
 ---
 
@@ -59,24 +59,24 @@ export type PlannerViewProps = {
 
 ### State (8 useState)
 
-| Variable | Type | Owner |
-|---|---|---|
-| `plannerViewScale` | `PlannerViewScale` | internal |
-| `plannerViewMode` | `PlannerViewMode` | internal |
-| `selectedPlannerDate` | `Date` | internal |
-| `isRecipePickerOpen` | `boolean` | internal |
-| `pickingMealInfo` | `{ date: string; mealType: string } \| null` | internal |
-| `isAddingProduct` | `boolean` | internal |
-| `customPlanForm` | form data object | internal |
-| `productFormData` | form data object | internal |
+| Variable              | Type                                         | Owner    |
+| --------------------- | -------------------------------------------- | -------- |
+| `plannerViewScale`    | `PlannerViewScale`                           | internal |
+| `plannerViewMode`     | `PlannerViewMode`                            | internal |
+| `selectedPlannerDate` | `Date`                                       | internal |
+| `isRecipePickerOpen`  | `boolean`                                    | internal |
+| `pickingMealInfo`     | `{ date: string; mealType: string } \| null` | internal |
+| `isAddingProduct`     | `boolean`                                    | internal |
+| `customPlanForm`      | form data object                             | internal |
+| `productFormData`     | form data object                             | internal |
 
 ### Handlers (3 functions)
 
-| Function | What it does |
-|---|---|
-| `handleAddToPlanner` | Allergy-checks recipe, then `addDoc` to `planner` collection |
-| `handleAddProductToPlanner` | `addDoc` manual product to `planner` collection |
-| `handleRemoveFromPlanner` | `deleteDoc` by entry ID from `planner` collection |
+| Function                    | What it does                                                 |
+| --------------------------- | ------------------------------------------------------------ |
+| `handleAddToPlanner`        | Allergy-checks recipe, then `addDoc` to `planner` collection |
+| `handleAddProductToPlanner` | `addDoc` manual product to `planner` collection              |
+| `handleRemoveFromPlanner`   | `deleteDoc` by entry ID from `planner` collection            |
 
 ### JSX (from App.tsx)
 
@@ -88,16 +88,17 @@ export type PlannerViewProps = {
 
 ## What Stays in App.tsx
 
-| Item | Reason |
-|---|---|
-| `checkedEntries` useState | Tracker reads it for `handleSuggest` |
-| `handleSuggest` | Tracker-feature; moves to Tracker tab when extracted |
+| Item                      | Reason                                               |
+| ------------------------- | ---------------------------------------------------- |
+| `checkedEntries` useState | Tracker reads it for `handleSuggest`                 |
+| `handleSuggest`           | Tracker-feature; moves to Tracker tab when extracted |
 
 ---
 
 ## App.tsx Changes
 
 ### Remove
+
 - `plannerEntries` useState + its `onSnapshot` useEffect
 - 8 useState declarations listed above
 - 3 handler functions
@@ -105,11 +106,13 @@ export type PlannerViewProps = {
 - Product Add Modal and Recipe Picker Modal from `return()`
 
 ### Add
+
 ```tsx
 import { PlannerView } from '@/features/planner/PlannerView';
 ```
 
 ### Replace in renderContent()
+
 ```tsx
 case 'planner':
   return (
@@ -129,12 +132,12 @@ case 'planner':
 
 ## Expected Outcome
 
-| Metric | Before | After |
-|---|---|---|
-| App.tsx lines | 2482 | ~1500 (−40%) |
-| PlannerView.tsx | — | ~900 lines |
-| TS errors | 0 | 0 |
-| Tests | 97 pass | 97 pass |
+| Metric          | Before  | After        |
+| --------------- | ------- | ------------ |
+| App.tsx lines   | 2482    | ~1500 (−40%) |
+| PlannerView.tsx | —       | ~900 lines   |
+| TS errors       | 0       | 0            |
+| Tests           | 97 pass | 97 pass      |
 
 ---
 

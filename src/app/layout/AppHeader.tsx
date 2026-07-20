@@ -54,28 +54,43 @@ export function AppHeader({ onOpenSettings }: AppHeaderProps) {
                       className="absolute right-0 mt-2 w-32 bg-white rounded-2xl shadow-2xl border border-zinc-100 overflow-hidden z-50"
                     >
                       <button
-                        onClick={() => { changeLanguage('ru'); setIsLanguageDropdownOpen(false); }}
+                        onClick={() => {
+                          changeLanguage('ru');
+                          setIsLanguageDropdownOpen(false);
+                        }}
                         className={cn(
                           'w-full px-4 py-3 text-left text-sm font-bold flex items-center gap-3 hover:bg-zinc-50 transition-colors',
-                          currentLanguage === 'ru' ? 'text-emerald-600 bg-emerald-50/50' : 'text-zinc-600',
+                          currentLanguage === 'ru'
+                            ? 'text-emerald-600 bg-emerald-50/50'
+                            : 'text-zinc-600',
                         )}
                       >
                         <span>🇷🇺</span> Русский
                       </button>
                       <button
-                        onClick={() => { changeLanguage('de'); setIsLanguageDropdownOpen(false); }}
+                        onClick={() => {
+                          changeLanguage('de');
+                          setIsLanguageDropdownOpen(false);
+                        }}
                         className={cn(
                           'w-full px-4 py-3 text-left text-sm font-bold flex items-center gap-3 hover:bg-zinc-50 transition-colors',
-                          currentLanguage === 'de' ? 'text-emerald-600 bg-emerald-50/50' : 'text-zinc-600',
+                          currentLanguage === 'de'
+                            ? 'text-emerald-600 bg-emerald-50/50'
+                            : 'text-zinc-600',
                         )}
                       >
                         <span>🇩🇪</span> Deutsch
                       </button>
                       <button
-                        onClick={() => { changeLanguage('en'); setIsLanguageDropdownOpen(false); }}
+                        onClick={() => {
+                          changeLanguage('en');
+                          setIsLanguageDropdownOpen(false);
+                        }}
                         className={cn(
                           'w-full px-4 py-3 text-left text-sm font-bold flex items-center gap-3 hover:bg-zinc-50 transition-colors',
-                          currentLanguage === 'en' ? 'text-emerald-600 bg-emerald-50/50' : 'text-zinc-600',
+                          currentLanguage === 'en'
+                            ? 'text-emerald-600 bg-emerald-50/50'
+                            : 'text-zinc-600',
                         )}
                       >
                         <span>🇺🇸</span> English

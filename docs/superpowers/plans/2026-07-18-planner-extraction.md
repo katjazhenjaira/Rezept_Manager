@@ -12,11 +12,11 @@
 
 ## File Map
 
-| Action | Path | Description |
-|--------|------|-------------|
-| Create | `src/features/planner/PlannerView.tsx` | New component (~900 lines) |
-| Create | `src/features/planner/__tests__/PlannerView.test.tsx` | Smoke render test |
-| Modify | `src/App.tsx` | Remove planner state/handlers/JSX; wire PlannerView |
+| Action | Path                                                  | Description                                         |
+| ------ | ----------------------------------------------------- | --------------------------------------------------- |
+| Create | `src/features/planner/PlannerView.tsx`                | New component (~900 lines)                          |
+| Create | `src/features/planner/__tests__/PlannerView.test.tsx` | Smoke render test                                   |
+| Modify | `src/App.tsx`                                         | Remove planner state/handlers/JSX; wire PlannerView |
 
 ---
 
@@ -34,6 +34,7 @@ The design spec (2026-04-30) needs three corrections found during code analysis:
 ## Task 1: Write failing smoke test
 
 **Files:**
+
 - Create: `src/features/planner/__tests__/PlannerView.test.tsx`
 
 - [ ] **Step 1: Create the test file**
@@ -72,11 +73,7 @@ const mockProfile: UserProfile = {
 const emptyData = { recipes: [], plannerEntries: [], cartItems: [], programs: [] };
 
 function Wrapper({ children }: { children: ReactNode }) {
-  return (
-    <DataContext.Provider value={emptyData}>
-      {children}
-    </DataContext.Provider>
-  );
+  return <DataContext.Provider value={emptyData}>{children}</DataContext.Provider>;
 }
 
 // Import will fail until PlannerView.tsx exists — that is the expected failure mode.
@@ -107,7 +104,7 @@ describe('PlannerView', () => {
           mealTypes={['Завтрак', 'Обед', 'Ужин', 'Перекус']}
           onMealTypesChange={vi.fn()}
         />
-      </Wrapper>
+      </Wrapper>,
     );
     expect(screen.getByText(/составь твой/i)).toBeDefined();
   });
@@ -128,9 +125,11 @@ Expected: 1 test fails with "expect(true).toBe(false)" (PlannerView file not yet
 ## Task 2: Create PlannerView.tsx
 
 **Files:**
+
 - Create: `src/features/planner/PlannerView.tsx`
 
 This task moves code from App.tsx with three adaptations:
+
 1. All references to `setSelectedRecipe` → `onSelectRecipe`
 2. All references to `setActiveTab('cart')` → `onNavigateToCart()`
 3. `plannerEntries` comes from `useData()` not props
@@ -233,63 +232,67 @@ export function PlannerView({
 Continue the file after the state declarations:
 
 ```tsx
-  const handleAddToPlanner = async (date: string, mealType: string, recipeId: string) => {
-    const recipe = recipes.find(r => r.id === recipeId);
-    if (recipe) {
-      const allergens = userProfile.allergies.filter(allergy =>
-        recipe.ingredients.some(ing => ing.toLowerCase().includes(allergy.toLowerCase()))
-      );
-      if (allergens.length > 0) {
-        if (!confirm(`Осторожно! Этот рецепт содержит ингредиенты, на которые у вас аллергия: ${allergens.join(', ')}. Все равно добавить?`)) {
-          return;
-        }
+const handleAddToPlanner = async (date: string, mealType: string, recipeId: string) => {
+  const recipe = recipes.find((r) => r.id === recipeId);
+  if (recipe) {
+    const allergens = userProfile.allergies.filter((allergy) =>
+      recipe.ingredients.some((ing) => ing.toLowerCase().includes(allergy.toLowerCase())),
+    );
+    if (allergens.length > 0) {
+      if (
+        !confirm(
+          `Осторожно! Этот рецепт содержит ингредиенты, на которые у вас аллергия: ${allergens.join(', ')}. Все равно добавить?`,
+        )
+      ) {
+        return;
       }
     }
-    try {
-      await addDoc(collection(db, 'planner'), {
-        date,
-        mealType,
-        type: 'recipe',
-        recipeId,
-      });
-    } catch (error) {
-      console.error('Error adding to planner:', error);
-    }
-  };
+  }
+  try {
+    await addDoc(collection(db, 'planner'), {
+      date,
+      mealType,
+      type: 'recipe',
+      recipeId,
+    });
+  } catch (error) {
+    console.error('Error adding to planner:', error);
+  }
+};
 
-  const handleAddProductToPlanner = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!pickingMealInfo || !productFormData.name) return;
-    try {
-      await addDoc(collection(db, 'planner'), {
-        date: pickingMealInfo.date,
-        mealType: pickingMealInfo.mealType,
-        type: 'product',
-        productName: productFormData.name,
-        amount: productFormData.amount,
-        macros: {
-          calories: productFormData.calories,
-          proteins: productFormData.proteins,
-          fats: productFormData.fats,
-          carbs: productFormData.carbs,
-        },
-      });
-      setIsAddingProduct(false);
-      setProductFormData({ name: '', amount: '', calories: 0, proteins: 0, fats: 0, carbs: 0 });
-      alert('Продукт добавлен');
-    } catch (error) {
-      console.error('Error adding product to planner:', error);
-      alert('Ошибка при добавлении продукта');
-    }
-  };
+const handleAddProductToPlanner = async (e: React.FormEvent) => {
+  e.preventDefault();
+  if (!pickingMealInfo || !productFormData.name) return;
+  try {
+    await addDoc(collection(db, 'planner'), {
+      date: pickingMealInfo.date,
+      mealType: pickingMealInfo.mealType,
+      type: 'product',
+      productName: productFormData.name,
+      amount: productFormData.amount,
+      macros: {
+        calories: productFormData.calories,
+        proteins: productFormData.proteins,
+        fats: productFormData.fats,
+        carbs: productFormData.carbs,
+      },
+    });
+    setIsAddingProduct(false);
+    setProductFormData({ name: '', amount: '', calories: 0, proteins: 0, fats: 0, carbs: 0 });
+    alert('Продукт добавлен');
+  } catch (error) {
+    console.error('Error adding product to planner:', error);
+    alert('Ошибка при добавлении продукта');
+  }
+};
 
-  const handleRemoveFromPlanner = async (entryId: string) => {
-    try {
-      await deleteDoc(doc(db, 'planner', entryId));
-    } catch (error) {
-      console.error('Error removing from planner:', error);
-    }
-  };
+const handleRemoveFromPlanner = async (entryId: string) => {
+  try {
+    await deleteDoc(doc(db, 'planner', entryId));
+  } catch (error) {
+    console.error('Error removing from planner:', error);
+  }
+};
 ```
 
 - [ ] **Step 3: Add inner helper functions (copy from App.tsx:580-612)**
@@ -297,16 +300,18 @@ Continue the file after the state declarations:
 Continue after the handlers:
 
 ```tsx
-  const getEntriesForDate = (date: Date) => {
-    const dateStr = format(date, 'yyyy-MM-dd');
-    return plannerEntries.filter(e => e.date === dateStr);
-  };
+const getEntriesForDate = (date: Date) => {
+  const dateStr = format(date, 'yyyy-MM-dd');
+  return plannerEntries.filter((e) => e.date === dateStr);
+};
 
-  const getRecipeById = (id: string | undefined) => (id ? recipes.find(r => r.id === id) : undefined);
+const getRecipeById = (id: string | undefined) =>
+  id ? recipes.find((r) => r.id === id) : undefined;
 
-  const getMacrosForDate = (date: Date) => {
-    const entries = getEntriesForDate(date);
-    return entries.reduce((acc, entry) => {
+const getMacrosForDate = (date: Date) => {
+  const entries = getEntriesForDate(date);
+  return entries.reduce(
+    (acc, entry) => {
       if (entry.type === 'recipe' && entry.recipeId) {
         const recipe = getRecipeById(entry.recipeId);
         if (recipe) {
@@ -322,44 +327,47 @@ Continue after the handlers:
         acc.carbs += entry.macros.carbs;
       }
       return acc;
-    }, { calories: 0, proteins: 0, fats: 0, carbs: 0 });
-  };
+    },
+    { calories: 0, proteins: 0, fats: 0, carbs: 0 },
+  );
+};
 
-  const selectedDateMacros = getMacrosForDate(selectedPlannerDate);
-  const isSelectedDateOverLimit =
-    selectedDateMacros.calories > userProfile.targetCalories ||
-    selectedDateMacros.proteins > userProfile.targetProteins ||
-    selectedDateMacros.fats > userProfile.targetFats ||
-    selectedDateMacros.carbs > userProfile.targetCarbs;
+const selectedDateMacros = getMacrosForDate(selectedPlannerDate);
+const isSelectedDateOverLimit =
+  selectedDateMacros.calories > userProfile.targetCalories ||
+  selectedDateMacros.proteins > userProfile.targetProteins ||
+  selectedDateMacros.fats > userProfile.targetFats ||
+  selectedDateMacros.carbs > userProfile.targetCarbs;
 ```
 
 - [ ] **Step 4: Add the four render sub-functions**
 
 Copy `renderDayView`, `renderWeekView`, `renderMonthView`, `renderListView` verbatim from **App.tsx lines 614–1197** with these substitutions:
-  - `setSelectedRecipe(recipe)` → `onSelectRecipe(recipe)`  (3 occurrences: lines 719, 911, 1165)
+
+- `setSelectedRecipe(recipe)` → `onSelectRecipe(recipe)` (3 occurrences: lines 719, 911, 1165)
 
 All other references (`mealTypes`, `setActiveAddDropdown`, `activeAddDropdown`, `pickingMealInfo`, `setPickingMealInfo`, `setIsRecipePickerOpen`, `setIsAddingProduct`, `handleRemoveFromPlanner`, `plannerEntries`, `userProfile`, `selectedPlannerDate`, `setSelectedPlannerDate`, `setPlannerViewScale`, `getEntriesForDate`, `getRecipeById`, `isSelectedDateOverLimit`) are already in scope as state/props/closures — no other changes needed.
 
 ```tsx
-  const renderDayView = () => {
-    // Copy verbatim from App.tsx lines 614-857
-    // ADAPT: setSelectedRecipe(recipe) → onSelectRecipe(recipe)   [line 719]
-  };
+const renderDayView = () => {
+  // Copy verbatim from App.tsx lines 614-857
+  // ADAPT: setSelectedRecipe(recipe) → onSelectRecipe(recipe)   [line 719]
+};
 
-  const renderWeekView = () => {
-    // Copy verbatim from App.tsx lines 860-1063
-    // ADAPT: setSelectedRecipe(recipe) → onSelectRecipe(recipe)   [line 911]
-  };
+const renderWeekView = () => {
+  // Copy verbatim from App.tsx lines 860-1063
+  // ADAPT: setSelectedRecipe(recipe) → onSelectRecipe(recipe)   [line 911]
+};
 
-  const renderMonthView = () => {
-    // Copy verbatim from App.tsx lines 1066-1127
-    // No onSelectRecipe calls here
-  };
+const renderMonthView = () => {
+  // Copy verbatim from App.tsx lines 1066-1127
+  // No onSelectRecipe calls here
+};
 
-  const renderListView = () => {
-    // Copy verbatim from App.tsx lines 1129-1197
-    // ADAPT: setSelectedRecipe(recipe) → onSelectRecipe(recipe)   [line 1165]
-  };
+const renderListView = () => {
+  // Copy verbatim from App.tsx lines 1129-1197
+  // ADAPT: setSelectedRecipe(recipe) → onSelectRecipe(recipe)   [line 1165]
+};
 ```
 
 - [ ] **Step 5: Add the component return() JSX**
@@ -407,6 +415,7 @@ Expected: 0 errors. Fix any that appear before continuing.
 ## Task 3: Update App.tsx
 
 **Files:**
+
 - Modify: `src/App.tsx`
 
 Apply all changes in this order to avoid intermediate broken states.
@@ -414,6 +423,7 @@ Apply all changes in this order to avoid intermediate broken states.
 - [ ] **Step 1: Add `PlannerView` import and remove unused type imports**
 
 At the top of App.tsx, after the existing feature imports, add:
+
 ```tsx
 import { PlannerView } from '@/features/planner/PlannerView';
 ```
@@ -437,14 +447,16 @@ Remove the entire `import { ru } from 'date-fns/locale';` line.
 - [ ] **Step 4: Remove `plannerEntries` state + its `onSnapshot` useEffect**
 
 Remove line 184:
+
 ```tsx
 const [plannerEntries, setPlannerEntries] = useState<PlannerEntry[]>([]);
 ```
 
 Remove lines 469-479:
+
 ```tsx
 useEffect(() => {
-  const q = query(collection(db, "planner"));
+  const q = query(collection(db, 'planner'));
   const unsubscribe = onSnapshot(q, (querySnapshot) => {
     const entries: PlannerEntry[] = [];
     querySnapshot.forEach((doc) => {
@@ -459,10 +471,13 @@ useEffect(() => {
 - [ ] **Step 5: Add `plannerEntries` to `useData()` destructuring**
 
 Find line 338:
+
 ```tsx
 const { programs } = useData();
 ```
+
 Replace with:
+
 ```tsx
 const { programs, plannerEntries } = useData();
 ```
@@ -496,12 +511,14 @@ Remove lines 579-1386 (the entire `const renderPlanner = () => { ... };` block i
 - [ ] **Step 9: Replace `renderPlanner()` call in `renderContent()`**
 
 Find (App.tsx ~line 1780 after removals):
+
 ```tsx
 case 'planner':
   return renderPlanner();
 ```
 
 Replace with:
+
 ```tsx
 case 'planner':
   return (
@@ -580,6 +597,7 @@ git commit -m "feat(planner): extract PlannerView from App.tsx into src/features
 ## Self-Review Checklist
 
 **Spec coverage:**
+
 - [x] `PlannerView.tsx` created in `src/features/planner/`
 - [x] `plannerEntries` read from `useData()` — duplicate `onSnapshot` removed from App.tsx
 - [x] 8 state variables moved: `plannerViewScale`, `plannerViewMode`, `selectedPlannerDate`, `isRecipePickerOpen`, `pickingMealInfo`, `isAddingProduct`, `activeAddDropdown`, `productFormData`

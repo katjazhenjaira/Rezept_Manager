@@ -46,9 +46,7 @@ describe('LoginScreen', () => {
   });
 
   it('disables submit button while request is in flight', async () => {
-    vi.mocked(signInWithEmailAndPassword).mockImplementation(
-      () => new Promise(() => {})
-    );
+    vi.mocked(signInWithEmailAndPassword).mockImplementation(() => new Promise(() => {}));
     render(<LoginScreen onGoToSignup={onGoToSignup} onBack={onBack} />);
 
     fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'test@test.com' } });

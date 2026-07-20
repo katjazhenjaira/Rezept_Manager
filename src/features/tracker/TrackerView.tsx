@@ -30,7 +30,9 @@ import type { FillRemainingResponse, FillRemainingOption } from '@/services/ai/c
 
 // Локальное состояние накапливает options из нескольких ответов API (клик "ещё альтернативы"),
 // поэтому строгий tuple-контракт ответа (ровно 3) здесь не подходит — нужен обычный массив.
-type AccumulatedSuggestion = Omit<FillRemainingResponse, 'options'> & { options: FillRemainingOption[] };
+type AccumulatedSuggestion = Omit<FillRemainingResponse, 'options'> & {
+  options: FillRemainingOption[];
+};
 import { ProgramSelectionModal } from './ProgramSelectionModal';
 
 function cn(...inputs: ClassValue[]) {
@@ -95,7 +97,9 @@ export function TrackerView({
       });
 
       if (isAlternative) {
-        setSuggestion((prev) => prev ? { ...result, options: [...prev.options, ...result.options] } : result);
+        setSuggestion((prev) =>
+          prev ? { ...result, options: [...prev.options, ...result.options] } : result,
+        );
       } else {
         setSuggestion(result);
       }
@@ -110,7 +114,9 @@ export function TrackerView({
   const handleAddSelectedSuggestions = async () => {
     if (!suggestion || selectedSuggestionIds.length === 0) return;
 
-    const selectedOptions = suggestion.options.filter((opt) => selectedSuggestionIds.includes(opt.id));
+    const selectedOptions = suggestion.options.filter((opt) =>
+      selectedSuggestionIds.includes(opt.id),
+    );
 
     try {
       for (const option of selectedOptions) {
@@ -147,7 +153,9 @@ export function TrackerView({
               <Droplets className="w-6 h-6" />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-blue-900">Не забудь пить достаточно воды сегодня!</h3>
+              <h3 className="text-lg font-bold text-blue-900">
+                Не забудь пить достаточно воды сегодня!
+              </h3>
               <p className="text-blue-700 text-sm">Твоя цель: {userProfile?.waterGoal} мл</p>
             </div>
           </div>
@@ -167,7 +175,9 @@ export function TrackerView({
               <h3 className="text-sm font-bold text-zinc-900">
                 {currentTargets.name}
                 {activeNutritionPlan?.subfolderName && (
-                  <span className="text-emerald-600 ml-1">/ {activeNutritionPlan.subfolderName}</span>
+                  <span className="text-emerald-600 ml-1">
+                    / {activeNutritionPlan.subfolderName}
+                  </span>
                 )}
               </h3>
             </div>
@@ -185,10 +195,15 @@ export function TrackerView({
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {(
             [
-              { label: 'Калории', key: 'calories' as const, unit: 'ккал', okColor: 'bg-emerald-500' },
-              { label: 'Белки',   key: 'proteins' as const, unit: 'г',    okColor: 'bg-blue-500'    },
-              { label: 'Жиры',    key: 'fats'     as const, unit: 'г',    okColor: 'bg-orange-500'  },
-              { label: 'Углеводы',key: 'carbs'    as const, unit: 'г',    okColor: 'bg-purple-500'  },
+              {
+                label: 'Калории',
+                key: 'calories' as const,
+                unit: 'ккал',
+                okColor: 'bg-emerald-500',
+              },
+              { label: 'Белки', key: 'proteins' as const, unit: 'г', okColor: 'bg-blue-500' },
+              { label: 'Жиры', key: 'fats' as const, unit: 'г', okColor: 'bg-orange-500' },
+              { label: 'Углеводы', key: 'carbs' as const, unit: 'г', okColor: 'bg-purple-500' },
             ] as const
           ).map(({ label, key, unit, okColor }) => {
             const actual = actualMacros[key];
@@ -204,8 +219,14 @@ export function TrackerView({
               >
                 <p className="text-xs font-bold text-zinc-400 uppercase mb-1">{label}</p>
                 <div className="flex items-end gap-2">
-                  <span className={cn('text-2xl font-bold', exceeded ? 'text-red-600' : 'text-zinc-900')}>
-                    {actual}{key !== 'calories' ? 'г' : ''}
+                  <span
+                    className={cn(
+                      'text-2xl font-bold',
+                      exceeded ? 'text-red-600' : 'text-zinc-900',
+                    )}
+                  >
+                    {actual}
+                    {key !== 'calories' ? 'г' : ''}
                   </span>
                   <span className="text-zinc-400 text-sm mb-1">
                     / {target} {unit}
@@ -252,23 +273,35 @@ export function TrackerView({
                 const mealEntries = todayEntries.filter((e) => e.mealType === meal);
                 if (mealEntries.length === 0) return null;
                 return (
-                  <div key={meal} className="bg-white rounded-3xl border border-zinc-100 overflow-hidden shadow-sm">
+                  <div
+                    key={meal}
+                    className="bg-white rounded-3xl border border-zinc-100 overflow-hidden shadow-sm"
+                  >
                     <div className="px-6 py-4 bg-zinc-50/50 border-b border-zinc-100 flex items-center justify-between">
-                      <h4 className="text-xs font-bold text-zinc-400 uppercase tracking-wider">{meal}</h4>
+                      <h4 className="text-xs font-bold text-zinc-400 uppercase tracking-wider">
+                        {meal}
+                      </h4>
                     </div>
                     <div className="divide-y divide-zinc-50">
                       {mealEntries.map((entry) => {
                         const isChecked = checkedEntries.includes(entry.id);
-                        const recipe = entry.type === 'recipe' ? recipes.find((r) => r.id === entry.recipeId) : null;
+                        const recipe =
+                          entry.type === 'recipe'
+                            ? recipes.find((r) => r.id === entry.recipeId)
+                            : null;
                         const title = entry.type === 'recipe' ? recipe?.title : entry.productName;
                         const calories =
-                          entry.type === 'recipe' ? recipe?.macros.calories : entry.macros?.calories;
+                          entry.type === 'recipe'
+                            ? recipe?.macros.calories
+                            : entry.macros?.calories;
                         return (
                           <div key={entry.id} className="p-4 flex items-center gap-4 group">
                             <button
                               onClick={() => {
                                 if (isChecked) {
-                                  onCheckedEntriesChange(checkedEntries.filter((id) => id !== entry.id));
+                                  onCheckedEntriesChange(
+                                    checkedEntries.filter((id) => id !== entry.id),
+                                  );
                                 } else {
                                   onCheckedEntriesChange([...checkedEntries, entry.id]);
                                 }
@@ -283,7 +316,12 @@ export function TrackerView({
                               <Check className="w-4 h-4" />
                             </button>
                             <div className="flex-1">
-                              <p className={cn('font-bold text-zinc-900', isChecked && 'line-through opacity-50')}>
+                              <p
+                                className={cn(
+                                  'font-bold text-zinc-900',
+                                  isChecked && 'line-through opacity-50',
+                                )}
+                              >
                                 {title}
                               </p>
                               <p className="text-xs text-zinc-400">{calories} ккал</p>
@@ -328,7 +366,8 @@ export function TrackerView({
               )}
             </button>
             <p className="text-zinc-500 text-sm max-w-md">
-              Ты не знаешь что съесть на остаток твоих кбжу сегодня? Нажми на кнопку и получи варианты на выбор
+              Ты не знаешь что съесть на остаток твоих кбжу сегодня? Нажми на кнопку и получи
+              варианты на выбор
             </p>
           </div>
 
@@ -362,7 +401,9 @@ export function TrackerView({
                         )}
                         onClick={() => {
                           if (selectedSuggestionIds.includes(option.id)) {
-                            setSelectedSuggestionIds(selectedSuggestionIds.filter((id) => id !== option.id));
+                            setSelectedSuggestionIds(
+                              selectedSuggestionIds.filter((id) => id !== option.id),
+                            );
                           } else {
                             setSelectedSuggestionIds([...selectedSuggestionIds, option.id]);
                           }
@@ -380,9 +421,13 @@ export function TrackerView({
                             <Check className="w-3 h-3" />
                           </div>
                           <div className="flex-1">
-                            <p className="font-bold text-zinc-900 text-sm mb-2">{option.description}</p>
+                            <p className="font-bold text-zinc-900 text-sm mb-2">
+                              {option.description}
+                            </p>
                             <div className="flex gap-3 text-[10px] font-bold text-zinc-400 uppercase">
-                              <span className="text-emerald-600">{option.macros.calories} ккал</span>
+                              <span className="text-emerald-600">
+                                {option.macros.calories} ккал
+                              </span>
                               <span>Б: {option.macros.proteins}г</span>
                               <span>Ж: {option.macros.fats}г</span>
                               <span>У: {option.macros.carbs}г</span>
@@ -407,7 +452,11 @@ export function TrackerView({
                       disabled={isSuggesting}
                       className="flex-1 py-4 bg-white border border-emerald-200 text-emerald-600 rounded-2xl font-bold hover:bg-emerald-50 transition-all flex items-center justify-center gap-2"
                     >
-                      {isSuggesting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+                      {isSuggesting ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <Sparkles className="w-4 h-4" />
+                      )}
                       Предложить альтернативу
                     </button>
                   </div>

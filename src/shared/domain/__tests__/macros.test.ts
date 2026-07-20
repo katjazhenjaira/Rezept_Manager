@@ -46,13 +46,27 @@ describe('sumMacros', () => {
   });
 
   it('sums macros for a recipe entry', () => {
-    const entry: PlannerEntry = { id: 'e1', date: '2026-01-01', mealType: 'Завтрак', type: 'recipe', recipeId: 'r1' };
-    expect(sumMacros([entry], [recipeA, recipeB])).toEqual({ calories: 300, proteins: 10, fats: 5, carbs: 55 });
+    const entry: PlannerEntry = {
+      id: 'e1',
+      date: '2026-01-01',
+      mealType: 'Завтрак',
+      type: 'recipe',
+      recipeId: 'r1',
+    };
+    expect(sumMacros([entry], [recipeA, recipeB])).toEqual({
+      calories: 300,
+      proteins: 10,
+      fats: 5,
+      carbs: 55,
+    });
   });
 
   it('sums macros for a product entry with inline macros', () => {
     const entry: PlannerEntry = {
-      id: 'e2', date: '2026-01-01', mealType: 'Обед', type: 'product',
+      id: 'e2',
+      date: '2026-01-01',
+      mealType: 'Обед',
+      type: 'product',
       macros: { calories: 150, proteins: 5, fats: 3, carbs: 25 },
     };
     expect(sumMacros([entry], [])).toEqual({ calories: 150, proteins: 5, fats: 3, carbs: 25 });
@@ -64,17 +78,31 @@ describe('sumMacros', () => {
       { id: 'e2', date: '2026-01-01', mealType: 'Обед', type: 'recipe', recipeId: 'r2' },
     ];
     expect(sumMacros(entries, [recipeA, recipeB])).toEqual({
-      calories: 500, proteins: 25, fats: 19, carbs: 57,
+      calories: 500,
+      proteins: 25,
+      fats: 19,
+      carbs: 57,
     });
   });
 
   it('ignores recipe entries whose recipeId has no match', () => {
-    const entry: PlannerEntry = { id: 'e1', date: '2026-01-01', mealType: 'Завтрак', type: 'recipe', recipeId: 'missing' };
+    const entry: PlannerEntry = {
+      id: 'e1',
+      date: '2026-01-01',
+      mealType: 'Завтрак',
+      type: 'recipe',
+      recipeId: 'missing',
+    };
     expect(sumMacros([entry], [recipeA])).toEqual({ calories: 0, proteins: 0, fats: 0, carbs: 0 });
   });
 
   it('ignores product entries with no macros field', () => {
-    const entry: PlannerEntry = { id: 'e1', date: '2026-01-01', mealType: 'Завтрак', type: 'product' };
+    const entry: PlannerEntry = {
+      id: 'e1',
+      date: '2026-01-01',
+      mealType: 'Завтрак',
+      type: 'product',
+    };
     expect(sumMacros([entry], [])).toEqual({ calories: 0, proteins: 0, fats: 0, carbs: 0 });
   });
 });
@@ -83,18 +111,33 @@ describe('remainingMacros', () => {
   it('returns positive difference when targets exceed actual', () => {
     const targets = { calories: 2000, proteins: 120, fats: 60, carbs: 250 };
     const actual = { calories: 500, proteins: 30, fats: 15, carbs: 60 };
-    expect(remainingMacros(targets, actual)).toEqual({ calories: 1500, proteins: 90, fats: 45, carbs: 190 });
+    expect(remainingMacros(targets, actual)).toEqual({
+      calories: 1500,
+      proteins: 90,
+      fats: 45,
+      carbs: 190,
+    });
   });
 
   it('clamps to zero when actual exceeds targets', () => {
     const targets = { calories: 500, proteins: 30, fats: 15, carbs: 60 };
     const actual = { calories: 600, proteins: 40, fats: 20, carbs: 80 };
-    expect(remainingMacros(targets, actual)).toEqual({ calories: 0, proteins: 0, fats: 0, carbs: 0 });
+    expect(remainingMacros(targets, actual)).toEqual({
+      calories: 0,
+      proteins: 0,
+      fats: 0,
+      carbs: 0,
+    });
   });
 
   it('returns zeros when targets equal actual', () => {
     const macros = { calories: 2000, proteins: 120, fats: 60, carbs: 250 };
-    expect(remainingMacros(macros, macros)).toEqual({ calories: 0, proteins: 0, fats: 0, carbs: 0 });
+    expect(remainingMacros(macros, macros)).toEqual({
+      calories: 0,
+      proteins: 0,
+      fats: 0,
+      carbs: 0,
+    });
   });
 });
 

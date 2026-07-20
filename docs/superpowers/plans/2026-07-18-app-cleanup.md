@@ -14,23 +14,24 @@
 
 ## File Map
 
-| Action | File | What changes |
-|--------|------|--------------|
-| Create | `src/shared/utils/pdfUtils.ts` | Single source for `extractImageFromPDF` + `extractTextFromPDF` + pdfjs worker setup |
-| Modify | `src/features/recipes/RecipesView.tsx` | Remove 3 duplicate pdfjs lines + 2 function bodies; import from pdfUtils |
-| Modify | `src/features/programs/ProgramsView.tsx` | Same removals as RecipesView |
-| Modify | `src/features/programs/ProgramDetailModal.tsx` | Absorb `addProductsToCart`; remove `onAddProductsToCart` prop |
-| Modify | `src/features/programs/ProgramsView.tsx` | Remove `onAddProductsToCart` from props |
-| Modify | `src/features/settings/SettingsModal.tsx` | Use `useUserProfile()` context; remove `userProfile`/`setUserProfile` props |
-| Create | `src/app/layout/AppHeader.tsx` | Header JSX + language switcher (internal state) |
-| Create | `src/app/layout/RecipeSelectionBar.tsx` | Floating recipe selection bar |
-| Modify | `src/App.tsx` | Remove all of the above; switch to context reads; use new layout components |
+| Action | File                                           | What changes                                                                        |
+| ------ | ---------------------------------------------- | ----------------------------------------------------------------------------------- |
+| Create | `src/shared/utils/pdfUtils.ts`                 | Single source for `extractImageFromPDF` + `extractTextFromPDF` + pdfjs worker setup |
+| Modify | `src/features/recipes/RecipesView.tsx`         | Remove 3 duplicate pdfjs lines + 2 function bodies; import from pdfUtils            |
+| Modify | `src/features/programs/ProgramsView.tsx`       | Same removals as RecipesView                                                        |
+| Modify | `src/features/programs/ProgramDetailModal.tsx` | Absorb `addProductsToCart`; remove `onAddProductsToCart` prop                       |
+| Modify | `src/features/programs/ProgramsView.tsx`       | Remove `onAddProductsToCart` from props                                             |
+| Modify | `src/features/settings/SettingsModal.tsx`      | Use `useUserProfile()` context; remove `userProfile`/`setUserProfile` props         |
+| Create | `src/app/layout/AppHeader.tsx`                 | Header JSX + language switcher (internal state)                                     |
+| Create | `src/app/layout/RecipeSelectionBar.tsx`        | Floating recipe selection bar                                                       |
+| Modify | `src/App.tsx`                                  | Remove all of the above; switch to context reads; use new layout components         |
 
 ---
 
 ## Task 1: Create shared PDF utility module
 
 **Files:**
+
 - Create: `src/shared/utils/pdfUtils.ts`
 
 The functions `extractImageFromPDF` and `extractTextFromPDF` currently exist identically in three files: `App.tsx`, `RecipesView.tsx`, and `ProgramsView.tsx`. This task creates the canonical copy.
@@ -119,6 +120,7 @@ git commit -m "feat(shared): extract pdfUtils — single source for extractImage
 ## Task 2: Remove PDF duplication from RecipesView
 
 **Files:**
+
 - Modify: `src/features/recipes/RecipesView.tsx`
 
 RecipesView.tsx has `import * as pdfjs from 'pdfjs-dist'` (line ~36) and defines both functions locally (~lines 80–136). These are replaced by a single import from pdfUtils.
@@ -126,11 +128,13 @@ RecipesView.tsx has `import * as pdfjs from 'pdfjs-dist'` (line ~36) and defines
 - [ ] **Step 2.1: Replace pdfjs import with pdfUtils import**
 
 Find in RecipesView.tsx:
+
 ```tsx
 import * as pdfjs from 'pdfjs-dist';
 ```
 
 Replace with:
+
 ```tsx
 import { extractImageFromPDF, extractTextFromPDF } from '@/shared/utils/pdfUtils';
 ```
@@ -138,6 +142,7 @@ import { extractImageFromPDF, extractTextFromPDF } from '@/shared/utils/pdfUtils
 - [ ] **Step 2.2: Delete local `extractImageFromPDF` function**
 
 The function body begins with:
+
 ```tsx
 const extractImageFromPDF = async (
   pdfData: string,
@@ -151,6 +156,7 @@ Delete the entire function (from `const extractImageFromPDF` to its closing `};`
 - [ ] **Step 2.3: Delete local `extractTextFromPDF` function**
 
 The function body begins with:
+
 ```tsx
 const extractTextFromPDF = async (pdfData: string): Promise<string> => {
 ```
@@ -177,6 +183,7 @@ git commit -m "refactor(recipes): import pdfUtils from shared utility, remove lo
 ## Task 3: Remove PDF duplication from ProgramsView
 
 **Files:**
+
 - Modify: `src/features/programs/ProgramsView.tsx`
 
 ProgramsView.tsx has the same three items to remove as Task 2.
@@ -184,11 +191,13 @@ ProgramsView.tsx has the same three items to remove as Task 2.
 - [ ] **Step 3.1: Replace pdfjs import**
 
 Find in ProgramsView.tsx (line ~12):
+
 ```tsx
 import * as pdfjs from 'pdfjs-dist';
 ```
 
 Replace with:
+
 ```tsx
 import { extractImageFromPDF, extractTextFromPDF } from '@/shared/utils/pdfUtils';
 ```
@@ -196,6 +205,7 @@ import { extractImageFromPDF, extractTextFromPDF } from '@/shared/utils/pdfUtils
 - [ ] **Step 3.2: Delete local `extractImageFromPDF` function**
 
 Beginning around line 41:
+
 ```tsx
 const extractImageFromPDF = async (
   pdfData: string,
@@ -209,6 +219,7 @@ Delete the entire function (~35 lines, to closing `};`).
 - [ ] **Step 3.3: Delete local `extractTextFromPDF` function**
 
 Beginning immediately after:
+
 ```tsx
 const extractTextFromPDF = async (pdfData: string): Promise<string> => {
 ```
@@ -235,12 +246,14 @@ git commit -m "refactor(programs): import pdfUtils from shared utility, remove l
 ## Task 4: Move `addProductsToCart` into ProgramDetailModal
 
 **Files:**
+
 - Modify: `src/features/programs/ProgramDetailModal.tsx`
 - Modify: `src/features/programs/ProgramsView.tsx`
 
 `addProductsToCart` in `App.tsx` (25 lines) is only ever called from `ProgramDetailModal` via the prop chain `App.tsx → ProgramsView → ProgramDetailModal`. Since ProgramDetailModal already imports `updateDoc`/`doc` from Firebase and `db`, it can own this function directly.
 
 **Context:** `addProductsToCart` in App.tsx looks like:
+
 ```ts
 const addProductsToCart = async (products: string[]) => {
   try {
@@ -257,16 +270,19 @@ const addProductsToCart = async (products: string[]) => {
         }
       }
       const isBasic = isStaple(name);
-      await addDoc(collection(db, "cart"), {
-        name, amount, sourceDishes: ['Из программы'],
-        checked: false, isBasic,
-        createdAt: new Date().toISOString()
+      await addDoc(collection(db, 'cart'), {
+        name,
+        amount,
+        sourceDishes: ['Из программы'],
+        checked: false,
+        isBasic,
+        createdAt: new Date().toISOString(),
       });
     }
-    alert("Продукты добавлены в корзину!");
+    alert('Продукты добавлены в корзину!');
   } catch (error) {
-    console.error("Error adding to cart:", error);
-    alert("Ошибка при добавлении в корзину");
+    console.error('Error adding to cart:', error);
+    alert('Ошибка при добавлении в корзину');
   }
 };
 ```
@@ -280,6 +296,7 @@ import { updateDoc, doc, addDoc, collection } from 'firebase/firestore';
 ```
 
 Also add `isStaple` import after the existing firebase imports:
+
 ```tsx
 import { isStaple } from '@/features/cart/services/staples';
 ```
@@ -324,6 +341,7 @@ const addProductsToCart = async (products: string[]) => {
 - [ ] **Step 4.3: Remove `onAddProductsToCart` from ProgramDetailModalProps**
 
 In `ProgramDetailModalProps` type, remove:
+
 ```tsx
   onAddProductsToCart: (products: string[]) => void;
 ```
@@ -349,6 +367,7 @@ onClick={(e) => { e.stopPropagation(); void addProductsToCart([...(subfolder.all
 - [ ] **Step 4.4: Remove `onAddProductsToCart` from ProgramsView**
 
 In `ProgramsView.tsx`:
+
 1. Remove `onAddProductsToCart: (products: string[]) => void;` from `ProgramsViewProps`
 2. Remove `onAddProductsToCart` from the props destructuring
 3. Remove `onAddProductsToCart={onAddProductsToCart}` from the `<ProgramDetailModal>` call
@@ -373,11 +392,13 @@ git commit -m "refactor(programs): absorb addProductsToCart into ProgramDetailMo
 ## Task 5: Update SettingsModal to use UserProfileContext
 
 **Files:**
+
 - Modify: `src/features/settings/SettingsModal.tsx`
 
 SettingsModal currently receives `userProfile: UserProfile` and `setUserProfile: (p: UserProfile) => void` as props. These are replaced by a local form state initialised from `useUserProfile()` context. The Firestore save (`setDoc`) is replaced by `saveUserProfile` from context.
 
 **Context from UserProfileContext.ts:**
+
 ```ts
 export function useUserProfile(): UserProfileState {
   // returns { userProfile: UserProfile | null, saveUserProfile: (p: UserProfile) => Promise<void> }
@@ -387,6 +408,7 @@ export function useUserProfile(): UserProfileState {
 - [ ] **Step 5.1: Add import for `useUserProfile`**
 
 In `SettingsModal.tsx`, add to imports:
+
 ```tsx
 import { useUserProfile } from '@/app/providers/UserProfileContext';
 ```
@@ -394,6 +416,7 @@ import { useUserProfile } from '@/app/providers/UserProfileContext';
 - [ ] **Step 5.2: Remove `userProfile` and `setUserProfile` from Props**
 
 Change the `Props` type from:
+
 ```tsx
 type Props = {
   isOpen: boolean;
@@ -407,6 +430,7 @@ type Props = {
 ```
 
 To:
+
 ```tsx
 type Props = {
   isOpen: boolean;
@@ -420,6 +444,7 @@ type Props = {
 - [ ] **Step 5.3: Update function signature and add context + form state**
 
 Change the function signature from:
+
 ```tsx
 export function SettingsModal({
   isOpen,
@@ -434,6 +459,7 @@ export function SettingsModal({
 ```
 
 To:
+
 ```tsx
 const DEFAULT_PROFILE: UserProfile = {
   name: '', age: 30, gender: 'female',
@@ -459,43 +485,47 @@ export function SettingsModal({
 - [ ] **Step 5.4: Add `useEffect` to sync form from context on open**
 
 After the `useState` line, add:
+
 ```tsx
-  useEffect(() => {
-    if (contextProfile) setUserProfile(contextProfile);
-  }, [contextProfile]);
+useEffect(() => {
+  if (contextProfile) setUserProfile(contextProfile);
+}, [contextProfile]);
 ```
 
 - [ ] **Step 5.5: Replace `handleSaveSettings` body**
 
 Current:
+
 ```tsx
-  const handleSaveSettings = async () => {
-    try {
-      await setDoc(doc(db, 'settings', 'profile'), userProfile);
-      onClose();
-    } catch (error) {
-      console.error('Error saving settings:', error);
-      alert('Не удалось сохранить настройки');
-    }
-  };
+const handleSaveSettings = async () => {
+  try {
+    await setDoc(doc(db, 'settings', 'profile'), userProfile);
+    onClose();
+  } catch (error) {
+    console.error('Error saving settings:', error);
+    alert('Не удалось сохранить настройки');
+  }
+};
 ```
 
 Replace with:
+
 ```tsx
-  const handleSaveSettings = async () => {
-    try {
-      await saveUserProfile(userProfile);
-      onClose();
-    } catch (error) {
-      console.error('Error saving settings:', error);
-      alert('Не удалось сохранить настройки');
-    }
-  };
+const handleSaveSettings = async () => {
+  try {
+    await saveUserProfile(userProfile);
+    onClose();
+  } catch (error) {
+    console.error('Error saving settings:', error);
+    alert('Не удалось сохранить настройки');
+  }
+};
 ```
 
 - [ ] **Step 5.6: Remove now-unused imports from SettingsModal**
 
 Remove `setDoc` and `doc` from the firebase import line (and `db` if it's no longer used):
+
 ```tsx
 // Before:
 import { setDoc, doc } from 'firebase/firestore';
@@ -505,6 +535,7 @@ import { db } from '@/infrastructure/firebaseApp';
 ```
 
 Also remove `UserProfile` from the type import if it's no longer used directly:
+
 ```tsx
 // Check: UserProfile is still used for the form state type annotation
 // Keep: import type { UserProfile } from '@/shared/domain/types';
@@ -530,6 +561,7 @@ git commit -m "refactor(settings): SettingsModal uses useUserProfile() context d
 ## Task 6: Create AppHeader component
 
 **Files:**
+
 - Create: `src/app/layout/AppHeader.tsx`
 
 This component wraps the 77-line header block from App.tsx. Language switcher state becomes internal. The settings button calls an `onOpenSettings` callback from App.tsx (so `isSettingsOpen` and `SettingsModal` stay in App.tsx; RecipesView's `onOpenSettings` prop can also call the same callback).
@@ -590,28 +622,43 @@ export function AppHeader({ onOpenSettings }: AppHeaderProps) {
                       className="absolute right-0 mt-2 w-32 bg-white rounded-2xl shadow-2xl border border-zinc-100 overflow-hidden z-50"
                     >
                       <button
-                        onClick={() => { setCurrentLanguage('ru'); setIsLanguageDropdownOpen(false); }}
+                        onClick={() => {
+                          setCurrentLanguage('ru');
+                          setIsLanguageDropdownOpen(false);
+                        }}
                         className={cn(
                           'w-full px-4 py-3 text-left text-sm font-bold flex items-center gap-3 hover:bg-zinc-50 transition-colors',
-                          currentLanguage === 'ru' ? 'text-emerald-600 bg-emerald-50/50' : 'text-zinc-600',
+                          currentLanguage === 'ru'
+                            ? 'text-emerald-600 bg-emerald-50/50'
+                            : 'text-zinc-600',
                         )}
                       >
                         <span>🇷🇺</span> Русский
                       </button>
                       <button
-                        onClick={() => { setCurrentLanguage('de'); setIsLanguageDropdownOpen(false); }}
+                        onClick={() => {
+                          setCurrentLanguage('de');
+                          setIsLanguageDropdownOpen(false);
+                        }}
                         className={cn(
                           'w-full px-4 py-3 text-left text-sm font-bold flex items-center gap-3 hover:bg-zinc-50 transition-colors',
-                          currentLanguage === 'de' ? 'text-emerald-600 bg-emerald-50/50' : 'text-zinc-600',
+                          currentLanguage === 'de'
+                            ? 'text-emerald-600 bg-emerald-50/50'
+                            : 'text-zinc-600',
                         )}
                       >
                         <span>🇩🇪</span> Deutsch
                       </button>
                       <button
-                        onClick={() => { setCurrentLanguage('en'); setIsLanguageDropdownOpen(false); }}
+                        onClick={() => {
+                          setCurrentLanguage('en');
+                          setIsLanguageDropdownOpen(false);
+                        }}
                         className={cn(
                           'w-full px-4 py-3 text-left text-sm font-bold flex items-center gap-3 hover:bg-zinc-50 transition-colors',
-                          currentLanguage === 'en' ? 'text-emerald-600 bg-emerald-50/50' : 'text-zinc-600',
+                          currentLanguage === 'en'
+                            ? 'text-emerald-600 bg-emerald-50/50'
+                            : 'text-zinc-600',
                         )}
                       >
                         <span>🇺🇸</span> English
@@ -655,6 +702,7 @@ git commit -m "feat(layout): add AppHeader component — extracts header JSX and
 ## Task 7: Create RecipeSelectionBar component
 
 **Files:**
+
 - Create: `src/app/layout/RecipeSelectionBar.tsx`
 
 The floating bar (42 lines in App.tsx) becomes a standalone component.
@@ -674,7 +722,12 @@ type RecipeSelectionBarProps = {
   onConfirm: () => Promise<void>;
 };
 
-export function RecipeSelectionBar({ isVisible, selectedCount, onCancel, onConfirm }: RecipeSelectionBarProps) {
+export function RecipeSelectionBar({
+  isVisible,
+  selectedCount,
+  onCancel,
+  onConfirm,
+}: RecipeSelectionBarProps) {
   return (
     <AnimatePresence>
       {isVisible && (
@@ -686,7 +739,9 @@ export function RecipeSelectionBar({ isVisible, selectedCount, onCancel, onConfi
         >
           <div className="bg-zinc-900 text-white px-6 py-4 rounded-3xl shadow-2xl flex items-center gap-8 border border-white/10 backdrop-blur-xl">
             <div className="flex flex-col">
-              <span className="text-xs font-bold text-zinc-400 uppercase tracking-widest">Выбрано</span>
+              <span className="text-xs font-bold text-zinc-400 uppercase tracking-widest">
+                Выбрано
+              </span>
               <span className="text-xl font-bold text-emerald-400">{selectedCount} рецептов</span>
             </div>
             <div className="h-8 w-px bg-white/10" />
@@ -734,11 +789,13 @@ git commit -m "feat(layout): add RecipeSelectionBar component"
 ## Task 8: Update App.tsx — switch to context, use new layout components
 
 **Files:**
+
 - Modify: `src/App.tsx`
 
 This task consolidates all removals. Each sub-step targets a distinct section to minimise risk.
 
 **What App.tsx currently imports (relevant to this task):**
+
 - pdfjs: `import * as pdfjs from 'pdfjs-dist'` and `import pdfjsWorker from '...'` → remove both
 - firebase: `collection, addDoc, updateDoc, doc, onSnapshot, query, getDoc` → remove `onSnapshot`, `query`, `addDoc` (if `addProductsToCart` is gone)
 - types: `CartItem, Tab, Recipe, UserProfile, Program` → remove `CartItem`, `UserProfile`; keep the rest
@@ -751,12 +808,14 @@ This task consolidates all removals. Each sub-step targets a distinct section to
 - [ ] **Step 8.1: Remove pdfjs imports and `extractImageFromPDF` / `extractTextFromPDF`**
 
 Delete these two import lines (near the top of the file):
+
 ```tsx
 import * as pdfjs from 'pdfjs-dist';
 import pdfjsWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 ```
 
 Delete the worker setup line:
+
 ```tsx
 pdfjs.GlobalWorkerOptions.workerSrc = pdfjsWorker;
 ```
@@ -768,81 +827,90 @@ Delete the entire `extractTextFromPDF` function (~11 lines starting with `const 
 - [ ] **Step 8.2: Remove `const [recipes, setRecipes]` and its `onSnapshot` useEffect**
 
 Delete:
+
 ```tsx
 const [recipes, setRecipes] = useState<Recipe[]>([]);
 ```
 
 Delete the useEffect block:
+
 ```tsx
-  useEffect(() => {
-    const q = query(collection(db, "recipes"));
-    const unsubscribe = onSnapshot(q, (querySnapshot) => {
-      const recipesData: Recipe[] = [];
-      querySnapshot.forEach((doc) => {
-        recipesData.push({ id: doc.id, ...doc.data() } as Recipe);
-      });
-      setRecipes(recipesData);
+useEffect(() => {
+  const q = query(collection(db, 'recipes'));
+  const unsubscribe = onSnapshot(q, (querySnapshot) => {
+    const recipesData: Recipe[] = [];
+    querySnapshot.forEach((doc) => {
+      recipesData.push({ id: doc.id, ...doc.data() } as Recipe);
     });
-    return () => unsubscribe();
-  }, []);
+    setRecipes(recipesData);
+  });
+  return () => unsubscribe();
+}, []);
 ```
 
 - [ ] **Step 8.3: Remove `const [cart, setCart]` and its `onSnapshot` useEffect**
 
 Delete:
+
 ```tsx
 const [cart, setCart] = useState<CartItem[]>([]);
 ```
 
 Delete the useEffect block:
+
 ```tsx
-  useEffect(() => {
-    const q = query(collection(db, "cart"));
-    const unsubscribe = onSnapshot(q, (querySnapshot) => {
-      const cartData: CartItem[] = [];
-      querySnapshot.forEach((doc) => {
-        cartData.push({ id: doc.id, ...doc.data() } as CartItem);
-      });
-      setCart(cartData.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
+useEffect(() => {
+  const q = query(collection(db, 'cart'));
+  const unsubscribe = onSnapshot(q, (querySnapshot) => {
+    const cartData: CartItem[] = [];
+    querySnapshot.forEach((doc) => {
+      cartData.push({ id: doc.id, ...doc.data() } as CartItem);
     });
-    return () => unsubscribe();
-  }, []);
+    setCart(
+      cartData.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()),
+    );
+  });
+  return () => unsubscribe();
+}, []);
 ```
 
 - [ ] **Step 8.4: Remove `const [userProfile, setUserProfile]` init block and its `onSnapshot` useEffect**
 
 Delete the useState block (~13 lines):
+
 ```tsx
-  const [userProfile, setUserProfile] = useState<UserProfile>({
-    name: '',
-    age: 30,
-    gender: 'female',
-    currentWeight: 65,
-    targetWeight: 60,
-    targetCalories: 1800,
-    targetProteins: 100,
-    targetFats: 60,
-    targetCarbs: 200,
-    waterGoal: 2000,
-    allergies: []
-  });
+const [userProfile, setUserProfile] = useState<UserProfile>({
+  name: '',
+  age: 30,
+  gender: 'female',
+  currentWeight: 65,
+  targetWeight: 60,
+  targetCalories: 1800,
+  targetProteins: 100,
+  targetFats: 60,
+  targetCarbs: 200,
+  waterGoal: 2000,
+  allergies: [],
+});
 ```
 
 Delete the useEffect block (~8 lines):
+
 ```tsx
-  useEffect(() => {
-    const unsubscribe = onSnapshot(doc(db, "settings", "profile"), (doc) => {
-      if (doc.exists()) {
-        setUserProfile(doc.data() as UserProfile);
-      }
-    });
-    return () => unsubscribe();
-  }, []);
+useEffect(() => {
+  const unsubscribe = onSnapshot(doc(db, 'settings', 'profile'), (doc) => {
+    if (doc.exists()) {
+      setUserProfile(doc.data() as UserProfile);
+    }
+  });
+  return () => unsubscribe();
+}, []);
 ```
 
 - [ ] **Step 8.5: Remove `isLanguageDropdownOpen` and `currentLanguage` state**
 
 Delete:
+
 ```tsx
 const [isLanguageDropdownOpen, setIsLanguageDropdownOpen] = useState(false);
 const [currentLanguage, setCurrentLanguage] = useState<'ru' | 'de' | 'en'>('ru');
@@ -851,6 +919,7 @@ const [currentLanguage, setCurrentLanguage] = useState<'ru' | 'de' | 'en'>('ru')
 - [ ] **Step 8.6: Remove `addProductsToCart` function**
 
 Delete the entire function (~25 lines):
+
 ```tsx
   const addProductsToCart = async (products: string[]) => {
     ...
@@ -863,41 +932,53 @@ Add `DEFAULT_PROFILE` above the `App` function (before `export default function 
 
 ```tsx
 const DEFAULT_PROFILE: UserProfile = {
-  name: '', age: 30, gender: 'female',
-  currentWeight: 65, targetWeight: 60,
-  targetCalories: 1800, targetProteins: 100, targetFats: 60, targetCarbs: 200,
-  waterGoal: 2000, allergies: [],
+  name: '',
+  age: 30,
+  gender: 'female',
+  currentWeight: 65,
+  targetWeight: 60,
+  targetCalories: 1800,
+  targetProteins: 100,
+  targetFats: 60,
+  targetCarbs: 200,
+  waterGoal: 2000,
+  allergies: [],
 };
 ```
 
 Inside the App function, find the current `useData` and `useNutritionPlan` lines:
+
 ```tsx
-  const { activeNutritionPlan } = useNutritionPlan();
-  const { programs } = useData();
+const { activeNutritionPlan } = useNutritionPlan();
+const { programs } = useData();
 ```
 
 Replace with:
+
 ```tsx
-  const { activeNutritionPlan } = useNutritionPlan();
-  const { userProfile: contextProfile } = useUserProfile();
-  const userProfile = contextProfile ?? DEFAULT_PROFILE;
-  const { recipes, cartItems, programs } = useData();
+const { activeNutritionPlan } = useNutritionPlan();
+const { userProfile: contextProfile } = useUserProfile();
+const userProfile = contextProfile ?? DEFAULT_PROFILE;
+const { recipes, cartItems, programs } = useData();
 ```
 
 - [ ] **Step 8.8: Add new imports and update UserProfileContext import**
 
 Add two new import lines:
+
 ```tsx
 import { AppHeader } from '@/app/layout/AppHeader';
 import { RecipeSelectionBar } from '@/app/layout/RecipeSelectionBar';
 ```
 
 Find the existing UserProfileContext import (currently `useNutritionPlan` only):
+
 ```tsx
 import { useNutritionPlan } from '@/app/providers/UserProfileContext';
 ```
 
 Replace with:
+
 ```tsx
 import { useNutritionPlan, useUserProfile } from '@/app/providers/UserProfileContext';
 ```
@@ -905,13 +986,15 @@ import { useNutritionPlan, useUserProfile } from '@/app/providers/UserProfileCon
 - [ ] **Step 8.10: Update firebase imports — remove now-unused names**
 
 Find the firebase import line:
+
 ```tsx
-import { collection, addDoc, updateDoc, doc, onSnapshot, query, getDoc } from "firebase/firestore";
+import { collection, addDoc, updateDoc, doc, onSnapshot, query, getDoc } from 'firebase/firestore';
 ```
 
 Remove `collection`, `addDoc`, `onSnapshot`, `query` — all are now gone from App.tsx (`addProductsToCart` and all three onSnapshot subscriptions removed):
+
 ```tsx
-import { updateDoc, doc, getDoc } from "firebase/firestore";
+import { updateDoc, doc, getDoc } from 'firebase/firestore';
 ```
 
 > **Note:** `updateDoc`/`doc` are still needed for `handleAddSelectedRecipes`. `getDoc` for the URL share handler.
@@ -919,23 +1002,15 @@ import { updateDoc, doc, getDoc } from "firebase/firestore";
 - [ ] **Step 8.11: Remove unused type imports**
 
 Find:
+
 ```tsx
-import type {
-  CartItem,
-  Tab,
-  Recipe,
-  UserProfile,
-  Program,
-} from '@/shared/domain/types';
+import type { CartItem, Tab, Recipe, UserProfile, Program } from '@/shared/domain/types';
 ```
 
 Remove `CartItem` and `UserProfile` (no longer used directly by App):
+
 ```tsx
-import type {
-  Tab,
-  Recipe,
-  Program,
-} from '@/shared/domain/types';
+import type { Tab, Recipe, Program } from '@/shared/domain/types';
 ```
 
 > **Note:** `Recipe` is still needed for `selectedRecipe: Recipe | null`. `Program` is still needed for the URL handler `getDoc` cast. `Tab` for `activeTab`.
@@ -943,8 +1018,9 @@ import type {
 - [ ] **Step 8.12: Remove `isStaple` import**
 
 Delete:
+
 ```tsx
-import { isStaple } from "@/features/cart/services/staples";
+import { isStaple } from '@/features/cart/services/staples';
 ```
 
 - [ ] **Step 8.13: Update `renderContent()` — fix CartView and ProgramsView props**
@@ -952,12 +1028,14 @@ import { isStaple } from "@/features/cart/services/staples";
 In `renderContent()`:
 
 Change `case 'cart'` to use `cartItems` instead of `cart`:
+
 ```tsx
       case 'cart':
         return <CartView cart={cartItems} />;
 ```
 
 Remove `onAddProductsToCart` from the `case 'programs'` block:
+
 ```tsx
       case 'programs':
         return (
@@ -993,34 +1071,37 @@ Remove `onAddProductsToCart` from the `case 'programs'` block:
 In the `return (...)` block of App:
 
 Replace the entire `<header>...</header>` block (77 lines) with:
+
 ```tsx
-      <AppHeader onOpenSettings={() => setIsSettingsOpen(true)} />
+<AppHeader onOpenSettings={() => setIsSettingsOpen(true)} />
 ```
 
 Replace the entire `<AnimatePresence>` block that was the RecipeSelectionBar (42 lines) with:
+
 ```tsx
-      <RecipeSelectionBar
-        isVisible={isRecipeSelectionMode}
-        selectedCount={selectedRecipeIds.length}
-        onCancel={() => {
-          setIsRecipeSelectionMode(false);
-          setSelectionTarget(null);
-          setSelectedRecipeIds([]);
-          if (selectionTarget?.programId) setOpenProgramId(selectionTarget.programId);
-        }}
-        onConfirm={handleAddSelectedRecipes}
-      />
+<RecipeSelectionBar
+  isVisible={isRecipeSelectionMode}
+  selectedCount={selectedRecipeIds.length}
+  onCancel={() => {
+    setIsRecipeSelectionMode(false);
+    setSelectionTarget(null);
+    setSelectedRecipeIds([]);
+    if (selectionTarget?.programId) setOpenProgramId(selectionTarget.programId);
+  }}
+  onConfirm={handleAddSelectedRecipes}
+/>
 ```
 
 Update the `<SettingsModal>` call (remove `userProfile` and `setUserProfile` props):
+
 ```tsx
-      <SettingsModal
-        isOpen={isSettingsOpen}
-        onClose={() => setIsSettingsOpen(false)}
-        availableCategories={availableCategories}
-        setAvailableCategories={setAvailableCategories}
-        onCategoryRemoved={() => {}}
-      />
+<SettingsModal
+  isOpen={isSettingsOpen}
+  onClose={() => setIsSettingsOpen(false)}
+  availableCategories={availableCategories}
+  setAvailableCategories={setAvailableCategories}
+  onCategoryRemoved={() => {}}
+/>
 ```
 
 - [ ] **Step 8.15: Verify TypeScript**

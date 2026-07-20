@@ -1,6 +1,13 @@
 import {
-  collection, addDoc, updateDoc, deleteDoc, doc,
-  onSnapshot, query, getDoc, where,
+  collection,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+  doc,
+  onSnapshot,
+  query,
+  getDoc,
+  where,
 } from 'firebase/firestore';
 import { db } from '@/infrastructure/firebaseApp';
 import { resolveImageField } from '@/infrastructure/firebaseStorage';
@@ -10,14 +17,14 @@ import { timestampToISO, requiredString, type TimestampLike } from './converters
 
 async function resolveSubfolderImages(
   uid: string,
-  subfolders: Program['subfolders']
+  subfolders: Program['subfolders'],
 ): Promise<Program['subfolders']> {
   if (!subfolders) return subfolders;
   return Promise.all(
     subfolders.map(async (sf) => ({
       ...sf,
       image: await resolveImageField(uid, 'subfolderImages', sf.image),
-    }))
+    })),
   );
 }
 
@@ -46,18 +53,21 @@ function fromFirestore(id: string, data: Record<string, unknown>): Program {
 export class FirestoreProgramsRepository implements ProgramsRepository {
   constructor(private readonly uid: string) {}
 
-  subscribeAll(callback: (programs: Program[]) => void, onError?: (error: Error) => void): () => void {
+  subscribeAll(
+    callback: (programs: Program[]) => void,
+    onError?: (error: Error) => void,
+  ): () => void {
     return onSnapshot(
       query(collection(db, 'programs'), where('userId', '==', this.uid)),
-      snapshot => {
+      (snapshot) => {
         const programs: Program[] = [];
-        snapshot.forEach(d => programs.push(fromFirestore(d.id, d.data())));
+        snapshot.forEach((d) => programs.push(fromFirestore(d.id, d.data())));
         callback(programs);
       },
-      error => {
+      (error) => {
         console.error('FirestoreProgramsRepository.subscribeAll failed:', error);
         onError?.(error);
-      }
+      },
     );
   }
 
@@ -65,7 +75,10 @@ export class FirestoreProgramsRepository implements ProgramsRepository {
     const image = await resolveImageField(this.uid, 'programImages', data.image);
     const subfolders = await resolveSubfolderImages(this.uid, data.subfolders);
     const ref = await addDoc(collection(db, 'programs'), {
-      ...data, image, subfolders, userId: this.uid,
+      ...data,
+      image,
+      subfolders,
+      userId: this.uid,
     });
     return ref.id;
   }

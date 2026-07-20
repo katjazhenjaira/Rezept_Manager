@@ -41,9 +41,7 @@ const fakeRepos = {
 function Wrapper({ children }: { children: ReactNode }) {
   return (
     <RepositoryContext.Provider value={fakeRepos}>
-      <DataContext.Provider value={emptyData}>
-        {children}
-      </DataContext.Provider>
+      <DataContext.Provider value={emptyData}>{children}</DataContext.Provider>
     </RepositoryContext.Provider>
   );
 }
@@ -74,7 +72,7 @@ describe('PlannerView', () => {
           mealTypes={['Завтрак', 'Обед', 'Ужин', 'Перекус']}
           onMealTypesChange={vi.fn()}
         />
-      </Wrapper>
+      </Wrapper>,
     );
     expect(screen.getByText(/составь твой/i)).toBeDefined();
   });
@@ -106,7 +104,7 @@ describe('PlannerView', () => {
             onMealTypesChange={vi.fn()}
           />
         </DataContext.Provider>
-      </RepositoryContext.Provider>
+      </RepositoryContext.Provider>,
     );
 
     fireEvent.click(screen.getByRole('button', { name: 'Месяц' }));

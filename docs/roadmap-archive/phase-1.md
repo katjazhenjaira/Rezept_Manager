@@ -5,6 +5,7 @@
 ## Чеклист
 
 ### 1. Доменный слой (Phase 1a) ✅ завершена (2026-04-26)
+
 - [x] `src/shared/domain/types.ts` — все типы из `App.tsx:163-275`
 - [x] `src/shared/domain/macros.ts` — sumMacros, remainingMacros, resolveActiveTargets
 - [x] `src/shared/domain/allergies.ts` — recipeAllergens, recipeHasAllergens
@@ -12,6 +13,7 @@
 - [x] Vitest + тесты 100% покрытия (32 теста, 3 файла)
 
 ### 2. Сервисный слой (Phase 1b) ✅ завершена (2026-04-27)
+
 - [x] Заменить все 3 вхождения `BASIC_KEYWORDS` в `App.tsx` на `isStaple()`
 - [x] Repository-интерфейсы: RecipesRepository, PlannerRepository, ProgramsRepository, CartRepository, UserProfileRepository, NutritionPlanRepository
 - [x] Firestore-реализации в `src/infrastructure/firestore/`
@@ -19,6 +21,7 @@
 - [x] Тесты на репозитории с fake реализациями (86 тестов, 0 ошибок TS)
 
 ### 3a. Providers и Shell ✅ завершена (2026-04-27)
+
 - [x] `src/app/providers/RepositoryProvider.tsx`
 - [x] `src/app/providers/DataProvider.tsx`
 - [x] `src/app/providers/UserProfileProvider.tsx`
@@ -30,6 +33,7 @@
 - [x] DataProvider unmount тест усилён (listenerCount === 0 для всех 4 репозиториев)
 
 ### 3b. i18n ✅ завершена (2026-04-28)
+
 - [x] `npm install i18next react-i18next`
 - [x] `src/app/providers/I18nProvider.tsx`
 - [x] `src/locales/ru.json`, `de.json`, `en.json`
@@ -37,6 +41,7 @@
 - [x] Все строки в Shell.tsx и TabBar.tsx через `t()` хук
 
 ### 4. По одной вкладке
+
 - [x] Settings → `src/features/settings/SettingsModal.tsx` (2026-04-28)
 - [x] Cart → `src/features/cart/CartView.tsx` (2026-04-28)
 - [x] Recipes → `src/features/recipes/RecipesView.tsx` (2026-04-28)
@@ -45,6 +50,7 @@
 - [x] Tracker → `src/features/tracker/TrackerView.tsx` (2026-07-18, App.tsx: 1395 → 540 строк)
 
 ### 5. Финальная очистка ✅ завершена (2026-07-18, App.tsx 540 → 277 строк)
+
 - [x] `extractImageFromPDF`/`extractTextFromPDF` → `src/shared/utils/pdfUtils.ts` (3 копии → 1)
 - [x] Удалить 3 дублирующих `onSnapshot` (recipes/cart/userProfile)
 - [x] `addProductsToCart` перенесена в `ProgramDetailModal`

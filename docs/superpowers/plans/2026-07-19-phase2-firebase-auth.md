@@ -14,39 +14,40 @@
 
 ## Файловая карта
 
-| Статус | Путь | Что делает |
-|--------|------|-----------|
-| NEW | `src/infrastructure/firebaseAuth.ts` | `getAuth(app)` singleton, экспортирует `auth` |
-| NEW | `src/features/auth/AuthContext.ts` | `{ user: FirebaseUser \| null, loading: boolean }` |
-| NEW | `src/features/auth/useAuth.ts` | хук-обёртка над AuthContext |
-| NEW | `src/features/auth/AuthProvider.tsx` | 3 состояния: loading / no-user / user |
-| NEW | `src/features/auth/LandingPage.tsx` | маркетинговый экран для гостей |
-| NEW | `src/features/auth/LoginScreen.tsx` | форма email/password + error map |
-| NEW | `src/features/auth/SignupScreen.tsx` | форма email/password/confirm + валидация |
-| NEW | `src/features/auth/__tests__/AuthProvider.test.tsx` | 4 теста AuthProvider |
-| NEW | `src/features/auth/__tests__/LoginScreen.test.tsx` | 3 теста LoginScreen |
-| NEW | `src/features/auth/__tests__/SignupScreen.test.tsx` | 4 теста SignupScreen |
-| NEW | `src/infrastructure/testing/FakeAuthProvider.tsx` | синхронный провайдер для тестов |
-| NEW | `firestore.rules` | Security Rules |
-| NEW | `scripts/migrate-assign-user.ts` | Admin SDK — проставить userId всем docs |
-| MODIFY | `src/infrastructure/firebaseApp.ts` | добавить `export const auth` |
-| MODIFY | `src/shared/domain/types.ts` | `userId?: string` в Recipe, PlannerEntry, CartItem, Program |
-| MODIFY | `src/app/providers/RepositoryProvider.tsx` | принимает `uid: string` prop |
-| MODIFY | `src/infrastructure/firestore/FirestoreRecipesRepository.ts` | uid + where + userId в writes |
-| MODIFY | `src/infrastructure/firestore/FirestorePlannerRepository.ts` | uid + where + userId в writes |
-| MODIFY | `src/infrastructure/firestore/FirestoreCartRepository.ts` | uid + where + userId в writes |
-| MODIFY | `src/infrastructure/firestore/FirestoreProgramsRepository.ts` | uid + where + userId в writes |
-| MODIFY | `src/infrastructure/firestore/FirestoreUserProfileRepository.ts` | path → `userProfiles/{uid}` |
-| MODIFY | `src/infrastructure/firestore/FirestoreNutritionPlanRepository.ts` | path → `nutritionPlans/{uid}` |
-| MODIFY | `src/main.tsx` | AuthProvider снаружи, uid → RepositoryProvider |
-| MODIFY | `src/features/settings/SettingsModal.tsx` | кнопка «Выйти» |
-| MODIFY | `vitest.config.ts` | добавить `setupFiles` для jest-dom |
+| Статус | Путь                                                               | Что делает                                                  |
+| ------ | ------------------------------------------------------------------ | ----------------------------------------------------------- |
+| NEW    | `src/infrastructure/firebaseAuth.ts`                               | `getAuth(app)` singleton, экспортирует `auth`               |
+| NEW    | `src/features/auth/AuthContext.ts`                                 | `{ user: FirebaseUser \| null, loading: boolean }`          |
+| NEW    | `src/features/auth/useAuth.ts`                                     | хук-обёртка над AuthContext                                 |
+| NEW    | `src/features/auth/AuthProvider.tsx`                               | 3 состояния: loading / no-user / user                       |
+| NEW    | `src/features/auth/LandingPage.tsx`                                | маркетинговый экран для гостей                              |
+| NEW    | `src/features/auth/LoginScreen.tsx`                                | форма email/password + error map                            |
+| NEW    | `src/features/auth/SignupScreen.tsx`                               | форма email/password/confirm + валидация                    |
+| NEW    | `src/features/auth/__tests__/AuthProvider.test.tsx`                | 4 теста AuthProvider                                        |
+| NEW    | `src/features/auth/__tests__/LoginScreen.test.tsx`                 | 3 теста LoginScreen                                         |
+| NEW    | `src/features/auth/__tests__/SignupScreen.test.tsx`                | 4 теста SignupScreen                                        |
+| NEW    | `src/infrastructure/testing/FakeAuthProvider.tsx`                  | синхронный провайдер для тестов                             |
+| NEW    | `firestore.rules`                                                  | Security Rules                                              |
+| NEW    | `scripts/migrate-assign-user.ts`                                   | Admin SDK — проставить userId всем docs                     |
+| MODIFY | `src/infrastructure/firebaseApp.ts`                                | добавить `export const auth`                                |
+| MODIFY | `src/shared/domain/types.ts`                                       | `userId?: string` в Recipe, PlannerEntry, CartItem, Program |
+| MODIFY | `src/app/providers/RepositoryProvider.tsx`                         | принимает `uid: string` prop                                |
+| MODIFY | `src/infrastructure/firestore/FirestoreRecipesRepository.ts`       | uid + where + userId в writes                               |
+| MODIFY | `src/infrastructure/firestore/FirestorePlannerRepository.ts`       | uid + where + userId в writes                               |
+| MODIFY | `src/infrastructure/firestore/FirestoreCartRepository.ts`          | uid + where + userId в writes                               |
+| MODIFY | `src/infrastructure/firestore/FirestoreProgramsRepository.ts`      | uid + where + userId в writes                               |
+| MODIFY | `src/infrastructure/firestore/FirestoreUserProfileRepository.ts`   | path → `userProfiles/{uid}`                                 |
+| MODIFY | `src/infrastructure/firestore/FirestoreNutritionPlanRepository.ts` | path → `nutritionPlans/{uid}`                               |
+| MODIFY | `src/main.tsx`                                                     | AuthProvider снаружи, uid → RepositoryProvider              |
+| MODIFY | `src/features/settings/SettingsModal.tsx`                          | кнопка «Выйти»                                              |
+| MODIFY | `vitest.config.ts`                                                 | добавить `setupFiles` для jest-dom                          |
 
 ---
 
 ## Task 1: Auth singleton + vitest setup
 
 **Files:**
+
 - Create: `src/infrastructure/firebaseAuth.ts`
 - Modify: `src/infrastructure/firebaseApp.ts`
 - Modify: `vitest.config.ts`
@@ -55,10 +56,11 @@
 - [ ] **Step 1: Добавить `auth` в firebaseApp.ts**
 
   В `src/infrastructure/firebaseApp.ts` добавить импорт и экспорт:
+
   ```typescript
   // после строки import { getFirestore }...
   import { getAuth } from 'firebase/auth';
-  
+
   // после export const db = getFirestore(app);
   export const auth = getAuth(app);
   ```
@@ -74,6 +76,7 @@
 - [ ] **Step 3: Настроить jest-dom в vitest.config.ts**
 
   В `vitest.config.ts` добавить `setupFiles`:
+
   ```typescript
   export default defineConfig({
     test: {
@@ -113,6 +116,7 @@
 ## Task 2: Добавить `userId?` в domain types
 
 **Files:**
+
 - Modify: `src/shared/domain/types.ts`
 
 - [ ] **Step 1: Добавить `userId?: string` в четыре типа**
@@ -122,28 +126,28 @@
   ```typescript
   export interface Recipe {
     id: string;
-    userId?: string;   // ← добавить
+    userId?: string; // ← добавить
     title: string;
     // ... остальные поля без изменений
   }
-  
+
   export type Program = {
     id: string;
-    userId?: string;   // ← добавить
+    userId?: string; // ← добавить
     name: string;
     // ... остальные поля без изменений
   };
-  
+
   export type PlannerEntry = {
     id: string;
-    userId?: string;   // ← добавить
+    userId?: string; // ← добавить
     date: string;
     // ... остальные поля без изменений
   };
-  
+
   export interface CartItem {
     id: string;
-    userId?: string;   // ← добавить
+    userId?: string; // ← добавить
     name: string;
     // ... остальные поля без изменений
   }
@@ -171,6 +175,7 @@
 ## Task 3: AuthContext + useAuth hook
 
 **Files:**
+
 - Create: `src/features/auth/AuthContext.ts`
 - Create: `src/features/auth/useAuth.ts`
 
@@ -179,17 +184,17 @@
   ```typescript
   import { createContext, useContext } from 'react';
   import type { User as FirebaseUser } from 'firebase/auth';
-  
+
   export type AuthState = {
     user: FirebaseUser | null;
     loading: boolean;
   };
-  
+
   export const AuthContext = createContext<AuthState>({
     user: null,
     loading: true,
   });
-  
+
   export function useAuthContext(): AuthState {
     return useContext(AuthContext);
   }
@@ -200,8 +205,8 @@
   ```typescript
   import { useAuthContext } from './AuthContext';
   import type { User as FirebaseUser } from 'firebase/auth';
-  
-  export function useAuth(): { user: FirebaseUser; } {
+
+  export function useAuth(): { user: FirebaseUser } {
     const { user, loading } = useAuthContext();
     if (loading || !user) {
       throw new Error('useAuth must be used inside AuthProvider with an authenticated user');
@@ -222,6 +227,7 @@
 ## Task 4: FakeAuthProvider для тестов
 
 **Files:**
+
 - Create: `src/infrastructure/testing/FakeAuthProvider.tsx`
 
 - [ ] **Step 1: Создать `src/infrastructure/testing/FakeAuthProvider.tsx`**
@@ -230,17 +236,17 @@
   import type { ReactNode } from 'react';
   import type { User as FirebaseUser } from 'firebase/auth';
   import { AuthContext } from '@/features/auth/AuthContext';
-  
+
   type Props = {
     uid: string | null;
     children: ReactNode;
   };
-  
+
   export function FakeAuthProvider({ uid, children }: Props) {
     const user = uid
       ? ({ uid, email: 'test@test.com' } as unknown as FirebaseUser)
       : null;
-  
+
     return (
       <AuthContext.Provider value={{ user, loading: false }}>
         {children}
@@ -261,6 +267,7 @@
 ## Task 5: LandingPage
 
 **Files:**
+
 - Create: `src/features/auth/LandingPage.tsx`
 
 - [ ] **Step 1: Создать `src/features/auth/LandingPage.tsx`**
@@ -270,7 +277,7 @@
     onGoToLogin: () => void;
     onGoToSignup: () => void;
   };
-  
+
   export function LandingPage({ onGoToLogin, onGoToSignup }: Props) {
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-6">
@@ -314,6 +321,7 @@
 ## Task 6: LoginScreen (TDD)
 
 **Files:**
+
 - Create: `src/features/auth/__tests__/LoginScreen.test.tsx`
 - Create: `src/features/auth/LoginScreen.tsx`
 
@@ -326,59 +334,59 @@
   import { describe, it, expect, vi, beforeEach } from 'vitest';
   import { render, screen, fireEvent, waitFor } from '@testing-library/react';
   import { LoginScreen } from '../LoginScreen';
-  
+
   vi.mock('firebase/auth', () => ({
     signInWithEmailAndPassword: vi.fn(),
   }));
   vi.mock('@/infrastructure/firebaseAuth', () => ({
     auth: {},
   }));
-  
+
   import { signInWithEmailAndPassword } from 'firebase/auth';
-  
+
   describe('LoginScreen', () => {
     const onGoToSignup = vi.fn();
     const onBack = vi.fn();
-  
+
     beforeEach(() => vi.clearAllMocks());
-  
+
     it('calls signInWithEmailAndPassword with correct credentials on submit', async () => {
       vi.mocked(signInWithEmailAndPassword).mockResolvedValueOnce({} as never);
       render(<LoginScreen onGoToSignup={onGoToSignup} onBack={onBack} />);
-  
+
       fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'test@test.com' } });
       fireEvent.change(screen.getByLabelText('Пароль'), { target: { value: 'password123' } });
       fireEvent.click(screen.getByRole('button', { name: 'Войти' }));
-  
+
       await waitFor(() => {
         expect(signInWithEmailAndPassword).toHaveBeenCalledWith({}, 'test@test.com', 'password123');
       });
     });
-  
+
     it('shows Russian error message for wrong password', async () => {
       const error = Object.assign(new Error('wrong password'), { code: 'auth/wrong-password' });
       vi.mocked(signInWithEmailAndPassword).mockRejectedValueOnce(error);
       render(<LoginScreen onGoToSignup={onGoToSignup} onBack={onBack} />);
-  
+
       fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'test@test.com' } });
       fireEvent.change(screen.getByLabelText('Пароль'), { target: { value: 'wrong' } });
       fireEvent.click(screen.getByRole('button', { name: 'Войти' }));
-  
+
       await waitFor(() => {
         expect(screen.getByText('Неверный пароль')).toBeInTheDocument();
       });
     });
-  
+
     it('disables submit button while request is in flight', async () => {
       vi.mocked(signInWithEmailAndPassword).mockImplementation(
         () => new Promise(() => {})
       );
       render(<LoginScreen onGoToSignup={onGoToSignup} onBack={onBack} />);
-  
+
       fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'test@test.com' } });
       fireEvent.change(screen.getByLabelText('Пароль'), { target: { value: 'password123' } });
       fireEvent.click(screen.getByRole('button', { name: 'Войти' }));
-  
+
       expect(screen.getByRole('button', { name: 'Войти' })).toBeDisabled();
     });
   });
@@ -398,7 +406,7 @@
   import { useState } from 'react';
   import { signInWithEmailAndPassword } from 'firebase/auth';
   import { auth } from '@/infrastructure/firebaseAuth';
-  
+
   const AUTH_ERRORS: Record<string, string> = {
     'auth/user-not-found': 'Пользователь не найден',
     'auth/wrong-password': 'Неверный пароль',
@@ -406,18 +414,18 @@
     'auth/invalid-credential': 'Неверный email или пароль',
     'auth/too-many-requests': 'Слишком много попыток, попробуйте позже',
   };
-  
+
   type Props = {
     onGoToSignup: () => void;
     onBack: () => void;
   };
-  
+
   export function LoginScreen({ onGoToSignup, onBack }: Props) {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-  
+
     const handleSubmit = async (e: React.FormEvent) => {
       e.preventDefault();
       setLoading(true);
@@ -431,7 +439,7 @@
         setLoading(false);
       }
     };
-  
+
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-6">
         <div className="max-w-sm w-full space-y-6">
@@ -509,6 +517,7 @@
 ## Task 7: SignupScreen (TDD)
 
 **Files:**
+
 - Create: `src/features/auth/__tests__/SignupScreen.test.tsx`
 - Create: `src/features/auth/SignupScreen.tsx`
 
@@ -521,66 +530,66 @@
   import { describe, it, expect, vi, beforeEach } from 'vitest';
   import { render, screen, fireEvent, waitFor } from '@testing-library/react';
   import { SignupScreen } from '../SignupScreen';
-  
+
   vi.mock('firebase/auth', () => ({
     createUserWithEmailAndPassword: vi.fn(),
   }));
   vi.mock('@/infrastructure/firebaseAuth', () => ({
     auth: {},
   }));
-  
+
   import { createUserWithEmailAndPassword } from 'firebase/auth';
-  
+
   describe('SignupScreen', () => {
     const onGoToLogin = vi.fn();
     const onBack = vi.fn();
-  
+
     beforeEach(() => vi.clearAllMocks());
-  
+
     function fillForm(email: string, password: string, confirm: string) {
       fireEvent.change(screen.getByLabelText('Email'), { target: { value: email } });
       fireEvent.change(screen.getByLabelText('Пароль'), { target: { value: password } });
       fireEvent.change(screen.getByLabelText('Подтвердите пароль'), { target: { value: confirm } });
     }
-  
+
     it('calls createUserWithEmailAndPassword with correct credentials', async () => {
       vi.mocked(createUserWithEmailAndPassword).mockResolvedValueOnce({} as never);
       render(<SignupScreen onGoToLogin={onGoToLogin} onBack={onBack} />);
-  
+
       fillForm('new@test.com', 'secret123', 'secret123');
       fireEvent.click(screen.getByRole('button', { name: 'Зарегистрироваться' }));
-  
+
       await waitFor(() => {
         expect(createUserWithEmailAndPassword).toHaveBeenCalledWith({}, 'new@test.com', 'secret123');
       });
     });
-  
+
     it('shows error when passwords do not match — no Firebase call', () => {
       render(<SignupScreen onGoToLogin={onGoToLogin} onBack={onBack} />);
       fillForm('a@b.com', 'pass123', 'mismatch');
       fireEvent.click(screen.getByRole('button', { name: 'Зарегистрироваться' }));
-  
+
       expect(screen.getByText('Пароли не совпадают')).toBeInTheDocument();
       expect(createUserWithEmailAndPassword).not.toHaveBeenCalled();
     });
-  
+
     it('shows error when password is shorter than 6 chars — no Firebase call', () => {
       render(<SignupScreen onGoToLogin={onGoToLogin} onBack={onBack} />);
       fillForm('a@b.com', '12', '12');
       fireEvent.click(screen.getByRole('button', { name: 'Зарегистрироваться' }));
-  
+
       expect(screen.getByText('Пароль должен содержать не менее 6 символов')).toBeInTheDocument();
       expect(createUserWithEmailAndPassword).not.toHaveBeenCalled();
     });
-  
+
     it('shows Russian error for email-already-in-use', async () => {
       const error = Object.assign(new Error(), { code: 'auth/email-already-in-use' });
       vi.mocked(createUserWithEmailAndPassword).mockRejectedValueOnce(error);
       render(<SignupScreen onGoToLogin={onGoToLogin} onBack={onBack} />);
-  
+
       fillForm('existing@test.com', 'pass123', 'pass123');
       fireEvent.click(screen.getByRole('button', { name: 'Зарегистрироваться' }));
-  
+
       await waitFor(() => {
         expect(screen.getByText('Аккаунт с таким email уже существует')).toBeInTheDocument();
       });
@@ -602,25 +611,25 @@
   import { useState } from 'react';
   import { createUserWithEmailAndPassword } from 'firebase/auth';
   import { auth } from '@/infrastructure/firebaseAuth';
-  
+
   const AUTH_ERRORS: Record<string, string> = {
     'auth/email-already-in-use': 'Аккаунт с таким email уже существует',
     'auth/invalid-email': 'Некорректный email',
     'auth/weak-password': 'Пароль слишком простой',
   };
-  
+
   type Props = {
     onGoToLogin: () => void;
     onBack: () => void;
   };
-  
+
   export function SignupScreen({ onGoToLogin, onBack }: Props) {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirm, setConfirm] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-  
+
     const handleSubmit = async (e: React.FormEvent) => {
       e.preventDefault();
       if (password.length < 6) {
@@ -642,7 +651,7 @@
         setLoading(false);
       }
     };
-  
+
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-6">
         <div className="max-w-sm w-full space-y-6">
@@ -733,6 +742,7 @@
 ## Task 8: AuthProvider (TDD)
 
 **Files:**
+
 - Create: `src/features/auth/__tests__/AuthProvider.test.tsx`
 - Create: `src/features/auth/AuthProvider.tsx`
 
@@ -747,32 +757,32 @@
   import type { User as FirebaseUser } from 'firebase/auth';
   import { AuthProvider } from '../AuthProvider';
   import { useAuthContext } from '../AuthContext';
-  
+
   vi.mock('firebase/auth', () => ({
     onAuthStateChanged: vi.fn(),
   }));
   vi.mock('@/infrastructure/firebaseAuth', () => ({
     auth: {},
   }));
-  
+
   import { onAuthStateChanged } from 'firebase/auth';
-  
+
   function AuthStateDisplay() {
     const { user, loading } = useAuthContext();
     if (loading) return <div>loading</div>;
     if (!user) return <div>no-user</div>;
     return <div>user:{user.uid}</div>;
   }
-  
+
   describe('AuthProvider', () => {
     beforeEach(() => vi.clearAllMocks());
-  
+
     it('renders loading spinner before onAuthStateChanged fires', () => {
       (onAuthStateChanged as Mock).mockImplementation(() => () => {});
       render(<AuthProvider><AuthStateDisplay /></AuthProvider>);
       expect(screen.getByText('loading')).toBeInTheDocument();
     });
-  
+
     it('renders LandingPage (no-user branch) when Firebase returns null', async () => {
       (onAuthStateChanged as Mock).mockImplementation((_auth: unknown, cb: (u: null) => void) => {
         cb(null);
@@ -783,7 +793,7 @@
       expect(screen.queryByText('no-user')).not.toBeInTheDocument();
       expect(screen.getByRole('button', { name: 'Войти' })).toBeInTheDocument();
     });
-  
+
     it('renders children when Firebase returns a user', async () => {
       const fakeUser = { uid: 'abc123' } as FirebaseUser;
       (onAuthStateChanged as Mock).mockImplementation((_auth: unknown, cb: (u: FirebaseUser) => void) => {
@@ -793,7 +803,7 @@
       render(<AuthProvider><AuthStateDisplay /></AuthProvider>);
       expect(screen.getByText('user:abc123')).toBeInTheDocument();
     });
-  
+
     it('returns to LandingPage after logout', async () => {
       let authCallback: (u: FirebaseUser | null) => void = () => {};
       (onAuthStateChanged as Mock).mockImplementation((_auth: unknown, cb: (u: FirebaseUser | null) => void) => {
@@ -803,7 +813,7 @@
       });
       render(<AuthProvider><AuthStateDisplay /></AuthProvider>);
       expect(screen.getByText('user:abc123')).toBeInTheDocument();
-  
+
       act(() => authCallback(null));
       expect(screen.getByRole('button', { name: 'Войти' })).toBeInTheDocument();
     });
@@ -828,14 +838,14 @@
   import { LandingPage } from './LandingPage';
   import { LoginScreen } from './LoginScreen';
   import { SignupScreen } from './SignupScreen';
-  
+
   type AuthScreen = 'landing' | 'login' | 'signup';
-  
+
   export function AuthProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState<FirebaseUser | null>(null);
     const [loading, setLoading] = useState(true);
     const [screen, setScreen] = useState<AuthScreen>('landing');
-  
+
     useEffect(() => {
       return onAuthStateChanged(auth, (u) => {
         setUser(u);
@@ -843,7 +853,7 @@
         if (u) setScreen('landing');
       });
     }, []);
-  
+
     if (loading) {
       return (
         <div className="min-h-screen flex items-center justify-center">
@@ -851,7 +861,7 @@
         </div>
       );
     }
-  
+
     if (!user) {
       if (screen === 'login') {
         return (
@@ -876,7 +886,7 @@
         />
       );
     }
-  
+
     return (
       <AuthContext.Provider value={{ user, loading: false }}>
         {children}
@@ -913,6 +923,7 @@
 ## Task 9: RepositoryProvider принимает uid
 
 **Files:**
+
 - Modify: `src/app/providers/RepositoryProvider.tsx`
 
 - [ ] **Step 1: Обновить RepositoryProvider**
@@ -928,12 +939,12 @@
   import { FirestoreUserProfileRepository } from '@/infrastructure/firestore/FirestoreUserProfileRepository';
   import { FirestoreNutritionPlanRepository } from '@/infrastructure/firestore/FirestoreNutritionPlanRepository';
   import { RepositoryContext, type Repositories } from './RepositoryContext';
-  
+
   type Props = {
     uid: string;
     children: ReactNode;
   };
-  
+
   export function RepositoryProvider({ uid, children }: Props) {
     const repositories = useMemo<Repositories>(() => ({
       recipes: new FirestoreRecipesRepository(uid),
@@ -943,7 +954,7 @@
       userProfile: new FirestoreUserProfileRepository(uid),
       nutritionPlan: new FirestoreNutritionPlanRepository(uid),
     }), [uid]);
-  
+
     return (
       <RepositoryContext.Provider value={repositories}>
         {children}
@@ -972,6 +983,7 @@
 ## Task 10: FirestoreRecipesRepository — uid scope
 
 **Files:**
+
 - Modify: `src/infrastructure/firestore/FirestoreRecipesRepository.ts`
 
 - [ ] **Step 1: Обновить FirestoreRecipesRepository**
@@ -980,14 +992,21 @@
 
   ```typescript
   import {
-    collection, addDoc, updateDoc, deleteDoc, doc,
-    onSnapshot, query, getDoc, where,
+    collection,
+    addDoc,
+    updateDoc,
+    deleteDoc,
+    doc,
+    onSnapshot,
+    query,
+    getDoc,
+    where,
   } from 'firebase/firestore';
   import { db } from '@/infrastructure/firebaseApp';
   import type { Recipe } from '@/shared/domain/types';
   import type { RecipesRepository } from '@/services/RecipesRepository';
   import { timestampToISO, type TimestampLike } from './converters';
-  
+
   function fromFirestore(id: string, data: Record<string, unknown>): Recipe {
     return {
       id,
@@ -1006,34 +1025,34 @@
       createdAt: timestampToISO(data['createdAt'] as TimestampLike | string | null | undefined),
     };
   }
-  
+
   export class FirestoreRecipesRepository implements RecipesRepository {
     constructor(private readonly uid: string) {}
-  
+
     subscribeAll(callback: (recipes: Recipe[]) => void): () => void {
       return onSnapshot(
         query(collection(db, 'recipes'), where('userId', '==', this.uid)),
-        snapshot => {
+        (snapshot) => {
           const recipes: Recipe[] = [];
-          snapshot.forEach(d => recipes.push(fromFirestore(d.id, d.data())));
+          snapshot.forEach((d) => recipes.push(fromFirestore(d.id, d.data())));
           callback(recipes);
-        }
+        },
       );
     }
-  
+
     async add(data: Omit<Recipe, 'id'>): Promise<string> {
       const ref = await addDoc(collection(db, 'recipes'), { ...data, userId: this.uid });
       return ref.id;
     }
-  
+
     async update(id: string, data: Partial<Omit<Recipe, 'id'>>): Promise<void> {
       await updateDoc(doc(db, 'recipes', id), data);
     }
-  
+
     async delete(id: string): Promise<void> {
       await deleteDoc(doc(db, 'recipes', id));
     }
-  
+
     async getById(id: string): Promise<Recipe | null> {
       const snap = await getDoc(doc(db, 'recipes', id));
       if (!snap.exists()) return null;
@@ -1054,6 +1073,7 @@
 ## Task 11: FirestorePlannerRepository — uid scope
 
 **Files:**
+
 - Modify: `src/infrastructure/firestore/FirestorePlannerRepository.ts`
 
 - [ ] **Step 1: Обновить FirestorePlannerRepository**
@@ -1061,14 +1081,11 @@
   Заменить весь файл `src/infrastructure/firestore/FirestorePlannerRepository.ts`:
 
   ```typescript
-  import {
-    collection, addDoc, deleteDoc, doc,
-    onSnapshot, query, where,
-  } from 'firebase/firestore';
+  import { collection, addDoc, deleteDoc, doc, onSnapshot, query, where } from 'firebase/firestore';
   import { db } from '@/infrastructure/firebaseApp';
   import type { PlannerEntry } from '@/shared/domain/types';
   import type { PlannerRepository } from '@/services/PlannerRepository';
-  
+
   function fromFirestore(id: string, data: Record<string, unknown>): PlannerEntry {
     return {
       id,
@@ -1081,26 +1098,26 @@
       macros: data['macros'] as PlannerEntry['macros'],
     };
   }
-  
+
   export class FirestorePlannerRepository implements PlannerRepository {
     constructor(private readonly uid: string) {}
-  
+
     subscribeAll(callback: (entries: PlannerEntry[]) => void): () => void {
       return onSnapshot(
         query(collection(db, 'planner'), where('userId', '==', this.uid)),
-        snapshot => {
+        (snapshot) => {
           const entries: PlannerEntry[] = [];
-          snapshot.forEach(d => entries.push(fromFirestore(d.id, d.data())));
+          snapshot.forEach((d) => entries.push(fromFirestore(d.id, d.data())));
           callback(entries);
-        }
+        },
       );
     }
-  
+
     async add(data: Omit<PlannerEntry, 'id'>): Promise<string> {
       const ref = await addDoc(collection(db, 'planner'), { ...data, userId: this.uid });
       return ref.id;
     }
-  
+
     async delete(id: string): Promise<void> {
       await deleteDoc(doc(db, 'planner', id));
     }
@@ -1119,6 +1136,7 @@
 ## Task 12: FirestoreCartRepository — uid scope
 
 **Files:**
+
 - Modify: `src/infrastructure/firestore/FirestoreCartRepository.ts`
 
 - [ ] **Step 1: Обновить FirestoreCartRepository**
@@ -1127,14 +1145,21 @@
 
   ```typescript
   import {
-    collection, addDoc, updateDoc, deleteDoc, doc,
-    onSnapshot, query, getDocs, where,
+    collection,
+    addDoc,
+    updateDoc,
+    deleteDoc,
+    doc,
+    onSnapshot,
+    query,
+    getDocs,
+    where,
   } from 'firebase/firestore';
   import { db } from '@/infrastructure/firebaseApp';
   import type { CartItem } from '@/shared/domain/types';
   import type { CartRepository } from '@/services/CartRepository';
   import { timestampToISO, type TimestampLike } from './converters';
-  
+
   function fromFirestore(id: string, data: Record<string, unknown>): CartItem {
     return {
       id,
@@ -1146,39 +1171,36 @@
       createdAt: timestampToISO(data['createdAt'] as TimestampLike | string | null | undefined),
     };
   }
-  
+
   export class FirestoreCartRepository implements CartRepository {
     constructor(private readonly uid: string) {}
-  
+
     subscribeAll(callback: (items: CartItem[]) => void): () => void {
-      return onSnapshot(
-        query(collection(db, 'cart'), where('userId', '==', this.uid)),
-        snap => {
-          const items: CartItem[] = [];
-          snap.forEach(d => items.push(fromFirestore(d.id, d.data())));
-          callback(
-            items.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-          );
-        }
-      );
+      return onSnapshot(query(collection(db, 'cart'), where('userId', '==', this.uid)), (snap) => {
+        const items: CartItem[] = [];
+        snap.forEach((d) => items.push(fromFirestore(d.id, d.data())));
+        callback(
+          items.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()),
+        );
+      });
     }
-  
+
     async add(data: Omit<CartItem, 'id'>): Promise<string> {
       const ref = await addDoc(collection(db, 'cart'), { ...data, userId: this.uid });
       return ref.id;
     }
-  
+
     async update(id: string, data: Partial<Omit<CartItem, 'id'>>): Promise<void> {
       await updateDoc(doc(db, 'cart', id), data);
     }
-  
+
     async delete(id: string): Promise<void> {
       await deleteDoc(doc(db, 'cart', id));
     }
-  
+
     async deleteAll(): Promise<void> {
       const snap = await getDocs(query(collection(db, 'cart'), where('userId', '==', this.uid)));
-      await Promise.all(snap.docs.map(d => deleteDoc(doc(db, 'cart', d.id))));
+      await Promise.all(snap.docs.map((d) => deleteDoc(doc(db, 'cart', d.id))));
     }
   }
   ```
@@ -1195,6 +1217,7 @@
 ## Task 13: FirestoreProgramsRepository — uid scope
 
 **Files:**
+
 - Modify: `src/infrastructure/firestore/FirestoreProgramsRepository.ts`
 
 - [ ] **Step 1: Обновить FirestoreProgramsRepository**
@@ -1203,14 +1226,21 @@
 
   ```typescript
   import {
-    collection, addDoc, updateDoc, deleteDoc, doc,
-    onSnapshot, query, getDoc, where,
+    collection,
+    addDoc,
+    updateDoc,
+    deleteDoc,
+    doc,
+    onSnapshot,
+    query,
+    getDoc,
+    where,
   } from 'firebase/firestore';
   import { db } from '@/infrastructure/firebaseApp';
   import type { Program } from '@/shared/domain/types';
   import type { ProgramsRepository } from '@/services/ProgramsRepository';
   import { timestampToISO, type TimestampLike } from './converters';
-  
+
   function fromFirestore(id: string, data: Record<string, unknown>): Program {
     return {
       id,
@@ -1232,34 +1262,34 @@
       forbiddenProducts: data['forbiddenProducts'] as string[] | undefined,
     };
   }
-  
+
   export class FirestoreProgramsRepository implements ProgramsRepository {
     constructor(private readonly uid: string) {}
-  
+
     subscribeAll(callback: (programs: Program[]) => void): () => void {
       return onSnapshot(
         query(collection(db, 'programs'), where('userId', '==', this.uid)),
-        snapshot => {
+        (snapshot) => {
           const programs: Program[] = [];
-          snapshot.forEach(d => programs.push(fromFirestore(d.id, d.data())));
+          snapshot.forEach((d) => programs.push(fromFirestore(d.id, d.data())));
           callback(programs);
-        }
+        },
       );
     }
-  
+
     async add(data: Omit<Program, 'id'>): Promise<string> {
       const ref = await addDoc(collection(db, 'programs'), { ...data, userId: this.uid });
       return ref.id;
     }
-  
+
     async update(id: string, data: Partial<Omit<Program, 'id'>>): Promise<void> {
       await updateDoc(doc(db, 'programs', id), data);
     }
-  
+
     async delete(id: string): Promise<void> {
       await deleteDoc(doc(db, 'programs', id));
     }
-  
+
     async getById(id: string): Promise<Program | null> {
       const snap = await getDoc(doc(db, 'programs', id));
       if (!snap.exists()) return null;
@@ -1280,6 +1310,7 @@
 ## Task 14: FirestoreUserProfileRepository — user-specific path
 
 **Files:**
+
 - Modify: `src/infrastructure/firestore/FirestoreUserProfileRepository.ts`
 
 Профиль хранится не в коллекции с `userId`-полем, а по uid-специфичному пути `userProfiles/{uid}`. Это чище: документ один на пользователя, Security Rules через `{uid}` в пути, не нужен `where()`.
@@ -1293,16 +1324,16 @@
   import { db } from '@/infrastructure/firebaseApp';
   import type { UserProfile } from '@/shared/domain/types';
   import type { UserProfileRepository } from '@/services/UserProfileRepository';
-  
+
   export class FirestoreUserProfileRepository implements UserProfileRepository {
     constructor(private readonly uid: string) {}
-  
+
     subscribe(callback: (profile: UserProfile | null) => void): () => void {
-      return onSnapshot(doc(db, 'userProfiles', this.uid), snap => {
+      return onSnapshot(doc(db, 'userProfiles', this.uid), (snap) => {
         callback(snap.exists() ? (snap.data() as UserProfile) : null);
       });
     }
-  
+
     async save(profile: UserProfile): Promise<void> {
       await setDoc(doc(db, 'userProfiles', this.uid), profile);
     }
@@ -1321,6 +1352,7 @@
 ## Task 15: FirestoreNutritionPlanRepository — user-specific path
 
 **Files:**
+
 - Modify: `src/infrastructure/firestore/FirestoreNutritionPlanRepository.ts`
 
 - [ ] **Step 1: Обновить FirestoreNutritionPlanRepository**
@@ -1332,14 +1364,14 @@
   import { db } from '@/infrastructure/firebaseApp';
   import type { NutritionPlanRepository } from '@/services/NutritionPlanRepository';
   import type { ActiveNutritionPlan } from '@/shared/domain/types';
-  
+
   export class FirestoreNutritionPlanRepository implements NutritionPlanRepository {
     constructor(private readonly uid: string) {}
-  
+
     private get ref() {
       return doc(db, 'nutritionPlans', this.uid);
     }
-  
+
     async get(): Promise<ActiveNutritionPlan | null> {
       const snap = await getDoc(this.ref);
       if (!snap.exists()) return null;
@@ -1356,7 +1388,7 @@
         forbiddenProducts: data.forbiddenProducts ?? [],
       };
     }
-  
+
     async set(plan: ActiveNutritionPlan | null): Promise<void> {
       if (plan === null) {
         await deleteDoc(this.ref);
@@ -1379,6 +1411,7 @@
 ## Task 16: Подключить AuthProvider в main.tsx
 
 **Files:**
+
 - Modify: `src/main.tsx`
 
 - [ ] **Step 1: Обновить main.tsx**
@@ -1397,7 +1430,7 @@
   import { UserProfileProvider } from './app/providers/UserProfileProvider';
   import { AuthProvider } from './features/auth/AuthProvider';
   import { useAuthContext } from './features/auth/AuthContext';
-  
+
   function AuthenticatedApp() {
     const { user } = useAuthContext();
     // user is guaranteed non-null here — AuthProvider only renders
@@ -1416,7 +1449,7 @@
       </I18nProvider>
     );
   }
-  
+
   createRoot(document.getElementById('root')!).render(
     <StrictMode>
       <AuthProvider>
@@ -1454,17 +1487,20 @@
 ## Task 17: Кнопка «Выйти» в SettingsModal
 
 **Files:**
+
 - Modify: `src/features/settings/SettingsModal.tsx`
 
 - [ ] **Step 1: Добавить импорты и кнопку выхода**
 
   В начало `src/features/settings/SettingsModal.tsx` добавить импорты:
+
   ```typescript
   import { signOut } from 'firebase/auth';
   import { auth } from '@/infrastructure/firebaseAuth';
   ```
 
   Добавить функцию-обработчик внутри компонента (после `handleSaveSettings`):
+
   ```typescript
   const handleSignOut = async () => {
     await signOut(auth);
@@ -1473,6 +1509,7 @@
   ```
 
   Найти в JSX кнопку «Сохранить» (или конец формы настроек) и добавить кнопку выхода рядом. Разместить после кнопки сохранения:
+
   ```tsx
   <button
     type="button"
@@ -1503,6 +1540,7 @@
 ## Task 18: Firestore Security Rules
 
 **Files:**
+
 - Create: `firestore.rules`
 
 - [ ] **Step 1: Создать `firestore.rules` в корне проекта**
@@ -1511,7 +1549,7 @@
   rules_version = '2';
   service cloud.firestore {
     match /databases/{database}/documents {
-  
+
       // Коллекции с полем userId
       match /recipes/{docId} {
         allow read, update, delete: if request.auth != null
@@ -1519,37 +1557,37 @@
         allow create: if request.auth != null
                       && request.auth.uid == request.resource.data.userId;
       }
-  
+
       match /planner/{docId} {
         allow read, update, delete: if request.auth != null
                                     && request.auth.uid == resource.data.userId;
         allow create: if request.auth != null
                       && request.auth.uid == request.resource.data.userId;
       }
-  
+
       match /cart/{docId} {
         allow read, update, delete: if request.auth != null
                                     && request.auth.uid == resource.data.userId;
         allow create: if request.auth != null
                       && request.auth.uid == request.resource.data.userId;
       }
-  
+
       match /programs/{docId} {
         allow read, update, delete: if request.auth != null
                                     && request.auth.uid == resource.data.userId;
         allow create: if request.auth != null
                       && request.auth.uid == request.resource.data.userId;
       }
-  
+
       // User-specific singleton documents — uid как путь документа
       match /userProfiles/{uid} {
         allow read, write: if request.auth != null && request.auth.uid == uid;
       }
-  
+
       match /nutritionPlans/{uid} {
         allow read, write: if request.auth != null && request.auth.uid == uid;
       }
-  
+
       // Старые пути settings/* — deny всё (документы мигрированы)
       match /settings/{docId} {
         allow read, write: if false;
@@ -1563,6 +1601,7 @@
   Зайти в [Firebase Console](https://console.firebase.google.com) → Firestore Database → Rules → вставить содержимое файла → Publish.
 
   Или через Firebase CLI:
+
   ```bash
   npx firebase deploy --only firestore:rules
   ```
@@ -1581,6 +1620,7 @@
 ## Task 19: Миграционный скрипт
 
 **Files:**
+
 - Create: `scripts/migrate-assign-user.ts`
 
 - [ ] **Step 1: Установить firebase-admin (dev dependency)**
@@ -1595,10 +1635,10 @@
   import { initializeApp, cert, type ServiceAccount } from 'firebase-admin/app';
   import { getFirestore } from 'firebase-admin/firestore';
   import { readFileSync } from 'fs';
-  
+
   const serviceAccountPath = process.env['GOOGLE_APPLICATION_CREDENTIALS'];
   const targetUid = process.env['MIGRATION_USER_UID'];
-  
+
   if (!serviceAccountPath) {
     console.error('Error: GOOGLE_APPLICATION_CREDENTIALS env var is required');
     process.exit(1);
@@ -1607,23 +1647,23 @@
     console.error('Error: MIGRATION_USER_UID env var is required');
     process.exit(1);
   }
-  
+
   const serviceAccount = JSON.parse(readFileSync(serviceAccountPath, 'utf-8')) as ServiceAccount;
-  
+
   initializeApp({ credential: cert(serviceAccount) });
   const db = getFirestore();
-  
+
   async function migrateCollection(name: string): Promise<number> {
     const snap = await db.collection(name).get();
-    const docsWithoutUserId = snap.docs.filter(d => !d.data()['userId']);
-    await Promise.all(docsWithoutUserId.map(d => d.ref.update({ userId: targetUid })));
+    const docsWithoutUserId = snap.docs.filter((d) => !d.data()['userId']);
+    await Promise.all(docsWithoutUserId.map((d) => d.ref.update({ userId: targetUid })));
     console.log(`  ${name}: ${docsWithoutUserId.length}/${snap.size} docs updated`);
     return docsWithoutUserId.length;
   }
-  
+
   async function migrateSettingsDoc(
     fromPath: [string, string],
-    toCollection: string
+    toCollection: string,
   ): Promise<void> {
     const [col, id] = fromPath;
     const snap = await db.collection(col).doc(id).get();
@@ -1635,24 +1675,24 @@
     await db.collection(col).doc(id).delete();
     console.log(`  ${col}/${id} → ${toCollection}/${targetUid}: migrated`);
   }
-  
+
   async function main() {
     console.log(`Migrating to userId=${targetUid}...\n`);
-  
+
     console.log('Collections with userId field:');
     await migrateCollection('recipes');
     await migrateCollection('planner');
     await migrateCollection('cart');
     await migrateCollection('programs');
-  
+
     console.log('\nSingleton settings documents:');
     await migrateSettingsDoc(['settings', 'profile'], 'userProfiles');
     await migrateSettingsDoc(['settings', 'plan'], 'nutritionPlans');
-  
+
     console.log('\nMigration complete.');
   }
-  
-  main().catch(err => {
+
+  main().catch((err) => {
     console.error('Migration failed:', err);
     process.exit(1);
   });
@@ -1661,6 +1701,7 @@
 - [ ] **Step 3: Добавить инструкцию в README или запустить вручную**
 
   Запуск (один раз):
+
   ```bash
   GOOGLE_APPLICATION_CREDENTIALS=./serviceAccount.json \
   MIGRATION_USER_UID=<your-firebase-uid> \
@@ -1668,6 +1709,7 @@
   ```
 
   Ожидаемый вывод:
+
   ```
   Migrating to userId=<uid>...
 
@@ -1727,6 +1769,7 @@
 ## Self-review
 
 **Покрытие спека:**
+
 - ✅ Firebase Auth (email/password) — Task 6, 7, 8
 - ✅ Landing-страница — Task 5
 - ✅ AuthProvider поверх RepositoryProvider — Task 8, 16
@@ -1744,6 +1787,7 @@
 **Placeholder scan:** нет TBD, нет TODO без кода.
 
 **Type consistency:**
+
 - `FirebaseUser` из `firebase/auth` — используется везде через `User as FirebaseUser`
 - `AuthContext` импортируется из `./AuthContext` в AuthProvider — корректно
 - `RepositoryProvider` принимает `uid: string` — передаётся как `user!.uid` в main.tsx — `user` гарантированно не null в `AuthenticatedApp` (AuthProvider рендерит его только когда user задан)

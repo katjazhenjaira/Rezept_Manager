@@ -10,7 +10,12 @@ type RecipeSelectionBarProps = {
   onConfirm: () => Promise<void>;
 };
 
-export function RecipeSelectionBar({ isVisible, selectedCount, onCancel, onConfirm }: RecipeSelectionBarProps) {
+export function RecipeSelectionBar({
+  isVisible,
+  selectedCount,
+  onCancel,
+  onConfirm,
+}: RecipeSelectionBarProps) {
   return (
     <AnimatePresence>
       {isVisible && (
@@ -22,7 +27,9 @@ export function RecipeSelectionBar({ isVisible, selectedCount, onCancel, onConfi
         >
           <div className="bg-zinc-900 text-white px-6 py-4 rounded-3xl shadow-2xl flex items-center gap-8 border border-white/10 backdrop-blur-xl">
             <div className="flex flex-col">
-              <span className="text-xs font-bold text-zinc-400 uppercase tracking-widest">Выбрано</span>
+              <span className="text-xs font-bold text-zinc-400 uppercase tracking-widest">
+                Выбрано
+              </span>
               <span className="text-xl font-bold text-emerald-400">{selectedCount} рецептов</span>
             </div>
             <div className="h-8 w-px bg-white/10" />

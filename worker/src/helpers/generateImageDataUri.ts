@@ -1,23 +1,23 @@
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenAI } from '@google/genai';
 
 export async function generateImageDataUri(
   ai: GoogleGenAI,
   title: string,
-  ingredients: string[]
+  ingredients: string[],
 ): Promise<string | null> {
   const response = await ai.models.generateContent({
-    model: "gemini-2.5-flash-image",
+    model: 'gemini-2.5-flash-image',
     contents: {
       parts: [
         {
-          text: `A professional food photography of ${title}. Ingredients: ${ingredients.join(", ")}. High quality, appetizing, top view or 45 degree angle.`,
+          text: `A professional food photography of ${title}. Ingredients: ${ingredients.join(', ')}. High quality, appetizing, top view or 45 degree angle.`,
         },
       ],
     },
     config: {
       imageConfig: {
-        aspectRatio: "4:3",
-        imageSize: "1K",
+        aspectRatio: '4:3',
+        imageSize: '1K',
       },
     },
   });

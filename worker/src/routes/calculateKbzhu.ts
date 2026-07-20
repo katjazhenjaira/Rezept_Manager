@@ -1,17 +1,17 @@
-import type { Context } from "hono";
-import { GoogleGenAI, Type } from "@google/genai";
+import type { Context } from 'hono';
+import { GoogleGenAI, Type } from '@google/genai';
 import type {
   CalculateKbzhuRequest,
   CalculateKbzhuResponse,
-} from "../../../src/services/ai/contracts";
-import type { Env } from "../types";
+} from '../../../src/services/ai/contracts';
+import type { Env } from '../types';
 
 export async function calculateKbzhu(c: Context<{ Bindings: Env }>) {
   const body = await c.req.json<CalculateKbzhuRequest>();
   const { ingredients } = body;
 
-  if (typeof ingredients !== "string" || !ingredients.trim()) {
-    return c.json({ error: "Expected { ingredients: string }" }, 400);
+  if (typeof ingredients !== 'string' || !ingredients.trim()) {
+    return c.json({ error: 'Expected { ingredients: string }' }, 400);
   }
 
   const ai = new GoogleGenAI({ apiKey: c.env.GEMINI_API_KEY });
@@ -19,10 +19,10 @@ export async function calculateKbzhu(c: Context<{ Bindings: Env }>) {
   let parsed: Partial<CalculateKbzhuResponse>;
   try {
     const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview",
+      model: 'gemini-3-flash-preview',
       contents: `Calculate KBJU (calories, proteins, fats, carbs) for these ingredients: ${ingredients}. Return JSON with fields: calories, proteins, fats, carbs. Return ONLY JSON.`,
       config: {
-        responseMimeType: "application/json",
+        responseMimeType: 'application/json',
         responseSchema: {
           type: Type.OBJECT,
           properties: {
@@ -31,14 +31,14 @@ export async function calculateKbzhu(c: Context<{ Bindings: Env }>) {
             fats: { type: Type.NUMBER },
             carbs: { type: Type.NUMBER },
           },
-          required: ["calories", "proteins", "fats", "carbs"],
+          required: ['calories', 'proteins', 'fats', 'carbs'],
         },
       },
     });
-    parsed = JSON.parse(response.text ?? "{}") as Partial<CalculateKbzhuResponse>;
+    parsed = JSON.parse(response.text ?? '{}') as Partial<CalculateKbzhuResponse>;
   } catch (err) {
-    console.error("[calculateKbzhu] error:", err);
-    return c.json({ error: "Failed to calculate KBJU" }, 502);
+    console.error('[calculateKbzhu] error:', err);
+    return c.json({ error: 'Failed to calculate KBJU' }, 502);
   }
 
   const payload: CalculateKbzhuResponse = {

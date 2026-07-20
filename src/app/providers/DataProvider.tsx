@@ -4,7 +4,12 @@ import { DataContext } from './DataContext';
 import { useRepositories } from './RepositoryContext';
 
 export function DataProvider({ children }: { children: ReactNode }) {
-  const { recipes: recipesRepo, planner: plannerRepo, cart: cartRepo, programs: programsRepo } = useRepositories();
+  const {
+    recipes: recipesRepo,
+    planner: plannerRepo,
+    cart: cartRepo,
+    programs: programsRepo,
+  } = useRepositories();
 
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [plannerEntries, setPlannerEntries] = useState<PlannerEntry[]>([]);

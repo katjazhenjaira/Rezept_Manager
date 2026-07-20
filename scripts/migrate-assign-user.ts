@@ -21,16 +21,13 @@ const db = getFirestore();
 
 async function migrateCollection(name: string): Promise<number> {
   const snap = await db.collection(name).get();
-  const docsWithoutUserId = snap.docs.filter(d => !d.data()['userId']);
-  await Promise.all(docsWithoutUserId.map(d => d.ref.update({ userId: targetUid })));
+  const docsWithoutUserId = snap.docs.filter((d) => !d.data()['userId']);
+  await Promise.all(docsWithoutUserId.map((d) => d.ref.update({ userId: targetUid })));
   console.log(`  ${name}: ${docsWithoutUserId.length}/${snap.size} docs updated`);
   return docsWithoutUserId.length;
 }
 
-async function migrateSettingsDoc(
-  fromPath: [string, string],
-  toCollection: string
-): Promise<void> {
+async function migrateSettingsDoc(fromPath: [string, string], toCollection: string): Promise<void> {
   const [col, id] = fromPath;
   const snap = await db.collection(col).doc(id).get();
   if (!snap.exists) {
@@ -58,7 +55,7 @@ async function main() {
   console.log('\nMigration complete.');
 }
 
-main().catch(err => {
+main().catch((err) => {
   console.error('Migration failed:', err);
   process.exit(1);
 });

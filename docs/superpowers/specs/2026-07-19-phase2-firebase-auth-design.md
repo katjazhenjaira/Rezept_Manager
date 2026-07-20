@@ -1,7 +1,7 @@
 # Phase 2 — Firebase Auth + Security Rules: Design Spec
 
 **Дата:** 2026-07-19  
-**Статус:** Утверждён  
+**Статус:** Утверждён
 
 ---
 
@@ -10,6 +10,7 @@
 Phase 1 завершена: монолитный `App.tsx` разобран на feature-модули, Repository pattern внедрён, все Firestore-репозитории работают через интерфейсы. Сейчас данные хранятся без `userId` — любой, кто знает `projectId`, может читать чужие рецепты. Phase 2 закрывает эту дыру.
 
 **Scope Phase 2:**
+
 - Email/password аутентификация (Google OAuth — в следующем шаге, добавлен в ROADMAP)
 - Landing-страница для гостей
 - Security Rules: `auth.uid == resource.data.userId`
@@ -67,14 +68,14 @@ firestore.rules                        # Security Rules
 
 ### Изменяемые файлы
 
-| Файл | Что меняется |
-|------|-------------|
-| `src/infrastructure/firebaseApp.ts` | добавить `export const auth = getAuth(app)` |
-| `src/app/providers/RepositoryProvider.tsx` | принимает `uid: string` как prop |
+| Файл                                           | Что меняется                                                                                   |
+| ---------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `src/infrastructure/firebaseApp.ts`            | добавить `export const auth = getAuth(app)`                                                    |
+| `src/app/providers/RepositoryProvider.tsx`     | принимает `uid: string` как prop                                                               |
 | `src/infrastructure/firestore/*.ts` (6 файлов) | конструктор принимает `uid`, adds `where('userId', '==', uid)` в reads, `userId: uid` в writes |
-| `src/shared/domain/types.ts` | `userId?: string` в `Recipe`, `PlannerEntry`, `CartItem`, `Program`, `UserProfile` |
-| `src/features/settings/SettingsModal.tsx` | кнопка «Выйти» → `signOut(auth)` |
-| `src/main.tsx` | обернуть в `AuthProvider`, передать `uid` в `RepositoryProvider` |
+| `src/shared/domain/types.ts`                   | `userId?: string` в `Recipe`, `PlannerEntry`, `CartItem`, `Program`, `UserProfile`             |
+| `src/features/settings/SettingsModal.tsx`      | кнопка «Выйти» → `signOut(auth)`                                                               |
+| `src/main.tsx`                                 | обернуть в `AuthProvider`, передать `uid` в `RepositoryProvider`                               |
 
 ---
 
@@ -116,6 +117,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 ## LandingPage
 
 Минималистичная страница:
+
 - Название приложения + описание 2–3 строки (на русском)
 - Кнопки «Войти» и «Зарегистрироваться»
 - Props: `onGoToLogin: () => void`, `onGoToSignup: () => void`
@@ -156,14 +158,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 ```typescript
 export function RepositoryProvider({ uid, children }: { uid: string; children: ReactNode }) {
-  const repositories = useMemo<Repositories>(() => ({
-    recipes: new FirestoreRecipesRepository(uid),
-    planner: new FirestorePlannerRepository(uid),
-    cart: new FirestoreCartRepository(uid),
-    programs: new FirestoreProgramsRepository(uid),
-    userProfile: new FirestoreUserProfileRepository(uid),
-    nutritionPlan: new FirestoreNutritionPlanRepository(uid),
-  }), [uid]);
+  const repositories = useMemo<Repositories>(
+    () => ({
+      recipes: new FirestoreRecipesRepository(uid),
+      planner: new FirestorePlannerRepository(uid),
+      cart: new FirestoreCartRepository(uid),
+      programs: new FirestoreProgramsRepository(uid),
+      userProfile: new FirestoreUserProfileRepository(uid),
+      nutritionPlan: new FirestoreNutritionPlanRepository(uid),
+    }),
+    [uid],
+  );
   // ...
 }
 ```
@@ -177,7 +182,9 @@ export class FirestoreRecipesRepository implements RecipesRepository {
   subscribeAll(callback: (items: Recipe[]) => void): () => void {
     return onSnapshot(
       query(collection(db, 'recipes'), where('userId', '==', this.uid)),
-      snapshot => { /* ... */ }
+      (snapshot) => {
+        /* ... */
+      },
     );
   }
 
@@ -198,6 +205,7 @@ export class FirestoreRecipesRepository implements RecipesRepository {
 ## Выход из приложения
 
 Кнопка «Выйти» в `SettingsModal`:
+
 ```typescript
 import { signOut } from 'firebase/auth';
 import { auth } from '@/infrastructure/firebaseAuth';
@@ -277,6 +285,7 @@ Firebase Auth мокается через `vi.mock('firebase/auth')`.
 ### FakeAuthProvider
 
 `src/infrastructure/testing/FakeAuthProvider.tsx` — синхронный провайдер для существующих тестов провайдеров:
+
 ```typescript
 function FakeAuthProvider({ uid, children }: { uid: string | null; children: ReactNode }) {
   // устанавливает AuthContext немедленно, без onAuthStateChanged

@@ -22,14 +22,14 @@ describe('FakeRecipesRepository', () => {
 
   it('subscribeAll immediately emits empty array', () => {
     const calls: Recipe[][] = [];
-    repo.subscribeAll(r => calls.push(r));
+    repo.subscribeAll((r) => calls.push(r));
     expect(calls).toHaveLength(1);
     expect(calls[0]).toEqual([]);
   });
 
   it('add returns incremental id and notifies subscribers', async () => {
     const calls: Recipe[][] = [];
-    repo.subscribeAll(r => calls.push(r));
+    repo.subscribeAll((r) => calls.push(r));
     const id = await repo.add(recipe());
     expect(id).toBe('1');
     expect(calls).toHaveLength(2);
@@ -45,7 +45,7 @@ describe('FakeRecipesRepository', () => {
   it('update changes a field and notifies', async () => {
     const id = await repo.add(recipe());
     const calls: Recipe[][] = [];
-    repo.subscribeAll(r => calls.push(r));
+    repo.subscribeAll((r) => calls.push(r));
     await repo.update(id, { title: 'Risotto' });
     expect(calls[calls.length - 1]![0]!.title).toBe('Risotto');
   });
@@ -76,7 +76,7 @@ describe('FakeRecipesRepository', () => {
 
   it('unsubscribe stops future notifications', async () => {
     const calls: Recipe[][] = [];
-    const unsub = repo.subscribeAll(r => calls.push(r));
+    const unsub = repo.subscribeAll((r) => calls.push(r));
     unsub();
     await repo.add(recipe());
     expect(calls).toHaveLength(1);
@@ -85,7 +85,7 @@ describe('FakeRecipesRepository', () => {
   it('reset clears all state and restarts ids from 1', async () => {
     await repo.add(recipe());
     const calls: Recipe[][] = [];
-    repo.subscribeAll(r => calls.push(r));
+    repo.subscribeAll((r) => calls.push(r));
     repo.reset();
     expect(calls).toHaveLength(1); // only initial emit, not triggered by reset
     const id = await repo.add(recipe());

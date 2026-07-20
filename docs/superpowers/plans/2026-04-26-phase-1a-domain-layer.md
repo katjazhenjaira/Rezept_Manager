@@ -12,23 +12,24 @@
 
 ## File Map
 
-| File | Action | Responsibility |
-|------|--------|----------------|
-| `vitest.config.ts` | Create | Vitest config with `@` alias and node environment |
-| `package.json` | Modify | Add `vitest`, `@vitest/coverage-v8` dev-deps; add `test`, `test:coverage` scripts |
-| `src/shared/domain/types.ts` | Create | All domain types extracted from App.tsx (Recipe, UserProfile, PlannerEntry, Program, etc.) |
-| `src/shared/domain/macros.ts` | Create | `sumMacros`, `remainingMacros`, `resolveActiveTargets`, `NutritionTargets` |
-| `src/shared/domain/allergies.ts` | Create | `recipeAllergens`, `recipeHasAllergens` |
-| `src/features/cart/services/staples.ts` | Create | `BASIC_KEYWORDS`, `isStaple` |
-| `src/shared/domain/__tests__/macros.test.ts` | Create | 100% coverage for macros.ts |
-| `src/shared/domain/__tests__/allergies.test.ts` | Create | 100% coverage for allergies.ts |
-| `src/features/cart/services/__tests__/staples.test.ts` | Create | 100% coverage for staples.ts |
+| File                                                   | Action | Responsibility                                                                             |
+| ------------------------------------------------------ | ------ | ------------------------------------------------------------------------------------------ |
+| `vitest.config.ts`                                     | Create | Vitest config with `@` alias and node environment                                          |
+| `package.json`                                         | Modify | Add `vitest`, `@vitest/coverage-v8` dev-deps; add `test`, `test:coverage` scripts          |
+| `src/shared/domain/types.ts`                           | Create | All domain types extracted from App.tsx (Recipe, UserProfile, PlannerEntry, Program, etc.) |
+| `src/shared/domain/macros.ts`                          | Create | `sumMacros`, `remainingMacros`, `resolveActiveTargets`, `NutritionTargets`                 |
+| `src/shared/domain/allergies.ts`                       | Create | `recipeAllergens`, `recipeHasAllergens`                                                    |
+| `src/features/cart/services/staples.ts`                | Create | `BASIC_KEYWORDS`, `isStaple`                                                               |
+| `src/shared/domain/__tests__/macros.test.ts`           | Create | 100% coverage for macros.ts                                                                |
+| `src/shared/domain/__tests__/allergies.test.ts`        | Create | 100% coverage for allergies.ts                                                             |
+| `src/features/cart/services/__tests__/staples.test.ts` | Create | 100% coverage for staples.ts                                                               |
 
 ---
 
 ## Task 1: Install and configure Vitest
 
 **Files:**
+
 - Modify: `package.json`
 - Create: `vitest.config.ts`
 
@@ -95,6 +96,7 @@ git commit -m "chore: add Vitest with coverage"
 ## Task 2: Domain types
 
 **Files:**
+
 - Create: `src/shared/domain/types.ts`
 
 Note: These are extracted from `App.tsx` lines 163–275 and from the `activeNutritionPlan` state type (line 512). `App.tsx` is NOT modified — duplication is intentional. Types will be imported by App.tsx in Phase 1b.
@@ -248,6 +250,7 @@ git commit -m "feat(domain): add shared domain types"
 ## Task 3: macros.ts (TDD)
 
 **Files:**
+
 - Create: `src/shared/domain/__tests__/macros.test.ts`
 - Create: `src/shared/domain/macros.ts`
 
@@ -304,13 +307,27 @@ describe('sumMacros', () => {
   });
 
   it('sums macros for a recipe entry', () => {
-    const entry: PlannerEntry = { id: 'e1', date: '2026-01-01', mealType: 'Завтрак', type: 'recipe', recipeId: 'r1' };
-    expect(sumMacros([entry], [recipeA, recipeB])).toEqual({ calories: 300, proteins: 10, fats: 5, carbs: 55 });
+    const entry: PlannerEntry = {
+      id: 'e1',
+      date: '2026-01-01',
+      mealType: 'Завтрак',
+      type: 'recipe',
+      recipeId: 'r1',
+    };
+    expect(sumMacros([entry], [recipeA, recipeB])).toEqual({
+      calories: 300,
+      proteins: 10,
+      fats: 5,
+      carbs: 55,
+    });
   });
 
   it('sums macros for a product entry with inline macros', () => {
     const entry: PlannerEntry = {
-      id: 'e2', date: '2026-01-01', mealType: 'Обед', type: 'product',
+      id: 'e2',
+      date: '2026-01-01',
+      mealType: 'Обед',
+      type: 'product',
       macros: { calories: 150, proteins: 5, fats: 3, carbs: 25 },
     };
     expect(sumMacros([entry], [])).toEqual({ calories: 150, proteins: 5, fats: 3, carbs: 25 });
@@ -322,17 +339,31 @@ describe('sumMacros', () => {
       { id: 'e2', date: '2026-01-01', mealType: 'Обед', type: 'recipe', recipeId: 'r2' },
     ];
     expect(sumMacros(entries, [recipeA, recipeB])).toEqual({
-      calories: 500, proteins: 25, fats: 19, carbs: 57,
+      calories: 500,
+      proteins: 25,
+      fats: 19,
+      carbs: 57,
     });
   });
 
   it('ignores recipe entries whose recipeId has no match', () => {
-    const entry: PlannerEntry = { id: 'e1', date: '2026-01-01', mealType: 'Завтрак', type: 'recipe', recipeId: 'missing' };
+    const entry: PlannerEntry = {
+      id: 'e1',
+      date: '2026-01-01',
+      mealType: 'Завтрак',
+      type: 'recipe',
+      recipeId: 'missing',
+    };
     expect(sumMacros([entry], [recipeA])).toEqual({ calories: 0, proteins: 0, fats: 0, carbs: 0 });
   });
 
   it('ignores product entries with no macros field', () => {
-    const entry: PlannerEntry = { id: 'e1', date: '2026-01-01', mealType: 'Завтрак', type: 'product' };
+    const entry: PlannerEntry = {
+      id: 'e1',
+      date: '2026-01-01',
+      mealType: 'Завтрак',
+      type: 'product',
+    };
     expect(sumMacros([entry], [])).toEqual({ calories: 0, proteins: 0, fats: 0, carbs: 0 });
   });
 });
@@ -341,18 +372,33 @@ describe('remainingMacros', () => {
   it('returns positive difference when targets exceed actual', () => {
     const targets = { calories: 2000, proteins: 120, fats: 60, carbs: 250 };
     const actual = { calories: 500, proteins: 30, fats: 15, carbs: 60 };
-    expect(remainingMacros(targets, actual)).toEqual({ calories: 1500, proteins: 90, fats: 45, carbs: 190 });
+    expect(remainingMacros(targets, actual)).toEqual({
+      calories: 1500,
+      proteins: 90,
+      fats: 45,
+      carbs: 190,
+    });
   });
 
   it('clamps to zero when actual exceeds targets', () => {
     const targets = { calories: 500, proteins: 30, fats: 15, carbs: 60 };
     const actual = { calories: 600, proteins: 40, fats: 20, carbs: 80 };
-    expect(remainingMacros(targets, actual)).toEqual({ calories: 0, proteins: 0, fats: 0, carbs: 0 });
+    expect(remainingMacros(targets, actual)).toEqual({
+      calories: 0,
+      proteins: 0,
+      fats: 0,
+      carbs: 0,
+    });
   });
 
   it('returns zeros when targets equal actual', () => {
     const macros = { calories: 2000, proteins: 120, fats: 60, carbs: 250 };
-    expect(remainingMacros(macros, macros)).toEqual({ calories: 0, proteins: 0, fats: 0, carbs: 0 });
+    expect(remainingMacros(macros, macros)).toEqual({
+      calories: 0,
+      proteins: 0,
+      fats: 0,
+      carbs: 0,
+    });
   });
 });
 
@@ -447,7 +493,7 @@ export function sumMacros(entries: PlannerEntry[], recipes: Recipe[]): Macros {
         carbs: acc.carbs + macros.carbs,
       };
     },
-    { calories: 0, proteins: 0, fats: 0, carbs: 0 }
+    { calories: 0, proteins: 0, fats: 0, carbs: 0 },
   );
 }
 
@@ -462,7 +508,7 @@ export function remainingMacros(targets: Macros, actual: Macros): Macros {
 
 export function resolveActiveTargets(
   plan: ActiveNutritionPlan | null,
-  profile: UserProfile
+  profile: UserProfile,
 ): NutritionTargets {
   if (plan) {
     return {
@@ -515,6 +561,7 @@ git commit -m "feat(domain): add sumMacros, remainingMacros, resolveActiveTarget
 ## Task 4: allergies.ts (TDD)
 
 **Files:**
+
 - Create: `src/shared/domain/__tests__/allergies.test.ts`
 - Create: `src/shared/domain/allergies.ts`
 
@@ -604,9 +651,7 @@ import type { Recipe } from './types';
 
 export function recipeAllergens(recipe: Recipe, allergies: string[]): string[] {
   return allergies.filter((allergy) =>
-    recipe.ingredients.some((ing) =>
-      ing.toLowerCase().includes(allergy.toLowerCase())
-    )
+    recipe.ingredients.some((ing) => ing.toLowerCase().includes(allergy.toLowerCase())),
   );
 }
 
@@ -643,6 +688,7 @@ git commit -m "feat(domain): add recipeAllergens, recipeHasAllergens with tests"
 ## Task 5: staples.ts (TDD)
 
 **Files:**
+
 - Create: `src/features/cart/services/__tests__/staples.test.ts`
 - Create: `src/features/cart/services/staples.ts`
 
@@ -715,8 +761,18 @@ Expected: FAIL — `Cannot find module '../staples'`
 
 ```typescript
 export const BASIC_KEYWORDS = [
-  'соль', 'сахар', 'перец', 'лук', 'чеснок', 'масло',
-  'мука', 'сода', 'уксус', 'вода', 'специи', 'приправа',
+  'соль',
+  'сахар',
+  'перец',
+  'лук',
+  'чеснок',
+  'масло',
+  'мука',
+  'сода',
+  'уксус',
+  'вода',
+  'специи',
+  'приправа',
 ] as const;
 
 export function isStaple(name: string): boolean {
@@ -740,6 +796,7 @@ npm run test:coverage
 ```
 
 Expected output (approximate):
+
 ```
  % Stmts | % Branch | % Funcs | % Lines | File
 ---------|----------|---------|---------|-------------------------------------------

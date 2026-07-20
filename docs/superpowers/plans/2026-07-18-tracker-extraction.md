@@ -14,19 +14,20 @@
 
 ## File Map
 
-| Action | File | Responsibility |
-|--------|------|----------------|
-| Create | `src/features/tracker/TrackerView.tsx` | Main view + state orchestration for both modals |
-| Create | `src/features/tracker/AISuggestModal.tsx` | AI suggestion modal (pure display + callbacks) |
-| Create | `src/features/tracker/ProgramSelectionModal.tsx` | Program selection modal (own context calls) |
-| Create | `src/features/tracker/__tests__/TrackerView.test.tsx` | Smoke + critical behaviour tests |
-| Modify | `src/App.tsx` | Remove renderTracker + both modals + tracker state; add TrackerView |
+| Action | File                                                  | Responsibility                                                      |
+| ------ | ----------------------------------------------------- | ------------------------------------------------------------------- |
+| Create | `src/features/tracker/TrackerView.tsx`                | Main view + state orchestration for both modals                     |
+| Create | `src/features/tracker/AISuggestModal.tsx`             | AI suggestion modal (pure display + callbacks)                      |
+| Create | `src/features/tracker/ProgramSelectionModal.tsx`      | Program selection modal (own context calls)                         |
+| Create | `src/features/tracker/__tests__/TrackerView.test.tsx` | Smoke + critical behaviour tests                                    |
+| Modify | `src/App.tsx`                                         | Remove renderTracker + both modals + tracker state; add TrackerView |
 
 ---
 
 ## Task 1: Create AISuggestModal
 
 **Files:**
+
 - Create: `src/features/tracker/AISuggestModal.tsx`
 
 - [ ] **Step 1.1: Create the file**
@@ -136,7 +137,9 @@ export function AISuggestModal({
                           <div className="flex-1 min-w-0">
                             <div className="flex justify-between items-start mb-1">
                               <span className="font-bold text-zinc-900 text-sm leading-tight">
-                                {option.type === 'recipe' ? `Рецепт: ${option.description}` : option.description}
+                                {option.type === 'recipe'
+                                  ? `Рецепт: ${option.description}`
+                                  : option.description}
                               </span>
                               <span className="text-xs font-bold text-emerald-600 ml-2 whitespace-nowrap">
                                 {option.macros.calories} ккал
@@ -174,7 +177,11 @@ export function AISuggestModal({
                     disabled={isSuggesting}
                     className="w-full py-3 bg-zinc-100 text-zinc-600 rounded-xl font-bold hover:bg-zinc-200 transition-all flex items-center justify-center gap-2"
                   >
-                    {isSuggesting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+                    {isSuggesting ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Sparkles className="w-4 h-4" />
+                    )}
                     Предложить другие варианты
                   </button>
                 </div>
@@ -208,6 +215,7 @@ git commit -m "feat(tracker): add AISuggestModal component"
 ## Task 2: Create ProgramSelectionModal
 
 **Files:**
+
 - Create: `src/features/tracker/ProgramSelectionModal.tsx`
 
 - [ ] **Step 2.1: Create the file**
@@ -335,28 +343,48 @@ export function ProgramSelectionModal({ isOpen, onClose }: ProgramSelectionModal
                       type="number"
                       placeholder="Ккал"
                       value={customPlanForm.calories || ''}
-                      onChange={(e) => setCustomPlanForm({ ...customPlanForm, calories: parseInt(e.target.value) || 0 })}
+                      onChange={(e) =>
+                        setCustomPlanForm({
+                          ...customPlanForm,
+                          calories: parseInt(e.target.value) || 0,
+                        })
+                      }
                       className="bg-white border border-emerald-200 rounded-xl px-4 py-2 outline-none focus:ring-2 focus:ring-emerald-500 text-sm"
                     />
                     <input
                       type="number"
                       placeholder="Белки (г)"
                       value={customPlanForm.proteins || ''}
-                      onChange={(e) => setCustomPlanForm({ ...customPlanForm, proteins: parseInt(e.target.value) || 0 })}
+                      onChange={(e) =>
+                        setCustomPlanForm({
+                          ...customPlanForm,
+                          proteins: parseInt(e.target.value) || 0,
+                        })
+                      }
                       className="bg-white border border-emerald-200 rounded-xl px-4 py-2 outline-none focus:ring-2 focus:ring-emerald-500 text-sm"
                     />
                     <input
                       type="number"
                       placeholder="Жиры (г)"
                       value={customPlanForm.fats || ''}
-                      onChange={(e) => setCustomPlanForm({ ...customPlanForm, fats: parseInt(e.target.value) || 0 })}
+                      onChange={(e) =>
+                        setCustomPlanForm({
+                          ...customPlanForm,
+                          fats: parseInt(e.target.value) || 0,
+                        })
+                      }
                       className="bg-white border border-emerald-200 rounded-xl px-4 py-2 outline-none focus:ring-2 focus:ring-emerald-500 text-sm"
                     />
                     <input
                       type="number"
                       placeholder="Углеводы (г)"
                       value={customPlanForm.carbs || ''}
-                      onChange={(e) => setCustomPlanForm({ ...customPlanForm, carbs: parseInt(e.target.value) || 0 })}
+                      onChange={(e) =>
+                        setCustomPlanForm({
+                          ...customPlanForm,
+                          carbs: parseInt(e.target.value) || 0,
+                        })
+                      }
                       className="bg-white border border-emerald-200 rounded-xl px-4 py-2 outline-none focus:ring-2 focus:ring-emerald-500 text-sm"
                     />
                   </div>
@@ -371,10 +399,15 @@ export function ProgramSelectionModal({ isOpen, onClose }: ProgramSelectionModal
 
               {/* Existing Programs */}
               <div className="space-y-3">
-                <h4 className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Доступные программы</h4>
+                <h4 className="text-xs font-bold text-zinc-400 uppercase tracking-wider">
+                  Доступные программы
+                </h4>
 
                 <button
-                  onClick={() => { void setActivePlan(null); onClose(); }}
+                  onClick={() => {
+                    void setActivePlan(null);
+                    onClose();
+                  }}
                   className={cn(
                     'w-full p-4 rounded-2xl border text-left transition-all flex items-center justify-between group',
                     !activeNutritionPlan
@@ -407,7 +440,8 @@ export function ProgramSelectionModal({ isOpen, onClose }: ProgramSelectionModal
                       }
                       className={cn(
                         'w-full p-4 rounded-2xl border text-left transition-all flex items-center justify-between group',
-                        activeNutritionPlan?.programId === program.id && !activeNutritionPlan?.subfolderId
+                        activeNutritionPlan?.programId === program.id &&
+                          !activeNutritionPlan?.subfolderId
                           ? 'bg-emerald-50 border-emerald-200 shadow-sm'
                           : 'bg-white border-zinc-100 hover:border-emerald-200',
                       )}
@@ -416,15 +450,19 @@ export function ProgramSelectionModal({ isOpen, onClose }: ProgramSelectionModal
                         <h5 className="font-bold text-zinc-900">{program.name}</h5>
                         {program.targetCalories ? (
                           <p className="text-xs text-emerald-600 font-medium">
-                            {program.targetCalories} ккал • Б:{program.targetProteins} Ж:{program.targetFats} У:{program.targetCarbs}
+                            {program.targetCalories} ккал • Б:{program.targetProteins} Ж:
+                            {program.targetFats} У:{program.targetCarbs}
                           </p>
                         ) : (
-                          <p className="text-xs text-zinc-400 italic">КБЖУ не заданы (будут взяты из настроек)</p>
+                          <p className="text-xs text-zinc-400 italic">
+                            КБЖУ не заданы (будут взяты из настроек)
+                          </p>
                         )}
                       </div>
-                      {activeNutritionPlan?.programId === program.id && !activeNutritionPlan?.subfolderId && (
-                        <Check className="w-5 h-5 text-emerald-600" />
-                      )}
+                      {activeNutritionPlan?.programId === program.id &&
+                        !activeNutritionPlan?.subfolderId && (
+                          <Check className="w-5 h-5 text-emerald-600" />
+                        )}
                     </button>
 
                     {program.subfolders && program.subfolders.length > 0 && (
@@ -439,24 +477,30 @@ export function ProgramSelectionModal({ isOpen, onClose }: ProgramSelectionModal
                                 calories:
                                   subfolder.targetCalories ??
                                   program.targetCalories ??
-                                  userProfile?.targetCalories ?? 0,
+                                  userProfile?.targetCalories ??
+                                  0,
                                 proteins:
                                   subfolder.targetProteins ??
                                   program.targetProteins ??
-                                  userProfile?.targetProteins ?? 0,
+                                  userProfile?.targetProteins ??
+                                  0,
                                 fats:
                                   subfolder.targetFats ??
                                   program.targetFats ??
-                                  userProfile?.targetFats ?? 0,
+                                  userProfile?.targetFats ??
+                                  0,
                                 carbs:
                                   subfolder.targetCarbs ??
                                   program.targetCarbs ??
-                                  userProfile?.targetCarbs ?? 0,
+                                  userProfile?.targetCarbs ??
+                                  0,
                                 isCustom: false,
                                 programId: program.id,
                                 subfolderId: subfolder.id,
-                                allowedProducts: subfolder.allowedProducts ?? program.allowedProducts,
-                                forbiddenProducts: subfolder.forbiddenProducts ?? program.forbiddenProducts,
+                                allowedProducts:
+                                  subfolder.allowedProducts ?? program.allowedProducts,
+                                forbiddenProducts:
+                                  subfolder.forbiddenProducts ?? program.forbiddenProducts,
                               })
                             }
                             className={cn(
@@ -469,7 +513,9 @@ export function ProgramSelectionModal({ isOpen, onClose }: ProgramSelectionModal
                             <div className="flex items-center gap-3">
                               <div className="w-1.5 h-1.5 rounded-full bg-emerald-300" />
                               <div>
-                                <h6 className="text-sm font-bold text-zinc-700">{subfolder.name}</h6>
+                                <h6 className="text-sm font-bold text-zinc-700">
+                                  {subfolder.name}
+                                </h6>
                                 {subfolder.targetCalories && (
                                   <p className="text-[10px] text-emerald-600 font-medium">
                                     {subfolder.targetCalories} ккал
@@ -497,6 +543,7 @@ export function ProgramSelectionModal({ isOpen, onClose }: ProgramSelectionModal
 ```
 
 > **Note on «По умолчанию» button:** The click handler above is verbose due to TypeScript — simplify it inline if the type allows `setActivePlan(null)` directly:
+>
 > ```tsx
 > onClick={() => { void setActivePlan(null); onClose(); }}
 > ```
@@ -521,6 +568,7 @@ git commit -m "feat(tracker): add ProgramSelectionModal component"
 ## Task 3: Create TrackerView test (TDD — write first)
 
 **Files:**
+
 - Create: `src/features/tracker/__tests__/TrackerView.test.tsx`
 
 - [ ] **Step 3.1: Create the test file**
@@ -598,7 +646,12 @@ const mockEntry: PlannerEntry = {
 };
 
 const emptyData = { recipes: [], plannerEntries: [], cartItems: [], programs: [] };
-const dataWithEntry = { recipes: [mockRecipe], plannerEntries: [mockEntry], cartItems: [], programs: [] };
+const dataWithEntry = {
+  recipes: [mockRecipe],
+  plannerEntries: [mockEntry],
+  cartItems: [],
+  programs: [],
+};
 
 function makeWrapper(data: typeof emptyData) {
   return function Wrapper({ children }: { children: ReactNode }) {
@@ -611,9 +664,7 @@ function makeWrapper(data: typeof emptyData) {
           setActivePlan: mockSetActivePlan,
         }}
       >
-        <DataContext.Provider value={data}>
-          {children}
-        </DataContext.Provider>
+        <DataContext.Provider value={data}>{children}</DataContext.Provider>
       </UserProfileContext.Provider>
     );
   };
@@ -729,6 +780,7 @@ git commit -m "test(tracker): add failing TrackerView tests (TDD)"
 ## Task 4: Create TrackerView
 
 **Files:**
+
 - Create: `src/features/tracker/TrackerView.tsx`
 
 - [ ] **Step 4.1: Create the file**
@@ -796,7 +848,9 @@ export function TrackerView({
   const actualMacros = checkedEntriesData.reduce(
     (acc, entry) => {
       const macros =
-        entry.type === 'recipe' ? recipes.find((r) => r.id === entry.recipeId)?.macros : entry.macros;
+        entry.type === 'recipe'
+          ? recipes.find((r) => r.id === entry.recipeId)?.macros
+          : entry.macros;
       if (macros) {
         acc.calories += macros.calories;
         acc.proteins += macros.proteins;
@@ -863,7 +917,9 @@ export function TrackerView({
   const handleAddSelectedSuggestions = async () => {
     if (!suggestion || selectedSuggestionIds.length === 0) return;
 
-    const selectedOptions = suggestion.options.filter((opt) => selectedSuggestionIds.includes(opt.id));
+    const selectedOptions = suggestion.options.filter((opt) =>
+      selectedSuggestionIds.includes(opt.id),
+    );
 
     try {
       for (const option of selectedOptions) {
@@ -902,7 +958,9 @@ export function TrackerView({
               <Droplets className="w-6 h-6" />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-blue-900">Не забудь пить достаточно воды сегодня!</h3>
+              <h3 className="text-lg font-bold text-blue-900">
+                Не забудь пить достаточно воды сегодня!
+              </h3>
               <p className="text-blue-700 text-sm">Твоя цель: {userProfile?.waterGoal} мл</p>
             </div>
           </div>
@@ -922,7 +980,9 @@ export function TrackerView({
               <h3 className="text-sm font-bold text-zinc-900">
                 {currentTargets.name}
                 {activeNutritionPlan?.subfolderName && (
-                  <span className="text-emerald-600 ml-1">/ {activeNutritionPlan.subfolderName}</span>
+                  <span className="text-emerald-600 ml-1">
+                    / {activeNutritionPlan.subfolderName}
+                  </span>
                 )}
               </h3>
             </div>
@@ -940,10 +1000,15 @@ export function TrackerView({
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {(
             [
-              { label: 'Калории', key: 'calories' as const, unit: 'ккал', okColor: 'bg-emerald-500' },
-              { label: 'Белки',   key: 'proteins' as const, unit: 'г',    okColor: 'bg-blue-500'    },
-              { label: 'Жиры',    key: 'fats'     as const, unit: 'г',    okColor: 'bg-orange-500'  },
-              { label: 'Углеводы',key: 'carbs'    as const, unit: 'г',    okColor: 'bg-purple-500'  },
+              {
+                label: 'Калории',
+                key: 'calories' as const,
+                unit: 'ккал',
+                okColor: 'bg-emerald-500',
+              },
+              { label: 'Белки', key: 'proteins' as const, unit: 'г', okColor: 'bg-blue-500' },
+              { label: 'Жиры', key: 'fats' as const, unit: 'г', okColor: 'bg-orange-500' },
+              { label: 'Углеводы', key: 'carbs' as const, unit: 'г', okColor: 'bg-purple-500' },
             ] as const
           ).map(({ label, key, unit, okColor }) => {
             const actual = actualMacros[key];
@@ -959,8 +1024,14 @@ export function TrackerView({
               >
                 <p className="text-xs font-bold text-zinc-400 uppercase mb-1">{label}</p>
                 <div className="flex items-end gap-2">
-                  <span className={cn('text-2xl font-bold', exceeded ? 'text-red-600' : 'text-zinc-900')}>
-                    {actual}{key !== 'calories' ? 'г' : ''}
+                  <span
+                    className={cn(
+                      'text-2xl font-bold',
+                      exceeded ? 'text-red-600' : 'text-zinc-900',
+                    )}
+                  >
+                    {actual}
+                    {key !== 'calories' ? 'г' : ''}
                   </span>
                   <span className="text-zinc-400 text-sm mb-1">
                     / {target} {unit}
@@ -1007,23 +1078,35 @@ export function TrackerView({
                 const mealEntries = todayEntries.filter((e) => e.mealType === meal);
                 if (mealEntries.length === 0) return null;
                 return (
-                  <div key={meal} className="bg-white rounded-3xl border border-zinc-100 overflow-hidden shadow-sm">
+                  <div
+                    key={meal}
+                    className="bg-white rounded-3xl border border-zinc-100 overflow-hidden shadow-sm"
+                  >
                     <div className="px-6 py-4 bg-zinc-50/50 border-b border-zinc-100 flex items-center justify-between">
-                      <h4 className="text-xs font-bold text-zinc-400 uppercase tracking-wider">{meal}</h4>
+                      <h4 className="text-xs font-bold text-zinc-400 uppercase tracking-wider">
+                        {meal}
+                      </h4>
                     </div>
                     <div className="divide-y divide-zinc-50">
                       {mealEntries.map((entry) => {
                         const isChecked = checkedEntries.includes(entry.id);
-                        const recipe = entry.type === 'recipe' ? recipes.find((r) => r.id === entry.recipeId) : null;
+                        const recipe =
+                          entry.type === 'recipe'
+                            ? recipes.find((r) => r.id === entry.recipeId)
+                            : null;
                         const title = entry.type === 'recipe' ? recipe?.title : entry.productName;
                         const calories =
-                          entry.type === 'recipe' ? recipe?.macros.calories : entry.macros?.calories;
+                          entry.type === 'recipe'
+                            ? recipe?.macros.calories
+                            : entry.macros?.calories;
                         return (
                           <div key={entry.id} className="p-4 flex items-center gap-4 group">
                             <button
                               onClick={() => {
                                 if (isChecked) {
-                                  onCheckedEntriesChange(checkedEntries.filter((id) => id !== entry.id));
+                                  onCheckedEntriesChange(
+                                    checkedEntries.filter((id) => id !== entry.id),
+                                  );
                                 } else {
                                   onCheckedEntriesChange([...checkedEntries, entry.id]);
                                 }
@@ -1038,7 +1121,12 @@ export function TrackerView({
                               <Check className="w-4 h-4" />
                             </button>
                             <div className="flex-1">
-                              <p className={cn('font-bold text-zinc-900', isChecked && 'line-through opacity-50')}>
+                              <p
+                                className={cn(
+                                  'font-bold text-zinc-900',
+                                  isChecked && 'line-through opacity-50',
+                                )}
+                              >
                                 {title}
                               </p>
                               <p className="text-xs text-zinc-400">{calories} ккал</p>
@@ -1083,7 +1171,8 @@ export function TrackerView({
               )}
             </button>
             <p className="text-zinc-500 text-sm max-w-md">
-              Ты не знаешь что съесть на остаток твоих кбжу сегодня? Нажми на кнопку и получи варианты на выбор
+              Ты не знаешь что съесть на остаток твоих кбжу сегодня? Нажми на кнопку и получи
+              варианты на выбор
             </p>
           </div>
 
@@ -1117,7 +1206,9 @@ export function TrackerView({
                         )}
                         onClick={() => {
                           if (selectedSuggestionIds.includes(option.id)) {
-                            setSelectedSuggestionIds(selectedSuggestionIds.filter((id) => id !== option.id));
+                            setSelectedSuggestionIds(
+                              selectedSuggestionIds.filter((id) => id !== option.id),
+                            );
                           } else {
                             setSelectedSuggestionIds([...selectedSuggestionIds, option.id]);
                           }
@@ -1135,9 +1226,13 @@ export function TrackerView({
                             <Check className="w-3 h-3" />
                           </div>
                           <div className="flex-1">
-                            <p className="font-bold text-zinc-900 text-sm mb-2">{option.description}</p>
+                            <p className="font-bold text-zinc-900 text-sm mb-2">
+                              {option.description}
+                            </p>
                             <div className="flex gap-3 text-[10px] font-bold text-zinc-400 uppercase">
-                              <span className="text-emerald-600">{option.macros.calories} ккал</span>
+                              <span className="text-emerald-600">
+                                {option.macros.calories} ккал
+                              </span>
                               <span>Б: {option.macros.proteins}г</span>
                               <span>Ж: {option.macros.fats}г</span>
                               <span>У: {option.macros.carbs}г</span>
@@ -1162,7 +1257,11 @@ export function TrackerView({
                       disabled={isSuggesting}
                       className="flex-1 py-4 bg-white border border-emerald-200 text-emerald-600 rounded-2xl font-bold hover:bg-emerald-50 transition-all flex items-center justify-center gap-2"
                     >
-                      {isSuggesting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+                      {isSuggesting ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <Sparkles className="w-4 h-4" />
+                      )}
                       Предложить альтернативу
                     </button>
                   </div>
@@ -1228,6 +1327,7 @@ git commit -m "feat(tracker): add TrackerView component"
 ## Task 5: Wire TrackerView into App.tsx and remove old code
 
 **Files:**
+
 - Modify: `src/App.tsx`
 
 - [ ] **Step 5.1: Add TrackerView import to App.tsx**
@@ -1241,12 +1341,14 @@ import { TrackerView } from '@/features/tracker/TrackerView';
 - [ ] **Step 5.2: Replace `case 'tracker'` in `renderContent()`**
 
 Find (around line 856):
+
 ```tsx
       case 'tracker':
         return renderTracker();
 ```
 
 Replace with:
+
 ```tsx
       case 'tracker':
         return (
@@ -1273,6 +1375,7 @@ const renderTracker = () => {
 - [ ] **Step 5.4: Delete AI Suggest Modal JSX from App.tsx return**
 
 Remove the entire `<AnimatePresence>` block (lines ~892–1021) that starts with:
+
 ```tsx
 {isSuggesting && (
   <div className="fixed inset-0 z-[200] ...
@@ -1281,6 +1384,7 @@ Remove the entire `<AnimatePresence>` block (lines ~892–1021) that starts with
 - [ ] **Step 5.5: Delete ProgramSelection Modal JSX from App.tsx return**
 
 Remove the entire `<AnimatePresence>` block (lines ~1162–1395) that starts with:
+
 ```tsx
 {isProgramSelectionOpen && (
   <div className="fixed inset-0 z-[160] ...
@@ -1292,12 +1396,12 @@ Remove these lines:
 
 ```tsx
 const [suggestion, setSuggestion] = useState<{
-  options: { 
+  options: {
     id: string;
     type: 'recipe' | 'product';
     recipeId?: string;
-    description: string; 
-    macros: { calories: number; proteins: number; fats: number; carbs: number; } 
+    description: string;
+    macros: { calories: number; proteins: number; fats: number; carbs: number };
   }[];
   reason: string;
 } | null>(null);
@@ -1311,7 +1415,11 @@ const [isSuggesting, setIsSuggesting] = useState(false);
 ```tsx
 const [isProgramSelectionOpen, setIsProgramSelectionOpen] = useState(false);
 const [customPlanForm, setCustomPlanForm] = useState({
-  name: '', calories: 0, proteins: 0, fats: 0, carbs: 0
+  name: '',
+  calories: 0,
+  proteins: 0,
+  fats: 0,
+  carbs: 0,
 });
 ```
 
@@ -1322,12 +1430,14 @@ Remove both function bodies (lines ~156–260).
 - [ ] **Step 5.8: Clean up any now-unused imports in App.tsx**
 
 After the deletions, check the import list at the top of App.tsx. Remove imports that are no longer used, for example:
+
 - `Edit3` (only used in ProgramSelectionModal)
 - `Settings2` (only used in TrackerView)
 - `Droplets`, `Target` (only used in TrackerView)
 - Any other icon or utility only referenced in removed code
 
 Run:
+
 ```bash
 npx tsc --noEmit
 ```

@@ -20,7 +20,14 @@ type CartItemRowProps = {
   onUpdateAmount: (id: string, amount: string) => void;
 };
 
-function CartItemRow({ item, isBasic = false, allergens, onToggle, onDelete, onUpdateAmount }: CartItemRowProps) {
+function CartItemRow({
+  item,
+  isBasic = false,
+  allergens,
+  onToggle,
+  onDelete,
+  onUpdateAmount,
+}: CartItemRowProps) {
   const hasAllergen = allergens.length > 0;
 
   return (
@@ -28,7 +35,7 @@ function CartItemRow({ item, isBasic = false, allergens, onToggle, onDelete, onU
       className={cn(
         'p-3 flex items-center gap-3 hover:bg-zinc-50/50 transition-colors group',
         item.checked && 'opacity-50',
-        hasAllergen && !item.checked && 'bg-red-50/60 hover:bg-red-50'
+        hasAllergen && !item.checked && 'bg-red-50/60 hover:bg-red-50',
       )}
     >
       <button
@@ -38,8 +45,8 @@ function CartItemRow({ item, isBasic = false, allergens, onToggle, onDelete, onU
           item.checked
             ? 'bg-emerald-500 border-emerald-500 text-white'
             : isBasic
-            ? 'border-emerald-200 text-transparent'
-            : 'border-zinc-200 text-transparent'
+              ? 'border-emerald-200 text-transparent'
+              : 'border-zinc-200 text-transparent',
         )}
       >
         <Check className="w-3 h-3" />
@@ -47,18 +54,30 @@ function CartItemRow({ item, isBasic = false, allergens, onToggle, onDelete, onU
 
       <div className="flex-1 min-w-0">
         <div className="flex items-baseline gap-2">
-          <span className={cn('font-bold text-sm', hasAllergen && !item.checked ? 'text-red-700' : 'text-zinc-900', item.checked && 'line-through')}>
+          <span
+            className={cn(
+              'font-bold text-sm',
+              hasAllergen && !item.checked ? 'text-red-700' : 'text-zinc-900',
+              item.checked && 'line-through',
+            )}
+          >
             {item.name}
           </span>
-          <span className={cn('text-xs font-medium', isBasic ? 'text-emerald-600/60' : 'text-zinc-400')}>
+          <span
+            className={cn('text-xs font-medium', isBasic ? 'text-emerald-600/60' : 'text-zinc-400')}
+          >
             {isBasic ? `Нужно: ${item.amount}` : item.amount}
           </span>
         </div>
         {item.sourceDishes && item.sourceDishes.length > 0 && (
-          <p className="text-[10px] text-zinc-400 truncate italic">({item.sourceDishes.join(', ')})</p>
+          <p className="text-[10px] text-zinc-400 truncate italic">
+            ({item.sourceDishes.join(', ')})
+          </p>
         )}
         {isBasic && !item.checked && (
-          <p className="text-[10px] text-emerald-600/40 font-medium">Есть в наличии или докупить?</p>
+          <p className="text-[10px] text-emerald-600/40 font-medium">
+            Есть в наличии или докупить?
+          </p>
         )}
         {hasAllergen && !item.checked && (
           <p className="flex items-center gap-1 text-[10px] text-red-600 font-bold">
@@ -118,13 +137,11 @@ export function CartView({ cart, allergies }: Props) {
     setNewCartItemAmount('');
   };
 
-  const toggleCartItem = (item: CartItem) =>
-    cartRepo.update(item.id, { checked: !item.checked });
+  const toggleCartItem = (item: CartItem) => cartRepo.update(item.id, { checked: !item.checked });
 
   const deleteCartItem = (id: string) => cartRepo.delete(id);
 
-  const updateCartItemAmount = (id: string, amount: string) =>
-    cartRepo.update(id, { amount });
+  const updateCartItemAmount = (id: string, amount: string) => cartRepo.update(id, { amount });
 
   const clearCart = async () => {
     if (!confirm('Очистить всю корзину?')) return;
@@ -141,12 +158,18 @@ export function CartView({ cart, allergies }: Props) {
           <h2 className="text-2xl font-bold font-display mb-1">Корзина</h2>
           <p className="text-sm text-zinc-500">Список покупок для ваших рецептов</p>
         </div>
-        <button onClick={clearCart} className="text-xs font-bold text-red-500 hover:text-red-600 transition-colors">
+        <button
+          onClick={clearCart}
+          className="text-xs font-bold text-red-500 hover:text-red-600 transition-colors"
+        >
           Очистить все
         </button>
       </div>
 
-      <form onSubmit={handleAddManualCartItem} className="bg-white p-4 rounded-2xl border border-zinc-100 shadow-sm flex gap-3">
+      <form
+        onSubmit={handleAddManualCartItem}
+        className="bg-white p-4 rounded-2xl border border-zinc-100 shadow-sm flex gap-3"
+      >
         <div className="flex-1">
           <input
             type="text"
@@ -179,14 +202,18 @@ export function CartView({ cart, allergies }: Props) {
           <div className="w-16 h-16 bg-zinc-50 rounded-full flex items-center justify-center mx-auto">
             <ShoppingCart className="w-8 h-8 text-zinc-200" />
           </div>
-          <p className="text-zinc-500 text-sm">Ваша корзина пуста. Добавьте продукты вручную или из планировщика.</p>
+          <p className="text-zinc-500 text-sm">
+            Ваша корзина пуста. Добавьте продукты вручную или из планировщика.
+          </p>
         </div>
       ) : (
         <div className="space-y-6">
           {mainItems.length > 0 && (
             <div className="bg-white rounded-2xl border border-zinc-100 shadow-sm overflow-hidden">
               <div className="px-4 py-3 bg-zinc-50/50 border-b border-zinc-100">
-                <h3 className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Основные продукты</h3>
+                <h3 className="text-xs font-bold text-zinc-400 uppercase tracking-wider">
+                  Основные продукты
+                </h3>
               </div>
               <div className="divide-y divide-zinc-50">
                 {mainItems.map((item) => (

@@ -25,13 +25,13 @@ describe('FakeUserProfileRepository', () => {
 
   it('subscribe immediately emits null when no profile saved', () => {
     const calls: (UserProfile | null)[] = [];
-    repo.subscribe(p => calls.push(p));
+    repo.subscribe((p) => calls.push(p));
     expect(calls[0]).toBeNull();
   });
 
   it('save persists profile and notifies subscriber', async () => {
     const calls: (UserProfile | null)[] = [];
-    repo.subscribe(p => calls.push(p));
+    repo.subscribe((p) => calls.push(p));
     await repo.save(profile());
     expect(calls).toHaveLength(2);
     expect(calls[1]!.name).toBe('Анна');
@@ -41,13 +41,13 @@ describe('FakeUserProfileRepository', () => {
     await repo.save(profile());
     await repo.save({ ...profile(), name: 'Мария' });
     const calls: (UserProfile | null)[] = [];
-    repo.subscribe(p => calls.push(p));
+    repo.subscribe((p) => calls.push(p));
     expect(calls[0]!.name).toBe('Мария');
   });
 
   it('unsubscribe stops notifications', async () => {
     const calls: (UserProfile | null)[] = [];
-    const unsub = repo.subscribe(p => calls.push(p));
+    const unsub = repo.subscribe((p) => calls.push(p));
     unsub();
     await repo.save(profile());
     expect(calls).toHaveLength(1);
@@ -57,7 +57,7 @@ describe('FakeUserProfileRepository', () => {
     await repo.save(profile());
     repo.reset();
     const calls: (UserProfile | null)[] = [];
-    repo.subscribe(p => calls.push(p));
+    repo.subscribe((p) => calls.push(p));
     expect(calls[0]).toBeNull();
   });
 });

@@ -13,6 +13,7 @@
 ## File Map
 
 **Create:**
+
 - `src/app/providers/RepositoryContext.ts` — `Repositories` type + `RepositoryContext` + `useRepositories()` hook
 - `src/app/providers/RepositoryProvider.tsx` — creates Firestore repo instances, provides via `RepositoryContext`
 - `src/app/providers/DataContext.ts` — `DataState` type + `DataContext` + `useData()` hook
@@ -26,6 +27,7 @@
 - `src/infrastructure/firestore/FirestoreNutritionPlanRepository.ts` — reads/writes Firestore `settings/plan` doc
 
 **Modify:**
+
 - `src/main.tsx` — wrap App in Shell + providers
 - `src/App.tsx` — use `useNutritionPlan()` context (remove `activeNutritionPlan` useState + localStorage); replace inline `<nav>` + `NavItem` with `<TabBar>`
 - `vitest.config.ts` — add coverage includes for new files
@@ -35,6 +37,7 @@
 ### Task 1: Install @testing-library/react and FirestoreNutritionPlanRepository
 
 **Files:**
+
 - Create: `src/infrastructure/firestore/FirestoreNutritionPlanRepository.ts`
 
 - [ ] **Step 1: Install @testing-library/react**
@@ -77,8 +80,14 @@ describe('NutritionPlanRepository contract', () => {
 
   it('persists and retrieves a plan', async () => {
     const plan = {
-      name: 'Test', calories: 1800, proteins: 100, fats: 60, carbs: 200,
-      isCustom: false, allowedProducts: [], forbiddenProducts: [],
+      name: 'Test',
+      calories: 1800,
+      proteins: 100,
+      fats: 60,
+      carbs: 200,
+      isCustom: false,
+      allowedProducts: [],
+      forbiddenProducts: [],
     };
     await repo.set(plan);
     expect(await repo.get()).toEqual(plan);
@@ -86,8 +95,14 @@ describe('NutritionPlanRepository contract', () => {
 
   it('clears plan when set(null) is called', async () => {
     await repo.set({
-      name: 'Test', calories: 1800, proteins: 100, fats: 60, carbs: 200,
-      isCustom: false, allowedProducts: [], forbiddenProducts: [],
+      name: 'Test',
+      calories: 1800,
+      proteins: 100,
+      fats: 60,
+      carbs: 200,
+      isCustom: false,
+      allowedProducts: [],
+      forbiddenProducts: [],
     });
     await repo.set(null);
     expect(await repo.get()).toBeNull();
@@ -145,6 +160,7 @@ git commit -m "feat(infra): add FirestoreNutritionPlanRepository + install @test
 ### Task 2: RepositoryContext + RepositoryProvider
 
 **Files:**
+
 - Create: `src/app/providers/RepositoryContext.ts`
 - Create: `src/app/providers/RepositoryProvider.tsx`
 
@@ -192,20 +208,19 @@ import { FirestoreNutritionPlanRepository } from '@/infrastructure/firestore/Fir
 import { RepositoryContext, type Repositories } from './RepositoryContext';
 
 export function RepositoryProvider({ children }: { children: ReactNode }) {
-  const repositories = useMemo<Repositories>(() => ({
-    recipes: new FirestoreRecipesRepository(),
-    planner: new FirestorePlannerRepository(),
-    cart: new FirestoreCartRepository(),
-    programs: new FirestoreProgramsRepository(),
-    userProfile: new FirestoreUserProfileRepository(),
-    nutritionPlan: new FirestoreNutritionPlanRepository(),
-  }), []);
-
-  return (
-    <RepositoryContext.Provider value={repositories}>
-      {children}
-    </RepositoryContext.Provider>
+  const repositories = useMemo<Repositories>(
+    () => ({
+      recipes: new FirestoreRecipesRepository(),
+      planner: new FirestorePlannerRepository(),
+      cart: new FirestoreCartRepository(),
+      programs: new FirestoreProgramsRepository(),
+      userProfile: new FirestoreUserProfileRepository(),
+      nutritionPlan: new FirestoreNutritionPlanRepository(),
+    }),
+    [],
   );
+
+  return <RepositoryContext.Provider value={repositories}>{children}</RepositoryContext.Provider>;
 }
 ```
 
@@ -231,6 +246,7 @@ git commit -m "feat(providers): add RepositoryContext and RepositoryProvider"
 ### Task 3: DataContext + DataProvider + tests
 
 **Files:**
+
 - Create: `src/app/providers/DataContext.ts`
 - Create: `src/app/providers/DataProvider.tsx`
 - Create: `src/app/providers/__tests__/DataProvider.test.tsx`
@@ -298,8 +314,13 @@ describe('DataProvider', () => {
 
     await act(async () => {
       await repos.recipes.add({
-        title: 'Borsch', time: '60m', servings: 4, categories: [],
-        ingredients: [], steps: [], macros: { calories: 300, proteins: 10, fats: 5, carbs: 40 },
+        title: 'Borsch',
+        time: '60m',
+        servings: 4,
+        categories: [],
+        ingredients: [],
+        steps: [],
+        macros: { calories: 300, proteins: 10, fats: 5, carbs: 40 },
         createdAt: '2026-01-01T00:00:00.000Z',
       });
     });
@@ -313,7 +334,11 @@ describe('DataProvider', () => {
 
     await act(async () => {
       await repos.cart.add({
-        name: 'Milk', amount: '1L', sourceDishes: [], checked: false, createdAt: '2026-01-01T00:00:00.000Z',
+        name: 'Milk',
+        amount: '1L',
+        sourceDishes: [],
+        checked: false,
+        createdAt: '2026-01-01T00:00:00.000Z',
       });
     });
 
@@ -325,11 +350,18 @@ describe('DataProvider', () => {
     const { unmount } = renderHook(() => useData(), { wrapper: makeWrapper(repos) });
     unmount();
     // After unmount, adding to repo must NOT update (no crash = listeners cleaned up)
-    expect(() => repos.recipes.add({
-      title: 'test', time: '10m', servings: 1, categories: [],
-      ingredients: [], steps: [], macros: { calories: 0, proteins: 0, fats: 0, carbs: 0 },
-      createdAt: '2026-01-01T00:00:00.000Z',
-    })).not.toThrow();
+    expect(() =>
+      repos.recipes.add({
+        title: 'test',
+        time: '10m',
+        servings: 1,
+        categories: [],
+        ingredients: [],
+        steps: [],
+        macros: { calories: 0, proteins: 0, fats: 0, carbs: 0 },
+        createdAt: '2026-01-01T00:00:00.000Z',
+      }),
+    ).not.toThrow();
   });
 });
 ```
@@ -378,7 +410,12 @@ import { DataContext } from './DataContext';
 import { useRepositories } from './RepositoryContext';
 
 export function DataProvider({ children }: { children: ReactNode }) {
-  const { recipes: recipesRepo, planner: plannerRepo, cart: cartRepo, programs: programsRepo } = useRepositories();
+  const {
+    recipes: recipesRepo,
+    planner: plannerRepo,
+    cart: cartRepo,
+    programs: programsRepo,
+  } = useRepositories();
 
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [plannerEntries, setPlannerEntries] = useState<PlannerEntry[]>([]);
@@ -434,6 +471,7 @@ git commit -m "feat(providers): add DataContext and DataProvider with tests"
 ### Task 4: UserProfileContext + UserProfileProvider + tests
 
 **Files:**
+
 - Create: `src/app/providers/UserProfileContext.ts`
 - Create: `src/app/providers/UserProfileProvider.tsx`
 - Create: `src/app/providers/__tests__/UserProfileProvider.test.tsx`
@@ -544,8 +582,14 @@ describe('useNutritionPlan', () => {
 
   it('loads a pre-existing plan from repository on mount', async () => {
     const plan = {
-      name: 'Diet', calories: 1500, proteins: 90, fats: 50, carbs: 160,
-      isCustom: false, allowedProducts: [], forbiddenProducts: [],
+      name: 'Diet',
+      calories: 1500,
+      proteins: 90,
+      fats: 50,
+      carbs: 160,
+      isCustom: false,
+      allowedProducts: [],
+      forbiddenProducts: [],
     };
     await repos.nutritionPlan.set(plan);
 
@@ -560,8 +604,14 @@ describe('useNutritionPlan', () => {
     await act(async () => {});
 
     const plan = {
-      name: 'Keto', calories: 1600, proteins: 120, fats: 100, carbs: 30,
-      isCustom: true, allowedProducts: [], forbiddenProducts: [],
+      name: 'Keto',
+      calories: 1600,
+      proteins: 120,
+      fats: 100,
+      carbs: 30,
+      isCustom: true,
+      allowedProducts: [],
+      forbiddenProducts: [],
     };
 
     await act(async () => {
@@ -574,8 +624,14 @@ describe('useNutritionPlan', () => {
 
   it('setActivePlan(null) clears the plan', async () => {
     const plan = {
-      name: 'Diet', calories: 1500, proteins: 90, fats: 50, carbs: 160,
-      isCustom: false, allowedProducts: [], forbiddenProducts: [],
+      name: 'Diet',
+      calories: 1500,
+      proteins: 90,
+      fats: 50,
+      carbs: 160,
+      isCustom: false,
+      allowedProducts: [],
+      forbiddenProducts: [],
     };
     await repos.nutritionPlan.set(plan);
     const { result } = renderHook(() => useNutritionPlan(), { wrapper: makeWrapper(repos) });
@@ -616,7 +672,9 @@ export type NutritionPlanState = {
   setActivePlan: (plan: ActiveNutritionPlan | null) => Promise<void>;
 };
 
-export const UserProfileContext = createContext<(UserProfileState & NutritionPlanState) | null>(null);
+export const UserProfileContext = createContext<(UserProfileState & NutritionPlanState) | null>(
+  null,
+);
 
 export function useUserProfile(): UserProfileState {
   const ctx = useContext(UserProfileContext);
@@ -654,17 +712,25 @@ export function UserProfileProvider({ children }: { children: ReactNode }) {
     nutritionPlanRepo.get().then(setActiveNutritionPlan);
   }, [nutritionPlanRepo]);
 
-  const saveUserProfile = useCallback(async (profile: UserProfile) => {
-    await userProfileRepo.save(profile);
-  }, [userProfileRepo]);
+  const saveUserProfile = useCallback(
+    async (profile: UserProfile) => {
+      await userProfileRepo.save(profile);
+    },
+    [userProfileRepo],
+  );
 
-  const setActivePlan = useCallback(async (plan: ActiveNutritionPlan | null) => {
-    await nutritionPlanRepo.set(plan);
-    setActiveNutritionPlan(plan);
-  }, [nutritionPlanRepo]);
+  const setActivePlan = useCallback(
+    async (plan: ActiveNutritionPlan | null) => {
+      await nutritionPlanRepo.set(plan);
+      setActiveNutritionPlan(plan);
+    },
+    [nutritionPlanRepo],
+  );
 
   return (
-    <UserProfileContext.Provider value={{ userProfile, saveUserProfile, activeNutritionPlan, setActivePlan }}>
+    <UserProfileContext.Provider
+      value={{ userProfile, saveUserProfile, activeNutritionPlan, setActivePlan }}
+    >
       {children}
     </UserProfileContext.Provider>
   );
@@ -692,6 +758,7 @@ git commit -m "feat(providers): add UserProfileContext and UserProfileProvider w
 ### Task 5: Shell and TabBar components
 
 **Files:**
+
 - Create: `src/app/layout/Shell.tsx`
 - Create: `src/app/layout/TabBar.tsx`
 
@@ -702,11 +769,7 @@ git commit -m "feat(providers): add UserProfileContext and UserProfileProvider w
 import type { ReactNode } from 'react';
 
 export function Shell({ children }: { children: ReactNode }) {
-  return (
-    <div className="min-h-screen bg-zinc-50 text-zinc-900 font-sans">
-      {children}
-    </div>
-  );
+  return <div className="min-h-screen bg-zinc-50 text-zinc-900 font-sans">{children}</div>;
 }
 ```
 
@@ -743,10 +806,15 @@ function NavItem({ active, onClick, icon, label }: NavItemProps) {
       onClick={onClick}
       className={cn(
         'flex flex-col items-center gap-1 px-2 py-1 rounded-xl transition-all duration-200 min-w-[64px]',
-        active ? 'text-emerald-600' : 'text-zinc-400 hover:text-zinc-600'
+        active ? 'text-emerald-600' : 'text-zinc-400 hover:text-zinc-600',
       )}
     >
-      <div className={cn('p-1 rounded-lg transition-colors', active ? 'bg-emerald-50' : 'bg-transparent')}>
+      <div
+        className={cn(
+          'p-1 rounded-lg transition-colors',
+          active ? 'bg-emerald-50' : 'bg-transparent',
+        )}
+      >
         {icon}
       </div>
       <span className="text-[10px] font-bold uppercase tracking-wider">{label}</span>
@@ -758,11 +826,36 @@ export function TabBar({ activeTab, onTabChange }: TabBarProps) {
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-lg border-t border-zinc-200 px-4 py-3 z-50">
       <div className="max-w-lg mx-auto flex justify-between items-center">
-        <NavItem active={activeTab === 'recipes'} onClick={() => onTabChange('recipes')} icon={<BookOpen className="w-6 h-6" />} label="Рецепты" />
-        <NavItem active={activeTab === 'planner'} onClick={() => onTabChange('planner')} icon={<Calendar className="w-6 h-6" />} label="Планер" />
-        <NavItem active={activeTab === 'cart'}    onClick={() => onTabChange('cart')}    icon={<ShoppingCart className="w-6 h-6" />} label="Корзина" />
-        <NavItem active={activeTab === 'tracker'} onClick={() => onTabChange('tracker')} icon={<Activity className="w-6 h-6" />} label="Трекер" />
-        <NavItem active={activeTab === 'programs'} onClick={() => onTabChange('programs')} icon={<Users className="w-6 h-6" />} label="Программы" />
+        <NavItem
+          active={activeTab === 'recipes'}
+          onClick={() => onTabChange('recipes')}
+          icon={<BookOpen className="w-6 h-6" />}
+          label="Рецепты"
+        />
+        <NavItem
+          active={activeTab === 'planner'}
+          onClick={() => onTabChange('planner')}
+          icon={<Calendar className="w-6 h-6" />}
+          label="Планер"
+        />
+        <NavItem
+          active={activeTab === 'cart'}
+          onClick={() => onTabChange('cart')}
+          icon={<ShoppingCart className="w-6 h-6" />}
+          label="Корзина"
+        />
+        <NavItem
+          active={activeTab === 'tracker'}
+          onClick={() => onTabChange('tracker')}
+          icon={<Activity className="w-6 h-6" />}
+          label="Трекер"
+        />
+        <NavItem
+          active={activeTab === 'programs'}
+          onClick={() => onTabChange('programs')}
+          icon={<Users className="w-6 h-6" />}
+          label="Программы"
+        />
       </div>
     </nav>
   );
@@ -789,6 +882,7 @@ git commit -m "feat(layout): add Shell and TabBar components"
 ### Task 6: Wire main.tsx with providers
 
 **Files:**
+
 - Modify: `src/main.tsx`
 
 - [ ] **Step 1: Update main.tsx**
@@ -840,9 +934,11 @@ git commit -m "feat(app): wire providers and Shell in main.tsx"
 ### Task 7: Migrate App.tsx — activeNutritionPlan + TabBar
 
 **Files:**
+
 - Modify: `src/App.tsx`
 
 This task has two independent surgical edits:
+
 1. Replace `activeNutritionPlan` useState + localStorage with `useNutritionPlan()` context
 2. Replace inline `<nav>` + `NavItem` function with `<TabBar>`
 
@@ -912,7 +1008,7 @@ useEffect(() => {
     try {
       setAvailableCategories(JSON.parse(savedCategories));
     } catch (e) {
-      console.error("Error parsing saved categories:", e);
+      console.error('Error parsing saved categories:', e);
     }
   }
 }, []);
@@ -931,7 +1027,7 @@ setActiveNutritionPlan({
   isCustom: true,
   programId: docRef.id,
   allowedProducts: [],
-  forbiddenProducts: []
+  forbiddenProducts: [],
 });
 
 // AFTER:
@@ -992,7 +1088,9 @@ import { TabBar } from '@/app/layout/TabBar';
 Find the inline `<nav>` block at approximately lines 6412–6446:
 
 ```tsx
-{/* Navigation - Always at the bottom */}
+{
+  /* Navigation - Always at the bottom */
+}
 <nav className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-lg border-t border-zinc-200 px-4 py-3 z-50">
   <div className="max-w-lg mx-auto flex justify-between items-center">
     <NavItem
@@ -1026,7 +1124,7 @@ Find the inline `<nav>` block at approximately lines 6412–6446:
       label="Программы"
     />
   </div>
-</nav>
+</nav>;
 ```
 
 Replace with:
@@ -1086,6 +1184,7 @@ npm run dev
 ```
 
 Check:
+
 - All 5 tabs navigate correctly
 - Active nutrition plan persists across page reload (now stored in Firestore `settings/plan`, not localStorage)
 - No console errors
@@ -1102,6 +1201,7 @@ git commit -m "refactor(app): migrate activeNutritionPlan to context; extract Ta
 ### Task 8: Update vitest.config.ts coverage includes
 
 **Files:**
+
 - Modify: `vitest.config.ts`
 
 - [ ] **Step 1: Update coverage include list**
@@ -1162,20 +1262,21 @@ git commit -m "chore(test): add coverage includes for providers and layout"
 
 **Spec coverage:**
 
-| Requirement (ROADMAP) | Task |
-|---|---|
-| `RepositoryProvider.tsx` — инъекция Firestore-реализаций | Task 2 |
-| `DataProvider.tsx` — подписка на репозитории | Task 3 |
-| `UserProfileProvider.tsx` — профиль + activeNutritionPlan | Task 4 |
-| `Shell.tsx` — layout wrapper | Task 5 |
-| `TabBar.tsx` — навигация по 5 вкладкам | Task 5 |
+| Requirement (ROADMAP)                                     | Task        |
+| --------------------------------------------------------- | ----------- |
+| `RepositoryProvider.tsx` — инъекция Firestore-реализаций  | Task 2      |
+| `DataProvider.tsx` — подписка на репозитории              | Task 3      |
+| `UserProfileProvider.tsx` — профиль + activeNutritionPlan | Task 4      |
+| `Shell.tsx` — layout wrapper                              | Task 5      |
+| `TabBar.tsx` — навигация по 5 вкладкам                    | Task 5      |
 | Перенос `activeNutritionPlan` из localStorage в Firestore | Tasks 1 + 7 |
-| Обновить `main.tsx` — обернуть App провайдерами | Task 6 |
-| Тесты провайдеров с fake-репозиториями | Tasks 3 + 4 |
+| Обновить `main.tsx` — обернуть App провайдерами           | Task 6      |
+| Тесты провайдеров с fake-репозиториями                    | Tasks 3 + 4 |
 
 **Placeholder scan:** No TBDs, no "add appropriate error handling", all code blocks are complete. ✅
 
 **Type consistency:**
+
 - `Tab` type is imported from `@/shared/domain/types` in `TabBar.tsx` — matches the type used in `App.tsx`. ✅
 - `ActiveNutritionPlan` — same type used in `UserProfileContext`, `UserProfileProvider`, `FirestoreNutritionPlanRepository`. ✅
 - `setActivePlan` name is consistent across `UserProfileContext.ts`, `UserProfileProvider.tsx`, and App.tsx call sites. ✅

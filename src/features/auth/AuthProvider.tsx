@@ -35,18 +35,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   if (!user) {
     if (screen === 'login') {
       return (
-        <LoginScreen
-          onGoToSignup={() => setScreen('signup')}
-          onBack={() => setScreen('landing')}
-        />
+        <LoginScreen onGoToSignup={() => setScreen('signup')} onBack={() => setScreen('landing')} />
       );
     }
     if (screen === 'signup') {
       return (
-        <SignupScreen
-          onGoToLogin={() => setScreen('login')}
-          onBack={() => setScreen('landing')}
-        />
+        <SignupScreen onGoToLogin={() => setScreen('login')} onBack={() => setScreen('landing')} />
       );
     }
     return (
@@ -57,9 +51,5 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     );
   }
 
-  return (
-    <AuthContext.Provider value={{ user, loading: false }}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={{ user, loading: false }}>{children}</AuthContext.Provider>;
 }

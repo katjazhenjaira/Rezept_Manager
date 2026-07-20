@@ -12,14 +12,14 @@ import type {
   FillRemainingRequest,
   FillRemainingResponse,
   AiErrorResponse,
-} from "./contracts";
+} from './contracts';
 
-const API_BASE = `${import.meta.env.VITE_AI_WORKER_URL ?? ""}/api/ai`;
+const API_BASE = `${import.meta.env.VITE_AI_WORKER_URL ?? ''}/api/ai`;
 
 async function post<TReq, TRes>(path: string, body: TReq): Promise<TRes> {
   const res = await fetch(`${API_BASE}${path}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   });
   if (!res.ok) {
@@ -34,15 +34,15 @@ async function post<TReq, TRes>(path: string, body: TReq): Promise<TRes> {
 
 export const aiClient = {
   importFromUrl: (req: ImportFromUrlRequest) =>
-    post<ImportFromUrlRequest, ImportFromUrlResponse>("/import-from-url", req),
+    post<ImportFromUrlRequest, ImportFromUrlResponse>('/import-from-url', req),
   importFromPdf: (req: ImportFromPdfRequest) =>
-    post<ImportFromPdfRequest, ImportFromPdfResponse>("/import-from-pdf", req),
+    post<ImportFromPdfRequest, ImportFromPdfResponse>('/import-from-pdf', req),
   importFromPhoto: (req: ImportFromPhotoRequest) =>
-    post<ImportFromPhotoRequest, ImportFromPhotoResponse>("/import-from-photo", req),
+    post<ImportFromPhotoRequest, ImportFromPhotoResponse>('/import-from-photo', req),
   generateImage: (req: GenerateImageRequest) =>
-    post<GenerateImageRequest, GenerateImageResponse>("/generate-image", req),
+    post<GenerateImageRequest, GenerateImageResponse>('/generate-image', req),
   calculateKbzhu: (req: CalculateKbzhuRequest) =>
-    post<CalculateKbzhuRequest, CalculateKbzhuResponse>("/calculate-kbzhu", req),
+    post<CalculateKbzhuRequest, CalculateKbzhuResponse>('/calculate-kbzhu', req),
   fillRemaining: (req: FillRemainingRequest) =>
-    post<FillRemainingRequest, FillRemainingResponse>("/fill-remaining", req),
+    post<FillRemainingRequest, FillRemainingResponse>('/fill-remaining', req),
 };

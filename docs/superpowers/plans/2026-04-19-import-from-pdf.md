@@ -12,11 +12,11 @@
 
 ## File map
 
-| Action | File | Purpose |
-|--------|------|---------|
-| Create | `worker/src/routes/importFromPdf.ts` | New route handler |
-| Modify | `worker/src/index.ts` | Replace 501 stub |
-| Modify | `src/App.tsx` (~lines 5618–5739) | Replace direct Gemini call with aiClient |
+| Action | File                                 | Purpose                                  |
+| ------ | ------------------------------------ | ---------------------------------------- |
+| Create | `worker/src/routes/importFromPdf.ts` | New route handler                        |
+| Modify | `worker/src/index.ts`                | Replace 501 stub                         |
+| Modify | `src/App.tsx` (~lines 5618–5739)     | Replace direct Gemini call with aiClient |
 
 No changes to `src/services/ai/contracts.ts` — `ImportedRecipe` already has `ingredients: string[]`, `steps: string[]`, `dishImage?: string`, `pageNumber?: number`, `dishBoundingBox?`.
 
@@ -25,6 +25,7 @@ No changes to `src/services/ai/contracts.ts` — `ImportedRecipe` already has `i
 ### Task 1: Create `importFromPdf` route
 
 **Files:**
+
 - Create: `worker/src/routes/importFromPdf.ts`
 
 - [ ] **Step 1: Create the route file**
@@ -32,13 +33,13 @@ No changes to `src/services/ai/contracts.ts` — `ImportedRecipe` already has `i
 Create `worker/src/routes/importFromPdf.ts`:
 
 ```ts
-import type { Context } from "hono";
-import { GoogleGenAI, Type } from "@google/genai";
+import type { Context } from 'hono';
+import { GoogleGenAI, Type } from '@google/genai';
 import type {
   ImportFromPdfRequest,
   ImportFromPdfResponse,
   ImportedRecipe,
-} from "../../../src/services/ai/contracts";
+} from '../../../src/services/ai/contracts';
 
 type Bindings = { GEMINI_API_KEY: string };
 
@@ -46,38 +47,40 @@ export async function importFromPdf(c: Context<{ Bindings: Bindings }>) {
   const body = await c.req.json<ImportFromPdfRequest>();
   const { pdfBase64, availableCategories } = body;
 
-  if (typeof pdfBase64 !== "string" || !pdfBase64.trim()) {
-    return c.json({ error: "Expected { pdfBase64: string, availableCategories: string[] }" }, 400);
+  if (typeof pdfBase64 !== 'string' || !pdfBase64.trim()) {
+    return c.json({ error: 'Expected { pdfBase64: string, availableCategories: string[] }' }, 400);
   }
   if (!Array.isArray(availableCategories)) {
-    return c.json({ error: "Expected { pdfBase64: string, availableCategories: string[] }" }, 400);
+    return c.json({ error: 'Expected { pdfBase64: string, availableCategories: string[] }' }, 400);
   }
 
   const ai = new GoogleGenAI({ apiKey: c.env.GEMINI_API_KEY });
 
-  let data: { recipes?: Array<{
-    title?: string;
-    author?: string;
-    ingredients?: string[];
-    steps?: string[];
-    time?: string;
-    calories?: number;
-    proteins?: number;
-    fats?: number;
-    carbs?: number;
-    categories?: string[];
-    servings?: number;
-    pageNumber?: number;
-    dishBoundingBox?: { ymin: number; xmin: number; ymax: number; xmax: number };
-  }> };
+  let data: {
+    recipes?: Array<{
+      title?: string;
+      author?: string;
+      ingredients?: string[];
+      steps?: string[];
+      time?: string;
+      calories?: number;
+      proteins?: number;
+      fats?: number;
+      carbs?: number;
+      categories?: string[];
+      servings?: number;
+      pageNumber?: number;
+      dishBoundingBox?: { ymin: number; xmin: number; ymax: number; xmax: number };
+    }>;
+  };
 
   try {
     const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview",
+      model: 'gemini-3-flash-preview',
       contents: [
         {
           inlineData: {
-            mimeType: "application/pdf",
+            mimeType: 'application/pdf',
             data: pdfBase64,
           },
         },
@@ -87,11 +90,11 @@ Include title, ingredients as an array of strings, steps as an array of strings,
 ВАЖНО: Если КБЖУ (калории, белки, жиры, углеводы) не указаны в документе явно, ПОЖАЛУЙСТА, РАССЧИТАЙТЕ ИХ самостоятельно на основе ингредиентов и их количества.
 Include 'author' if mentioned in the document.
 For each recipe, provide the 'pageNumber' (1-indexed) and 'dishBoundingBox' with ymin, xmin, ymax, xmax for the main photo associated with that recipe. Use normalized coordinates (0-1000).
-For categories, ONLY choose from this list: ${availableCategories.join(", ")}.`,
+For categories, ONLY choose from this list: ${availableCategories.join(', ')}.`,
         },
       ],
       config: {
-        responseMimeType: "application/json",
+        responseMimeType: 'application/json',
         responseSchema: {
           type: Type.OBJECT,
           properties: {
@@ -122,27 +125,38 @@ For categories, ONLY choose from this list: ${availableCategories.join(", ")}.`,
                     },
                   },
                 },
-                required: ["title", "ingredients", "steps", "time", "calories", "proteins", "fats", "carbs", "categories", "servings"],
+                required: [
+                  'title',
+                  'ingredients',
+                  'steps',
+                  'time',
+                  'calories',
+                  'proteins',
+                  'fats',
+                  'carbs',
+                  'categories',
+                  'servings',
+                ],
               },
             },
           },
-          required: ["recipes"],
+          required: ['recipes'],
         },
       },
     });
 
     data = JSON.parse(response.text ?? '{"recipes":[]}') as typeof data;
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Unknown error";
+    const message = err instanceof Error ? err.message : 'Unknown error';
     return c.json({ error: `Gemini error: ${message}` }, 502);
   }
 
   const recipes: ImportedRecipe[] = (data.recipes ?? []).map((r) => ({
-    title: r.title ?? "Новый рецепт",
+    title: r.title ?? 'Новый рецепт',
     author: r.author,
     ingredients: r.ingredients ?? [],
     steps: r.steps ?? [],
-    time: r.time ?? "30 мин",
+    time: r.time ?? '30 мин',
     servings: r.servings ?? 2,
     categories: (r.categories ?? [])
       .map((cat) => availableCategories.find((ac) => ac.toLowerCase() === cat.toLowerCase()))
@@ -183,6 +197,7 @@ git commit -m "feat(worker): add import-from-pdf route"
 ### Task 2: Register route in worker index
 
 **Files:**
+
 - Modify: `worker/src/index.ts`
 
 - [ ] **Step 1: Add import and replace stub**
@@ -190,12 +205,12 @@ git commit -m "feat(worker): add import-from-pdf route"
 Replace the entire content of `worker/src/index.ts` with:
 
 ```ts
-import { Hono } from "hono";
-import { cors } from "hono/cors";
-import { generateImage } from "./routes/generateImage";
-import { calculateKbzhu } from "./routes/calculateKbzhu";
-import { importFromUrl } from "./routes/importFromUrl";
-import { importFromPdf } from "./routes/importFromPdf";
+import { Hono } from 'hono';
+import { cors } from 'hono/cors';
+import { generateImage } from './routes/generateImage';
+import { calculateKbzhu } from './routes/calculateKbzhu';
+import { importFromUrl } from './routes/importFromUrl';
+import { importFromPdf } from './routes/importFromPdf';
 
 type Bindings = {
   GEMINI_API_KEY: string;
@@ -203,24 +218,24 @@ type Bindings = {
 
 const app = new Hono<{ Bindings: Bindings }>();
 
-app.use("*", cors());
+app.use('*', cors());
 
-app.get("/", (c) => c.text("Rezept Manager AI proxy"));
+app.get('/', (c) => c.text('Rezept Manager AI proxy'));
 
 app.onError((err, c) => {
-  console.error("AI proxy error:", err);
-  return c.json({ error: err.message || "Internal error" }, 500);
+  console.error('AI proxy error:', err);
+  return c.json({ error: err.message || 'Internal error' }, 500);
 });
 
-app.post("/api/ai/generate-image", generateImage);
-app.post("/api/ai/calculate-kbzhu", calculateKbzhu);
-app.post("/api/ai/import-from-url", importFromUrl);
-app.post("/api/ai/import-from-pdf", importFromPdf);
+app.post('/api/ai/generate-image', generateImage);
+app.post('/api/ai/calculate-kbzhu', calculateKbzhu);
+app.post('/api/ai/import-from-url', importFromUrl);
+app.post('/api/ai/import-from-pdf', importFromPdf);
 
 // Остальные 2 ещё не портированы — stubs.
-const NOT_IMPLEMENTED = { error: "Not implemented yet (Phase 0b)" };
-app.post("/api/ai/import-from-photo", (c) => c.json(NOT_IMPLEMENTED, 501));
-app.post("/api/ai/fill-remaining", (c) => c.json(NOT_IMPLEMENTED, 501));
+const NOT_IMPLEMENTED = { error: 'Not implemented yet (Phase 0b)' };
+app.post('/api/ai/import-from-photo', (c) => c.json(NOT_IMPLEMENTED, 501));
+app.post('/api/ai/fill-remaining', (c) => c.json(NOT_IMPLEMENTED, 501));
 
 export default app;
 ```
@@ -246,6 +261,7 @@ git commit -m "feat(worker): register import-from-pdf route"
 ### Task 3: Update App.tsx PDF handler
 
 **Files:**
+
 - Modify: `src/App.tsx` (~lines 5618–5739)
 
 The current `onChange` handler for the PDF file input (around line 5618) calls `new GoogleGenAI(...)` directly. Replace the `reader.onloadend` callback body with:
@@ -287,9 +303,9 @@ reader.onloadend = async () => {
         if (generated?.imageDataUri) dishImage = generated.imageDataUri;
       }
 
-      await addDoc(collection(db, "recipes"), {
+      await addDoc(collection(db, 'recipes'), {
         title: r.title,
-        author: r.author ?? "",
+        author: r.author ?? '',
         image: dishImage,
         time: r.time,
         servings: r.servings,
@@ -302,7 +318,7 @@ reader.onloadend = async () => {
       });
 
       if (recipeTarget) {
-        const docRef = await addDoc(collection(db, "recipes"), {});
+        const docRef = await addDoc(collection(db, 'recipes'), {});
         await addRecipeToTarget(docRef.id);
       }
     }
@@ -310,8 +326,8 @@ reader.onloadend = async () => {
     setIsAddingPDF(false);
     alert(`Успешно добавлено рецептов: ${result.recipes.length}`);
   } catch (error) {
-    console.error("Error analyzing PDF:", error);
-    alert("Не удалось распознать PDF. Попробуйте другой файл.");
+    console.error('Error analyzing PDF:', error);
+    alert('Не удалось распознать PDF. Попробуйте другой файл.');
   } finally {
     setIsScanning(false);
   }
@@ -345,9 +361,9 @@ reader.onloadend = async () => {
         if (generated?.imageDataUri) dishImage = generated.imageDataUri;
       }
 
-      const docRef = await addDoc(collection(db, "recipes"), {
+      const docRef = await addDoc(collection(db, 'recipes'), {
         title: r.title,
-        author: r.author ?? "",
+        author: r.author ?? '',
         image: dishImage,
         time: r.time,
         servings: r.servings,
@@ -367,8 +383,8 @@ reader.onloadend = async () => {
     setIsAddingPDF(false);
     alert(`Успешно добавлено рецептов: ${result.recipes.length}`);
   } catch (error) {
-    console.error("Error analyzing PDF:", error);
-    alert("Не удалось распознать PDF. Попробуйте другой файл.");
+    console.error('Error analyzing PDF:', error);
+    alert('Не удалось распознать PDF. Попробуйте другой файл.');
   } finally {
     setIsScanning(false);
   }

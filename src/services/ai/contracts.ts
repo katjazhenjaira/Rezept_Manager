@@ -75,7 +75,7 @@ export type FillRemainingRequest = {
 };
 export type FillRemainingOption = {
   id: string;
-  type: "recipe" | "product";
+  type: 'recipe' | 'product';
   recipeId?: string;
   description: string;
   macros: Macros;

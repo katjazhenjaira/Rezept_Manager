@@ -11,6 +11,7 @@
 `App.tsx` is being decomposed from a ~1400-line monolith into feature modules. Recipes, Cart, Planner, Programs are already extracted. Tracker is the last remaining tab. After extraction, App.tsx should reach < 200 lines and proceed to Step 5 (final cleanup).
 
 Tracker currently consists of three pieces inside App.tsx:
+
 - `renderTracker()` — main view (lines 450–807, ~357 lines)
 - AI Suggest Modal — in JSX return (lines 892–1021, ~130 lines)
 - ProgramSelection Modal — in JSX return (lines 1162–1395, ~230 lines)
@@ -47,6 +48,7 @@ type TrackerViewProps = {
 ```
 
 **Context hooks called directly inside TrackerView:**
+
 - `useData()` → `plannerEntries`, `recipes`, `programs`
 - `useNutritionPlan()` → `activeNutritionPlan`, `setActivePlan`
 - `useUserProfile()` → `userProfile`
@@ -61,6 +63,7 @@ const [isProgramSelectionOpen, setIsProgramSelectionOpen] = useState(false);
 ```
 
 **Functions (move from App.tsx):**
+
 - `handleSuggest(isAlternative: boolean)` — calls `aiClient.fillRemaining()`, updates `suggestion`
 - `handleAddSelectedSuggestions()` — writes selected options to Firestore (`collection(db, "planner")`)
 
@@ -86,6 +89,7 @@ type AISuggestModalProps = {
 ```
 
 **`SuggestionResult` type** (extracted to `TrackerView.tsx` or `shared/domain/types.ts` if reused):
+
 ```ts
 type SuggestionResult = {
   options: {
@@ -104,6 +108,7 @@ type SuggestionResult = {
 ### ProgramSelectionModal
 
 Calls context hooks directly (avoids threading ~10 props through TrackerView):
+
 - `useData()` → `programs`
 - `useNutritionPlan()` → `activeNutritionPlan`, `setActivePlan`
 - `useUserProfile()` → `userProfile.name`
@@ -116,8 +121,15 @@ type ProgramSelectionModalProps = {
 ```
 
 Internal state:
+
 ```ts
-const [customPlanForm, setCustomPlanForm] = useState({ name: '', calories: 0, proteins: 0, fats: 0, carbs: 0 });
+const [customPlanForm, setCustomPlanForm] = useState({
+  name: '',
+  calories: 0,
+  proteins: 0,
+  fats: 0,
+  carbs: 0,
+});
 ```
 
 `customPlanForm` and its state move from App.tsx into this component since they are exclusively used here.
@@ -127,6 +139,7 @@ const [customPlanForm, setCustomPlanForm] = useState({ name: '', calories: 0, pr
 ## What Changes in App.tsx
 
 **Removed:**
+
 - `useState` for `suggestion`, `selectedSuggestionIds`, `isSuggesting`, `isProgramSelectionOpen`, `customPlanForm`
 - Functions `handleSuggest`, `handleAddSelectedSuggestions`
 - `renderTracker()` function body
@@ -134,11 +147,14 @@ const [customPlanForm, setCustomPlanForm] = useState({ name: '', calories: 0, pr
 - ProgramSelection Modal JSX (lines 1162–1395)
 
 **Replaced:**
+
 ```tsx
 case 'tracker':
   return renderTracker();
 ```
+
 →
+
 ```tsx
 case 'tracker':
   return (
@@ -174,6 +190,7 @@ App.tsx
 ## Testing
 
 **`TrackerView.test.tsx`** (smoke + critical behaviour):
+
 - Renders without crash with mocked `useData`, `useNutritionPlan`, `useUserProfile`
 - Displays macros computed from `checkedEntries` (KBZHU sync invariant)
 - "Заполнить остаток кбжу" button triggers `aiClient.fillRemaining`

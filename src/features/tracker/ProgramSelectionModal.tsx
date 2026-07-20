@@ -136,28 +136,48 @@ export function ProgramSelectionModal({ isOpen, onClose }: ProgramSelectionModal
                       type="number"
                       placeholder="Ккал"
                       value={customPlanForm.calories || ''}
-                      onChange={(e) => setCustomPlanForm({ ...customPlanForm, calories: parseInt(e.target.value) || 0 })}
+                      onChange={(e) =>
+                        setCustomPlanForm({
+                          ...customPlanForm,
+                          calories: parseInt(e.target.value) || 0,
+                        })
+                      }
                       className="bg-white border border-emerald-200 rounded-xl px-4 py-2 outline-none focus:ring-2 focus:ring-emerald-500 text-sm"
                     />
                     <input
                       type="number"
                       placeholder="Белки (г)"
                       value={customPlanForm.proteins || ''}
-                      onChange={(e) => setCustomPlanForm({ ...customPlanForm, proteins: parseInt(e.target.value) || 0 })}
+                      onChange={(e) =>
+                        setCustomPlanForm({
+                          ...customPlanForm,
+                          proteins: parseInt(e.target.value) || 0,
+                        })
+                      }
                       className="bg-white border border-emerald-200 rounded-xl px-4 py-2 outline-none focus:ring-2 focus:ring-emerald-500 text-sm"
                     />
                     <input
                       type="number"
                       placeholder="Жиры (г)"
                       value={customPlanForm.fats || ''}
-                      onChange={(e) => setCustomPlanForm({ ...customPlanForm, fats: parseInt(e.target.value) || 0 })}
+                      onChange={(e) =>
+                        setCustomPlanForm({
+                          ...customPlanForm,
+                          fats: parseInt(e.target.value) || 0,
+                        })
+                      }
                       className="bg-white border border-emerald-200 rounded-xl px-4 py-2 outline-none focus:ring-2 focus:ring-emerald-500 text-sm"
                     />
                     <input
                       type="number"
                       placeholder="Углеводы (г)"
                       value={customPlanForm.carbs || ''}
-                      onChange={(e) => setCustomPlanForm({ ...customPlanForm, carbs: parseInt(e.target.value) || 0 })}
+                      onChange={(e) =>
+                        setCustomPlanForm({
+                          ...customPlanForm,
+                          carbs: parseInt(e.target.value) || 0,
+                        })
+                      }
                       className="bg-white border border-emerald-200 rounded-xl px-4 py-2 outline-none focus:ring-2 focus:ring-emerald-500 text-sm"
                     />
                   </div>
@@ -173,7 +193,9 @@ export function ProgramSelectionModal({ isOpen, onClose }: ProgramSelectionModal
 
               {/* Existing Programs */}
               <div className="space-y-3">
-                <h4 className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Доступные программы</h4>
+                <h4 className="text-xs font-bold text-zinc-400 uppercase tracking-wider">
+                  Доступные программы
+                </h4>
 
                 <button
                   onClick={() => void handleSetDefault()}
@@ -209,7 +231,8 @@ export function ProgramSelectionModal({ isOpen, onClose }: ProgramSelectionModal
                       }
                       className={cn(
                         'w-full p-4 rounded-2xl border text-left transition-all flex items-center justify-between group',
-                        activeNutritionPlan?.programId === program.id && !activeNutritionPlan?.subfolderId
+                        activeNutritionPlan?.programId === program.id &&
+                          !activeNutritionPlan?.subfolderId
                           ? 'bg-emerald-50 border-emerald-200 shadow-sm'
                           : 'bg-white border-zinc-100 hover:border-emerald-200',
                       )}
@@ -218,15 +241,19 @@ export function ProgramSelectionModal({ isOpen, onClose }: ProgramSelectionModal
                         <h5 className="font-bold text-zinc-900">{program.name}</h5>
                         {program.targetCalories ? (
                           <p className="text-xs text-emerald-600 font-medium">
-                            {program.targetCalories} ккал • Б:{program.targetProteins} Ж:{program.targetFats} У:{program.targetCarbs}
+                            {program.targetCalories} ккал • Б:{program.targetProteins} Ж:
+                            {program.targetFats} У:{program.targetCarbs}
                           </p>
                         ) : (
-                          <p className="text-xs text-zinc-400 italic">КБЖУ не заданы (будут взяты из настроек)</p>
+                          <p className="text-xs text-zinc-400 italic">
+                            КБЖУ не заданы (будут взяты из настроек)
+                          </p>
                         )}
                       </div>
-                      {activeNutritionPlan?.programId === program.id && !activeNutritionPlan?.subfolderId && (
-                        <Check className="w-5 h-5 text-emerald-600" />
-                      )}
+                      {activeNutritionPlan?.programId === program.id &&
+                        !activeNutritionPlan?.subfolderId && (
+                          <Check className="w-5 h-5 text-emerald-600" />
+                        )}
                     </button>
 
                     {program.subfolders && program.subfolders.length > 0 && (
@@ -241,30 +268,36 @@ export function ProgramSelectionModal({ isOpen, onClose }: ProgramSelectionModal
                                 calories:
                                   subfolder.targetCalories ??
                                   program.targetCalories ??
-                                  userProfile?.targetCalories ?? 0,
+                                  userProfile?.targetCalories ??
+                                  0,
                                 proteins:
                                   subfolder.targetProteins ??
                                   program.targetProteins ??
-                                  userProfile?.targetProteins ?? 0,
+                                  userProfile?.targetProteins ??
+                                  0,
                                 fats:
                                   subfolder.targetFats ??
                                   program.targetFats ??
-                                  userProfile?.targetFats ?? 0,
+                                  userProfile?.targetFats ??
+                                  0,
                                 carbs:
                                   subfolder.targetCarbs ??
                                   program.targetCarbs ??
-                                  userProfile?.targetCarbs ?? 0,
+                                  userProfile?.targetCarbs ??
+                                  0,
                                 isCustom: false,
                                 programId: program.id,
                                 subfolderId: subfolder.id,
-                                allowedProducts: subfolder.allowedProducts ?? program.allowedProducts,
-                                forbiddenProducts: subfolder.forbiddenProducts ?? program.forbiddenProducts,
+                                allowedProducts:
+                                  subfolder.allowedProducts ?? program.allowedProducts,
+                                forbiddenProducts:
+                                  subfolder.forbiddenProducts ?? program.forbiddenProducts,
                               })
                             }
                             className={cn(
                               'w-full p-3 rounded-xl border text-left transition-all flex items-center justify-between group',
                               activeNutritionPlan?.programId === program.id &&
-                              activeNutritionPlan?.subfolderId === subfolder.id
+                                activeNutritionPlan?.subfolderId === subfolder.id
                                 ? 'bg-emerald-50 border-emerald-200 shadow-sm'
                                 : 'bg-white border-zinc-50 hover:border-emerald-100',
                             )}
@@ -272,7 +305,9 @@ export function ProgramSelectionModal({ isOpen, onClose }: ProgramSelectionModal
                             <div className="flex items-center gap-3">
                               <div className="w-1.5 h-1.5 rounded-full bg-emerald-300" />
                               <div>
-                                <h6 className="text-sm font-bold text-zinc-700">{subfolder.name}</h6>
+                                <h6 className="text-sm font-bold text-zinc-700">
+                                  {subfolder.name}
+                                </h6>
                                 {subfolder.targetCalories && (
                                   <p className="text-[10px] text-emerald-600 font-medium">
                                     {subfolder.targetCalories} ккал
@@ -282,8 +317,8 @@ export function ProgramSelectionModal({ isOpen, onClose }: ProgramSelectionModal
                             </div>
                             {activeNutritionPlan?.programId === program.id &&
                               activeNutritionPlan?.subfolderId === subfolder.id && (
-                              <Check className="w-4 h-4 text-emerald-600" />
-                            )}
+                                <Check className="w-4 h-4 text-emerald-600" />
+                              )}
                           </button>
                         ))}
                       </div>

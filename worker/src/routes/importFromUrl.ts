@@ -1,23 +1,23 @@
-import type { Context } from "hono";
-import { GoogleGenAI, Type } from "@google/genai";
+import type { Context } from 'hono';
+import { GoogleGenAI, Type } from '@google/genai';
 import type {
   ImportFromUrlRequest,
   ImportFromUrlResponse,
   ImportedRecipe,
-} from "../../../src/services/ai/contracts";
-import { generateImageDataUri } from "../helpers/generateImageDataUri";
-import { safeFetch, validateExternalUrl } from "../helpers/validateExternalUrl";
-import type { Env } from "../types";
+} from '../../../src/services/ai/contracts';
+import { generateImageDataUri } from '../helpers/generateImageDataUri';
+import { safeFetch, validateExternalUrl } from '../helpers/validateExternalUrl';
+import type { Env } from '../types';
 
 export async function importFromUrl(c: Context<{ Bindings: Env }>) {
   const body = await c.req.json<ImportFromUrlRequest>();
   const { url, availableCategories } = body;
 
-  if (typeof url !== "string" || !url.trim() || !Array.isArray(availableCategories)) {
-    return c.json({ error: "Expected { url: string, availableCategories: string[] }" }, 400);
+  if (typeof url !== 'string' || !url.trim() || !Array.isArray(availableCategories)) {
+    return c.json({ error: 'Expected { url: string, availableCategories: string[] }' }, 400);
   }
   if (!validateExternalUrl(url)) {
-    return c.json({ error: "URL must be http(s) and point to a public host" }, 400);
+    return c.json({ error: 'URL must be http(s) and point to a public host' }, 400);
   }
 
   const ai = new GoogleGenAI({ apiKey: c.env.GEMINI_API_KEY });
@@ -38,16 +38,19 @@ export async function importFromUrl(c: Context<{ Bindings: Env }>) {
   };
   try {
     const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview",
+      model: 'gemini-3-flash-preview',
       config: {
-        systemInstruction: `You are a precise recipe extraction engine. Your goal is to extract recipe data ONLY from the provided URL. For categories, ONLY choose from this list: ${availableCategories.join(", ")}. If the content is not a recipe or cannot be accessed, return an error or a very minimal object. NEVER hallucinate a recipe from a different source.`,
+        systemInstruction: `You are a precise recipe extraction engine. Your goal is to extract recipe data ONLY from the provided URL. For categories, ONLY choose from this list: ${availableCategories.join(', ')}. If the content is not a recipe or cannot be accessed, return an error or a very minimal object. NEVER hallucinate a recipe from a different source.`,
         tools: [{ urlContext: {} }],
-        responseMimeType: "application/json",
+        responseMimeType: 'application/json',
         responseSchema: {
           type: Type.OBJECT,
           properties: {
             title: { type: Type.STRING },
-            author: { type: Type.STRING, description: "Name of the author, channel name, or creator" },
+            author: {
+              type: Type.STRING,
+              description: 'Name of the author, channel name, or creator',
+            },
             ingredients: { type: Type.ARRAY, items: { type: Type.STRING } },
             steps: { type: Type.ARRAY, items: { type: Type.STRING } },
             time: { type: Type.STRING },
@@ -57,9 +60,23 @@ export async function importFromUrl(c: Context<{ Bindings: Env }>) {
             carbs: { type: Type.NUMBER },
             categories: { type: Type.ARRAY, items: { type: Type.STRING } },
             servings: { type: Type.NUMBER },
-            imageUrl: { type: Type.STRING, description: "Direct URL to the recipe image or video thumbnail" },
+            imageUrl: {
+              type: Type.STRING,
+              description: 'Direct URL to the recipe image or video thumbnail',
+            },
           },
-          required: ["title", "ingredients", "steps", "time", "calories", "proteins", "fats", "carbs", "categories", "servings"],
+          required: [
+            'title',
+            'ingredients',
+            'steps',
+            'time',
+            'calories',
+            'proteins',
+            'fats',
+            'carbs',
+            'categories',
+            'servings',
+          ],
         },
       },
       contents: `TASK: Extract the recipe details ONLY from the provided URL: ${url}.
@@ -74,10 +91,10 @@ INSTRUCTIONS:
 7. DO NOT hallucinate or use external knowledge. Only use what's on the page.
 8. Return the data in Russian.`,
     });
-    data = JSON.parse(response.text ?? "{}") as typeof data;
+    data = JSON.parse(response.text ?? '{}') as typeof data;
   } catch (err) {
-    console.error("[importFromUrl] error:", err);
-    return c.json({ error: "Failed to import recipe from URL" }, 502);
+    console.error('[importFromUrl] error:', err);
+    return c.json({ error: 'Failed to import recipe from URL' }, 502);
   }
 
   let dishImage: string | undefined;
@@ -92,8 +109,8 @@ INSTRUCTIONS:
     const pageResp = await safeFetch(url, {
       headers: {
         // Social-crawler UA that sites typically allow for og:image access.
-        "User-Agent": "facebookexternalhit/1.1",
-        Accept: "text/html",
+        'User-Agent': 'facebookexternalhit/1.1',
+        Accept: 'text/html',
       },
     });
     if (pageResp?.ok) {
@@ -104,9 +121,14 @@ INSTRUCTIONS:
       if (ogMatch?.[1]) {
         try {
           // Resolve relative URLs and decode HTML entities (e.g. &amp; in CDN query strings).
-          const decoded = ogMatch[1].replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">");
+          const decoded = ogMatch[1]
+            .replace(/&amp;/g, '&')
+            .replace(/&lt;/g, '<')
+            .replace(/&gt;/g, '>');
           imageUrlCandidates.push(new URL(decoded, url).href);
-        } catch { /* ignore malformed URLs */ }
+        } catch {
+          /* ignore malformed URLs */
+        }
       }
     }
   } catch {}
@@ -121,13 +143,13 @@ INSTRUCTIONS:
       const buffer = await imgResp.arrayBuffer();
       if (buffer.byteLength > 600_000) continue;
       const bytes = new Uint8Array(buffer);
-      let binary = "";
+      let binary = '';
       const chunkSize = 8192;
       for (let i = 0; i < bytes.length; i += chunkSize) {
         binary += String.fromCharCode(...bytes.slice(i, i + chunkSize));
       }
       const base64 = btoa(binary);
-      const contentType = imgResp.headers.get("content-type") ?? "image/jpeg";
+      const contentType = imgResp.headers.get('content-type') ?? 'image/jpeg';
       dishImage = `data:${contentType};base64,${base64}`;
       break;
     } catch {}
@@ -136,19 +158,19 @@ INSTRUCTIONS:
   if (!dishImage) {
     const generated = await generateImageDataUri(
       ai,
-      data.title ?? "Новый рецепт",
-      data.ingredients ?? []
+      data.title ?? 'Новый рецепт',
+      data.ingredients ?? [],
     );
     if (generated) dishImage = generated;
   }
 
   const recipe: ImportedRecipe = {
-    title: data.title ?? "Новый рецепт",
+    title: data.title ?? 'Новый рецепт',
     author: data.author,
     sourceUrl: url,
     ingredients: data.ingredients ?? [],
     steps: data.steps ?? [],
-    time: data.time ?? "30 мин",
+    time: data.time ?? '30 мин',
     servings: data.servings ?? 2,
     categories: (data.categories ?? [])
       .map((cat) => availableCategories.find((ac) => ac.toLowerCase() === cat.toLowerCase()))

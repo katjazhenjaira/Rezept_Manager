@@ -53,8 +53,13 @@ describe('DataProvider', () => {
 
     await act(async () => {
       await repos.recipes.add({
-        title: 'Borsch', time: '60m', servings: 4, categories: [],
-        ingredients: [], steps: [], macros: { calories: 300, proteins: 10, fats: 5, carbs: 40 },
+        title: 'Borsch',
+        time: '60m',
+        servings: 4,
+        categories: [],
+        ingredients: [],
+        steps: [],
+        macros: { calories: 300, proteins: 10, fats: 5, carbs: 40 },
         createdAt: '2026-01-01T00:00:00.000Z',
       });
     });
@@ -68,7 +73,11 @@ describe('DataProvider', () => {
 
     await act(async () => {
       await repos.cart.add({
-        name: 'Milk', amount: '1L', sourceDishes: [], checked: false, createdAt: '2026-01-01T00:00:00.000Z',
+        name: 'Milk',
+        amount: '1L',
+        sourceDishes: [],
+        checked: false,
+        createdAt: '2026-01-01T00:00:00.000Z',
       });
     });
 

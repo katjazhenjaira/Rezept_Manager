@@ -25,7 +25,7 @@ export function sumMacros(entries: PlannerEntry[], recipes: Recipe[]): Macros {
         carbs: acc.carbs + macros.carbs,
       };
     },
-    { calories: 0, proteins: 0, fats: 0, carbs: 0 }
+    { calories: 0, proteins: 0, fats: 0, carbs: 0 },
   );
 }
 
@@ -40,7 +40,7 @@ export function remainingMacros(targets: Macros, actual: Macros): Macros {
 
 export function resolveActiveTargets(
   plan: ActiveNutritionPlan | null,
-  profile: UserProfile
+  profile: UserProfile,
 ): NutritionTargets {
   if (plan) {
     return {

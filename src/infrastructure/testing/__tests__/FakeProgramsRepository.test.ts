@@ -20,13 +20,13 @@ describe('FakeProgramsRepository', () => {
 
   it('subscribeAll immediately emits empty array', () => {
     const calls: Program[][] = [];
-    repo.subscribeAll(p => calls.push(p));
+    repo.subscribeAll((p) => calls.push(p));
     expect(calls[0]).toEqual([]);
   });
 
   it('add returns id and notifies', async () => {
     const calls: Program[][] = [];
-    repo.subscribeAll(p => calls.push(p));
+    repo.subscribeAll((p) => calls.push(p));
     const id = await repo.add(program());
     expect(id).toBe('1');
     expect(calls[1]![0]!.name).toBe('Похудение');
@@ -59,7 +59,7 @@ describe('FakeProgramsRepository', () => {
 
   it('unsubscribe stops notifications', async () => {
     const calls: Program[][] = [];
-    const unsub = repo.subscribeAll(p => calls.push(p));
+    const unsub = repo.subscribeAll((p) => calls.push(p));
     unsub();
     await repo.add(program());
     expect(calls).toHaveLength(1);
@@ -69,7 +69,7 @@ describe('FakeProgramsRepository', () => {
     await repo.add(program());
     repo.reset();
     const calls: Program[][] = [];
-    repo.subscribeAll(p => calls.push(p));
+    repo.subscribeAll((p) => calls.push(p));
     expect(calls[0]).toEqual([]);
   });
 });

@@ -15,8 +15,32 @@ function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-const DEFAULT_CATEGORIES = ['Завтрак', 'Обед', 'Ужин', 'Перекус', 'Десерт', 'Мясо', 'Рыба', 'Веган', 'Вегетарианское', 'Напитки', 'Основное блюдо', 'Гарниры', 'Салаты', 'Супы'];
-const PRESET_ALLERGIES = ['Глютен', 'Лактоза', 'Орехи', 'Морепродукты', 'Яйца', 'Соя', 'Мед', 'Цитрусовые'];
+const DEFAULT_CATEGORIES = [
+  'Завтрак',
+  'Обед',
+  'Ужин',
+  'Перекус',
+  'Десерт',
+  'Мясо',
+  'Рыба',
+  'Веган',
+  'Вегетарианское',
+  'Напитки',
+  'Основное блюдо',
+  'Гарниры',
+  'Салаты',
+  'Супы',
+];
+const PRESET_ALLERGIES = [
+  'Глютен',
+  'Лактоза',
+  'Орехи',
+  'Морепродукты',
+  'Яйца',
+  'Соя',
+  'Мед',
+  'Цитрусовые',
+];
 
 type Props = {
   isOpen: boolean;
@@ -147,7 +171,9 @@ export function SettingsModal({
                   <input
                     type="number"
                     value={userProfile.age}
-                    onChange={(e) => setUserProfile({ ...userProfile, age: parseInt(e.target.value) })}
+                    onChange={(e) =>
+                      setUserProfile({ ...userProfile, age: parseInt(e.target.value) })
+                    }
                     className="w-full bg-zinc-50 border border-zinc-100 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-emerald-500"
                   />
                 </div>
@@ -155,7 +181,12 @@ export function SettingsModal({
                   <label className="text-xs font-bold text-zinc-400 uppercase">Пол</label>
                   <select
                     value={userProfile.gender}
-                    onChange={(e) => setUserProfile({ ...userProfile, gender: e.target.value as 'male' | 'female' })}
+                    onChange={(e) =>
+                      setUserProfile({
+                        ...userProfile,
+                        gender: e.target.value as 'male' | 'female',
+                      })
+                    }
                     className="w-full bg-zinc-50 border border-zinc-100 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-emerald-500"
                   >
                     <option value="female">Женский</option>
@@ -163,61 +194,85 @@ export function SettingsModal({
                   </select>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-xs font-bold text-zinc-400 uppercase">Текущий вес (кг)</label>
+                  <label className="text-xs font-bold text-zinc-400 uppercase">
+                    Текущий вес (кг)
+                  </label>
                   <input
                     type="number"
                     value={userProfile.currentWeight}
-                    onChange={(e) => setUserProfile({ ...userProfile, currentWeight: parseFloat(e.target.value) })}
+                    onChange={(e) =>
+                      setUserProfile({ ...userProfile, currentWeight: parseFloat(e.target.value) })
+                    }
                     className="w-full bg-zinc-50 border border-zinc-100 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-emerald-500"
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-xs font-bold text-zinc-400 uppercase">Желаемый вес (кг)</label>
+                  <label className="text-xs font-bold text-zinc-400 uppercase">
+                    Желаемый вес (кг)
+                  </label>
                   <input
                     type="number"
                     value={userProfile.targetWeight}
-                    onChange={(e) => setUserProfile({ ...userProfile, targetWeight: parseFloat(e.target.value) })}
+                    onChange={(e) =>
+                      setUserProfile({ ...userProfile, targetWeight: parseFloat(e.target.value) })
+                    }
                     className="w-full bg-zinc-50 border border-zinc-100 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-emerald-500"
                   />
                 </div>
               </div>
 
               <div className="space-y-4">
-                <h3 className="text-sm font-bold text-zinc-900 border-b border-zinc-100 pb-2">Цели КБЖУ</h3>
+                <h3 className="text-sm font-bold text-zinc-900 border-b border-zinc-100 pb-2">
+                  Цели КБЖУ
+                </h3>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div className="space-y-2">
                     <label className="text-[10px] font-bold text-zinc-400 uppercase">Ккал</label>
                     <input
                       type="number"
                       value={userProfile.targetCalories}
-                      onChange={(e) => setUserProfile({ ...userProfile, targetCalories: parseInt(e.target.value) })}
+                      onChange={(e) =>
+                        setUserProfile({ ...userProfile, targetCalories: parseInt(e.target.value) })
+                      }
                       className="w-full bg-zinc-50 border border-zinc-100 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-emerald-500"
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[10px] font-bold text-zinc-400 uppercase">Белки (г)</label>
+                    <label className="text-[10px] font-bold text-zinc-400 uppercase">
+                      Белки (г)
+                    </label>
                     <input
                       type="number"
                       value={userProfile.targetProteins}
-                      onChange={(e) => setUserProfile({ ...userProfile, targetProteins: parseInt(e.target.value) })}
+                      onChange={(e) =>
+                        setUserProfile({ ...userProfile, targetProteins: parseInt(e.target.value) })
+                      }
                       className="w-full bg-zinc-50 border border-zinc-100 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-emerald-500"
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[10px] font-bold text-zinc-400 uppercase">Жиры (г)</label>
+                    <label className="text-[10px] font-bold text-zinc-400 uppercase">
+                      Жиры (г)
+                    </label>
                     <input
                       type="number"
                       value={userProfile.targetFats}
-                      onChange={(e) => setUserProfile({ ...userProfile, targetFats: parseInt(e.target.value) })}
+                      onChange={(e) =>
+                        setUserProfile({ ...userProfile, targetFats: parseInt(e.target.value) })
+                      }
                       className="w-full bg-zinc-50 border border-zinc-100 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-emerald-500"
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[10px] font-bold text-zinc-400 uppercase">Углеводы (г)</label>
+                    <label className="text-[10px] font-bold text-zinc-400 uppercase">
+                      Углеводы (г)
+                    </label>
                     <input
                       type="number"
                       value={userProfile.targetCarbs}
-                      onChange={(e) => setUserProfile({ ...userProfile, targetCarbs: parseInt(e.target.value) })}
+                      onChange={(e) =>
+                        setUserProfile({ ...userProfile, targetCarbs: parseInt(e.target.value) })
+                      }
                       className="w-full bg-zinc-50 border border-zinc-100 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-emerald-500"
                     />
                   </div>
@@ -225,7 +280,9 @@ export function SettingsModal({
               </div>
 
               <div className="space-y-4">
-                <h3 className="text-sm font-bold text-zinc-900 border-b border-zinc-100 pb-2">Аллергии и непереносимости</h3>
+                <h3 className="text-sm font-bold text-zinc-900 border-b border-zinc-100 pb-2">
+                  Аллергии и непереносимости
+                </h3>
                 <div className="flex flex-wrap gap-2">
                   {PRESET_ALLERGIES.map((allergy) => (
                     <button
@@ -235,7 +292,7 @@ export function SettingsModal({
                         'px-4 py-2 rounded-xl text-sm font-medium transition-all border',
                         userProfile.allergies.includes(allergy)
                           ? 'bg-red-50 border-red-200 text-red-600 shadow-sm'
-                          : 'bg-zinc-50 border-zinc-100 text-zinc-500 hover:border-red-100'
+                          : 'bg-zinc-50 border-zinc-100 text-zinc-500 hover:border-red-100',
                       )}
                     >
                       {allergy}
@@ -258,7 +315,9 @@ export function SettingsModal({
                   />
                   <button
                     onClick={() => {
-                      const input = document.getElementById('custom-allergy-input') as HTMLInputElement;
+                      const input = document.getElementById(
+                        'custom-allergy-input',
+                      ) as HTMLInputElement;
                       addCustomAllergy(input.value.trim());
                       input.value = '';
                     }}
@@ -312,7 +371,12 @@ export function SettingsModal({
                     {Math.round(userProfile.currentWeight * 35)} мл
                   </span>
                   <button
-                    onClick={() => setUserProfile({ ...userProfile, waterGoal: Math.round(userProfile.currentWeight * 35) })}
+                    onClick={() =>
+                      setUserProfile({
+                        ...userProfile,
+                        waterGoal: Math.round(userProfile.currentWeight * 35),
+                      })
+                    }
                     className="text-xs font-bold bg-blue-600 text-white px-4 py-2 rounded-xl hover:bg-blue-700 transition-all"
                   >
                     Установить как цель
@@ -321,7 +385,9 @@ export function SettingsModal({
               </div>
 
               <div className="space-y-3">
-                <h3 className="text-sm font-bold text-zinc-900 border-b border-zinc-100 pb-2">Язык интерфейса</h3>
+                <h3 className="text-sm font-bold text-zinc-900 border-b border-zinc-100 pb-2">
+                  Язык интерфейса
+                </h3>
                 <div className="flex gap-2">
                   {(['ru', 'de', 'en'] as AppLanguage[]).map((lang) => (
                     <button
@@ -331,7 +397,7 @@ export function SettingsModal({
                         'flex-1 py-2 rounded-xl text-sm font-bold border transition-all',
                         i18n.language === lang
                           ? 'bg-emerald-600 border-emerald-600 text-white shadow-sm'
-                          : 'bg-zinc-50 border-zinc-100 text-zinc-500 hover:border-emerald-200'
+                          : 'bg-zinc-50 border-zinc-100 text-zinc-500 hover:border-emerald-200',
                       )}
                     >
                       {lang === 'ru' ? '🇷🇺 RU' : lang === 'de' ? '🇩🇪 DE' : '🇬🇧 EN'}
@@ -378,7 +444,10 @@ export function SettingsModal({
           >
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-bold">Новая категория</h3>
-              <button onClick={() => setIsCategoryModalOpen(false)} className="text-zinc-400 hover:text-zinc-600">
+              <button
+                onClick={() => setIsCategoryModalOpen(false)}
+                className="text-zinc-400 hover:text-zinc-600"
+              >
                 <Plus className="w-6 h-6 rotate-45" />
               </button>
             </div>

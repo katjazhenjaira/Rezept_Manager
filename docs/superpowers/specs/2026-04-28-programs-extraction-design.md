@@ -37,6 +37,7 @@ src/features/programs/
 Orchestrates the Programs tab. Reads `programs` from `useDataContext()`. Renders the program card grid, the create/edit modal, and the delete confirmation modal. Mounts `ProgramDetailModal` when `openProgramId !== null`.
 
 **Internal state:**
+
 - `programFormData`, `editingProgramId`, `isCreatingProgram`, `isCreateProgramDropdownOpen`
 - `programToDelete`
 - `programRecipeFilter` (used in both card grid and detail modal)
@@ -45,10 +46,12 @@ Orchestrates the Programs tab. Reads `programs` from `useDataContext()`. Renders
 - Refs: `programPhotoInputRef`, `programPdfInputRef`, `subfolderPhotoInputRef`
 
 **Handlers owned:**
+
 - `handleCreateProgram`, `handleShareProgram`
 - `handleProgramPhotoUpload`, `handleProgramPdfUpload`, `handleSubfolderPhotoUpload`
 
 **Props:**
+
 ```typescript
 type ProgramsViewProps = {
   recipes: Recipe[];
@@ -68,10 +71,14 @@ type ProgramsViewProps = {
   recipeTarget: { programId: string; subfolderId: string | 'main' } | null;
   onRecipeTargetCleared: () => void;
   photoInputRef: React.RefObject<HTMLInputElement>;
-  isAddingManual: boolean; onIsAddingManualChange: (v: boolean) => void;
-  isAddingLink: boolean;   onIsAddingLinkChange: (v: boolean) => void;
-  isAddingPDF: boolean;    onIsAddingPDFChange: (v: boolean) => void;
-  isScanning: boolean;     onIsScanningChange: (v: boolean) => void;
+  isAddingManual: boolean;
+  onIsAddingManualChange: (v: boolean) => void;
+  isAddingLink: boolean;
+  onIsAddingLinkChange: (v: boolean) => void;
+  isAddingPDF: boolean;
+  onIsAddingPDFChange: (v: boolean) => void;
+  isScanning: boolean;
+  onIsScanningChange: (v: boolean) => void;
   // Cross-domain
   onAddProductsToCart: (products: string[]) => void;
 };
@@ -84,6 +91,7 @@ type ProgramsViewProps = {
 Renders the full-screen overlay for a single open program. Manages all detail-level UI state independently.
 
 **Internal state:**
+
 - `openSubfolderId`, `editingSubfolderId`
 - `editingEntity`, `editFormData`
 - `programAddRecipeDropdown`
@@ -93,12 +101,14 @@ Renders the full-screen overlay for a single open program. Manages all detail-le
 - Ref: `subfolderPdfInputRef`
 
 **Handlers owned:**
+
 - `handleDropRecipe` (DnD between subfolders)
 - `handleSubfolderPdfUpload`
 - Inline subfolder CRUD (create, rename, delete)
 - Edit entity (program/subfolder inline edit)
 
 **Props:**
+
 ```typescript
 type ProgramDetailModalProps = {
   program: Program;
@@ -113,10 +123,14 @@ type ProgramDetailModalProps = {
   recipeTarget: { programId: string; subfolderId: string | 'main' } | null;
   onRecipeTargetCleared: () => void;
   photoInputRef: React.RefObject<HTMLInputElement>;
-  isAddingManual: boolean; onIsAddingManualChange: (v: boolean) => void;
-  isAddingLink: boolean;   onIsAddingLinkChange: (v: boolean) => void;
-  isAddingPDF: boolean;    onIsAddingPDFChange: (v: boolean) => void;
-  isScanning: boolean;     onIsScanningChange: (v: boolean) => void;
+  isAddingManual: boolean;
+  onIsAddingManualChange: (v: boolean) => void;
+  isAddingLink: boolean;
+  onIsAddingLinkChange: (v: boolean) => void;
+  isAddingPDF: boolean;
+  onIsAddingPDFChange: (v: boolean) => void;
+  isScanning: boolean;
+  onIsScanningChange: (v: boolean) => void;
   onAddProductsToCart: (products: string[]) => void;
 };
 ```
@@ -127,17 +141,17 @@ type ProgramDetailModalProps = {
 
 ## App.tsx Changes
 
-| What | Action |
-|---|---|
-| `programs` onSnapshot (line ~526) | Remove; replace with `const { programs } = useDataContext()` |
-| `activeCollectionId` | Rename to `openProgramId`, keep as lifted state |
-| `renderPrograms()` (lines 1656–2319) | Remove |
-| Detail modal JSX (lines 2728–4191) | Remove (moves to ProgramDetailModal) |
-| Program/subfolder delete modals (lines 4201–4301) | Remove (moves to ProgramsView / ProgramDetailModal) |
-| All Programs-specific state | Remove from App.tsx |
-| `renderContent()` case 'programs' | Replace `renderPrograms()` with `<ProgramsView ... />` |
-| `handleStartRecipeSelection` | Keep in App.tsx — uses `programs` from `useDataContext()` |
-| `handleAddSelectedRecipes` | Keep in App.tsx — uses `programs` from `useDataContext()` |
+| What                                              | Action                                                       |
+| ------------------------------------------------- | ------------------------------------------------------------ |
+| `programs` onSnapshot (line ~526)                 | Remove; replace with `const { programs } = useDataContext()` |
+| `activeCollectionId`                              | Rename to `openProgramId`, keep as lifted state              |
+| `renderPrograms()` (lines 1656–2319)              | Remove                                                       |
+| Detail modal JSX (lines 2728–4191)                | Remove (moves to ProgramDetailModal)                         |
+| Program/subfolder delete modals (lines 4201–4301) | Remove (moves to ProgramsView / ProgramDetailModal)          |
+| All Programs-specific state                       | Remove from App.tsx                                          |
+| `renderContent()` case 'programs'                 | Replace `renderPrograms()` with `<ProgramsView ... />`       |
+| `handleStartRecipeSelection`                      | Keep in App.tsx — uses `programs` from `useDataContext()`    |
+| `handleAddSelectedRecipes`                        | Keep in App.tsx — uses `programs` from `useDataContext()`    |
 
 **State that stays in App.tsx (cross-tab):**
 `openProgramId`, `selectionTarget`, `recipeTarget`, `isRecipeSelectionMode`, `selectedRecipeIds`, `isAddingManual`, `isAddingLink`, `isAddingPDF`, `isScanning`

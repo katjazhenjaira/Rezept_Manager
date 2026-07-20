@@ -19,13 +19,13 @@ describe('FakeCartRepository', () => {
 
   it('subscribeAll immediately emits empty array', () => {
     const calls: CartItem[][] = [];
-    repo.subscribeAll(i => calls.push(i));
+    repo.subscribeAll((i) => calls.push(i));
     expect(calls[0]).toEqual([]);
   });
 
   it('add returns id and notifies', async () => {
     const calls: CartItem[][] = [];
-    repo.subscribeAll(i => calls.push(i));
+    repo.subscribeAll((i) => calls.push(i));
     const id = await repo.add(item());
     expect(id).toBe('1');
     expect(calls[1]![0]!.name).toBe('Молоко');
@@ -35,7 +35,7 @@ describe('FakeCartRepository', () => {
     const id = await repo.add(item());
     await repo.update(id, { checked: true });
     const calls: CartItem[][] = [];
-    repo.subscribeAll(i => calls.push(i));
+    repo.subscribeAll((i) => calls.push(i));
     expect(calls[0]![0]!.checked).toBe(true);
   });
 
@@ -47,7 +47,7 @@ describe('FakeCartRepository', () => {
     const id = await repo.add(item());
     await repo.delete(id);
     const calls: CartItem[][] = [];
-    repo.subscribeAll(i => calls.push(i));
+    repo.subscribeAll((i) => calls.push(i));
     expect(calls[0]).toEqual([]);
   });
 
@@ -60,7 +60,7 @@ describe('FakeCartRepository', () => {
     await repo.add({ ...item(), name: 'Кефир' });
     await repo.deleteAll();
     const calls: CartItem[][] = [];
-    repo.subscribeAll(i => calls.push(i));
+    repo.subscribeAll((i) => calls.push(i));
     expect(calls[0]).toEqual([]);
   });
 
@@ -70,7 +70,7 @@ describe('FakeCartRepository', () => {
 
   it('unsubscribe stops notifications', async () => {
     const calls: CartItem[][] = [];
-    const unsub = repo.subscribeAll(i => calls.push(i));
+    const unsub = repo.subscribeAll((i) => calls.push(i));
     unsub();
     await repo.add(item());
     expect(calls).toHaveLength(1);
@@ -80,7 +80,7 @@ describe('FakeCartRepository', () => {
     await repo.add(item());
     repo.reset();
     const calls: CartItem[][] = [];
-    repo.subscribeAll(i => calls.push(i));
+    repo.subscribeAll((i) => calls.push(i));
     expect(calls[0]).toEqual([]);
   });
 });

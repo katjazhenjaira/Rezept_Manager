@@ -1,21 +1,33 @@
-import type { Context } from "hono";
-import { GoogleGenAI, Type } from "@google/genai";
+import type { Context } from 'hono';
+import { GoogleGenAI, Type } from '@google/genai';
 import type {
   ImportFromPhotoRequest,
   ImportFromPhotoResponse,
   ImportedRecipe,
-} from "../../../src/services/ai/contracts";
-import type { Env } from "../types";
+} from '../../../src/services/ai/contracts';
+import type { Env } from '../types';
 
 export async function importFromPhoto(c: Context<{ Bindings: Env }>) {
   const body = await c.req.json<ImportFromPhotoRequest>();
   const { images, availableCategories } = body;
 
   if (!Array.isArray(images) || images.length === 0) {
-    return c.json({ error: "Expected { images: Array<{ base64: string; mimeType: string }>, availableCategories: string[] }" }, 400);
+    return c.json(
+      {
+        error:
+          'Expected { images: Array<{ base64: string; mimeType: string }>, availableCategories: string[] }',
+      },
+      400,
+    );
   }
   if (!Array.isArray(availableCategories)) {
-    return c.json({ error: "Expected { images: Array<{ base64: string; mimeType: string }>, availableCategories: string[] }" }, 400);
+    return c.json(
+      {
+        error:
+          'Expected { images: Array<{ base64: string; mimeType: string }>, availableCategories: string[] }',
+      },
+      400,
+    );
   }
 
   const ai = new GoogleGenAI({ apiKey: c.env.GEMINI_API_KEY });
@@ -23,7 +35,7 @@ export async function importFromPhoto(c: Context<{ Bindings: Env }>) {
   const imageParts = images.map((img) => ({
     inlineData: {
       mimeType: img.mimeType,
-      data: img.base64.includes(",") ? img.base64.split(",")[1]! : img.base64,
+      data: img.base64.includes(',') ? img.base64.split(',')[1]! : img.base64,
     },
   }));
 
@@ -44,20 +56,20 @@ export async function importFromPhoto(c: Context<{ Bindings: Env }>) {
 
   try {
     const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview",
+      model: 'gemini-3-flash-preview',
       contents: [
         ...imageParts,
         {
           text: `Extract recipe details from these images. Return structured data in Russian.
 Include title, ingredients as an array of strings, steps as an array of strings, time, calories, proteins, fats, carbs, servings.
 ВАЖНО: Если КБЖУ (калории, белки, жиры, углеводы) не указаны в источнике явно, ПОЖАЛУЙСТА, РАССЧИТАЙТЕ ИХ самостоятельно на основе ингредиентов и их количества.
-For categories, ONLY choose from this list: ${availableCategories.join(", ")}.
+For categories, ONLY choose from this list: ${availableCategories.join(', ')}.
 If you find any URL or link to the original source in the text, include it in the 'sourceUrl' field.
 MUST include 'dishBoundingBox' with ymin, xmin, ymax, xmax for the main dish shown in the images. Use normalized coordinates (0-1000).`,
         },
       ],
       config: {
-        responseMimeType: "application/json",
+        responseMimeType: 'application/json',
         responseSchema: {
           type: Type.OBJECT,
           properties: {
@@ -71,7 +83,10 @@ MUST include 'dishBoundingBox' with ymin, xmin, ymax, xmax for the main dish sho
             carbs: { type: Type.NUMBER },
             categories: { type: Type.ARRAY, items: { type: Type.STRING } },
             servings: { type: Type.NUMBER },
-            sourceUrl: { type: Type.STRING, description: "URL to the original recipe source if found" },
+            sourceUrl: {
+              type: Type.STRING,
+              description: 'URL to the original recipe source if found',
+            },
             dishBoundingBox: {
               type: Type.OBJECT,
               properties: {
@@ -82,23 +97,34 @@ MUST include 'dishBoundingBox' with ymin, xmin, ymax, xmax for the main dish sho
               },
             },
           },
-          required: ["title", "ingredients", "steps", "time", "calories", "proteins", "fats", "carbs", "categories", "servings"],
+          required: [
+            'title',
+            'ingredients',
+            'steps',
+            'time',
+            'calories',
+            'proteins',
+            'fats',
+            'carbs',
+            'categories',
+            'servings',
+          ],
         },
       },
     });
 
-    data = JSON.parse(response.text ?? "{}") as typeof data;
+    data = JSON.parse(response.text ?? '{}') as typeof data;
   } catch (err) {
-    console.error("[importFromPhoto] error:", err);
-    return c.json({ error: "Failed to import recipe from photo" }, 502);
+    console.error('[importFromPhoto] error:', err);
+    return c.json({ error: 'Failed to import recipe from photo' }, 502);
   }
 
   const recipe: ImportedRecipe = {
-    title: data.title ?? "Новый рецепт",
+    title: data.title ?? 'Новый рецепт',
     sourceUrl: data.sourceUrl,
     ingredients: data.ingredients ?? [],
     steps: data.steps ?? [],
-    time: data.time ?? "30 мин",
+    time: data.time ?? '30 мин',
     servings: data.servings ?? 2,
     categories: (data.categories ?? [])
       .map((cat) => availableCategories.find((ac) => ac.toLowerCase() === cat.toLowerCase()))

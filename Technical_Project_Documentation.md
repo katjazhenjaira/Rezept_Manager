@@ -19,23 +19,23 @@
 
 ## 2. Технический стек
 
-| Слой | Технология | Версия | Роль |
-|------|-----------|--------|------|
-| Frontend | React | 19.0 | UI |
-| Language | TypeScript | 5.8 strict | Типизация |
-| Build | Vite | 6.2 | Bundler + dev server |
-| Styles | Tailwind CSS | 4.1 | Утилитарные стили |
-| State | Context API + Repository pattern | — | Нет внешней state lib |
-| DB/Backend | Firebase (Firestore + Auth) | 12.9 | Текущий бэкенд (→ Supabase в Phase 3) |
-| AI | Google Gemini via Cloudflare Worker | @google/genai 1.29 | Импорт рецептов, КБЖУ, AI-советы |
-| Worker | Hono на Cloudflare Workers | — | Gemini proxy, rate limiting |
-| i18n | i18next + react-i18next | 26 / 17 | ru/de/en |
-| Icons | lucide-react | 0.546 | UI иконки |
-| Animation | motion (framer-motion) | — | Анимации |
-| Dates | date-fns | 4.1 | Работа с датами |
-| PDF | pdfjs-dist | — | Клиентский парсинг PDF (Canvas нужен) |
-| Testing | Vitest + @testing-library/react | 4.1 | 112 тестов |
-| Hosting | Cloudflare Pages + Workers | — | Фронтенд + AI proxy |
+| Слой       | Технология                          | Версия             | Роль                                  |
+| ---------- | ----------------------------------- | ------------------ | ------------------------------------- |
+| Frontend   | React                               | 19.0               | UI                                    |
+| Language   | TypeScript                          | 5.8 strict         | Типизация                             |
+| Build      | Vite                                | 6.2                | Bundler + dev server                  |
+| Styles     | Tailwind CSS                        | 4.1                | Утилитарные стили                     |
+| State      | Context API + Repository pattern    | —                  | Нет внешней state lib                 |
+| DB/Backend | Firebase (Firestore + Auth)         | 12.9               | Текущий бэкенд (→ Supabase в Phase 3) |
+| AI         | Google Gemini via Cloudflare Worker | @google/genai 1.29 | Импорт рецептов, КБЖУ, AI-советы      |
+| Worker     | Hono на Cloudflare Workers          | —                  | Gemini proxy, rate limiting           |
+| i18n       | i18next + react-i18next             | 26 / 17            | ru/de/en                              |
+| Icons      | lucide-react                        | 0.546              | UI иконки                             |
+| Animation  | motion (framer-motion)              | —                  | Анимации                              |
+| Dates      | date-fns                            | 4.1                | Работа с датами                       |
+| PDF        | pdfjs-dist                          | —                  | Клиентский парсинг PDF (Canvas нужен) |
+| Testing    | Vitest + @testing-library/react     | 4.1                | 112 тестов                            |
+| Hosting    | Cloudflare Pages + Workers          | —                  | Фронтенд + AI proxy                   |
 
 ---
 
@@ -76,12 +76,14 @@ StrictMode
 ### Data flow
 
 **Добавление рецепта вручную:**
+
 1. `RecipesView` → `aiClient.calculateKbzhu()` (если нужно)
 2. Worker `/api/ai/calculate-kbzhu` → Gemini → ответ
 3. `recipesRepo.add(recipe)` из `RepositoryContext`
 4. Firestore → `onSnapshot` в `DataProvider` → `DataContext` → UI
 
 **Импорт из PDF:**
+
 1. Клиент: `extractTextFromPDF` / `extractImageFromPDF` через `pdfjs-dist` (Canvas → только на клиенте)
 2. `aiClient.importFromPdf({ text/imageData, pageNumber, dishBoundingBox })`
 3. Worker `/api/ai/import-from-pdf` → Gemini → `ImportedRecipe`
@@ -89,12 +91,14 @@ StrictMode
 5. `recipesRepo.add()` → Firestore
 
 **AI fill remaining КБЖУ:**
+
 1. `TrackerView` вычисляет remaining macros через `remainingMacros()`
 2. `aiClient.fillRemaining({ remaining, allergies, activeProgram, recipeLibrary })`
 3. Worker → Gemini → 3 варианта (`FillRemainingOption[]`)
 4. `AISuggestModal` → выбор → `plannerRepo.add()`
 
 **Авторизация:**
+
 1. `LoginScreen` → `signInWithEmailAndPassword(auth, email, password)`
 2. Firebase Auth → `AuthProvider.onAuthStateChanged` → `user.uid` в `AuthContext`
 3. `RepositoryProvider(uid)` → все репозитории uid-scoped
@@ -105,85 +109,93 @@ StrictMode
 ## 4. Структура файлов
 
 ### `src/shared/domain/` — доменный слой, нет внешних зависимостей
-| Файл | Роль |
-|------|------|
-| `types.ts` | Все TypeScript типы: Recipe, PlannerEntry, Program, CartItem, UserProfile, NutritionPlan |
-| `macros.ts` | sumMacros(), remainingMacros(), resolveActiveTargets() |
-| `allergies.ts` | recipeAllergens(), recipeHasAllergens() |
-| `defaults.ts` | DEFAULT_PROFILE — дефолтные значения профиля |
+
+| Файл           | Роль                                                                                     |
+| -------------- | ---------------------------------------------------------------------------------------- |
+| `types.ts`     | Все TypeScript типы: Recipe, PlannerEntry, Program, CartItem, UserProfile, NutritionPlan |
+| `macros.ts`    | sumMacros(), remainingMacros(), resolveActiveTargets()                                   |
+| `allergies.ts` | recipeAllergens(), recipeHasAllergens()                                                  |
+| `defaults.ts`  | DEFAULT_PROFILE — дефолтные значения профиля                                             |
 
 ### `src/services/` — интерфейсы и AI contracts
-| Файл | Роль |
-|------|------|
-| `RecipesRepository.ts` | Интерфейс: subscribeAll, add, update, delete, getById |
-| `PlannerRepository.ts` | Интерфейс: subscribeAll, add, delete (нет update) |
-| `CartRepository.ts` | Интерфейс: subscribe, add, update, delete, deleteAll |
-| `ProgramsRepository.ts` | Интерфейс: subscribeAll, add, update, delete, getById |
-| `UserProfileRepository.ts` | Интерфейс: subscribe, save |
+
+| Файл                         | Роль                                                                |
+| ---------------------------- | ------------------------------------------------------------------- |
+| `RecipesRepository.ts`       | Интерфейс: subscribeAll, add, update, delete, getById               |
+| `PlannerRepository.ts`       | Интерфейс: subscribeAll, add, delete (нет update)                   |
+| `CartRepository.ts`          | Интерфейс: subscribe, add, update, delete, deleteAll                |
+| `ProgramsRepository.ts`      | Интерфейс: subscribeAll, add, update, delete, getById               |
+| `UserProfileRepository.ts`   | Интерфейс: subscribe, save                                          |
 | `NutritionPlanRepository.ts` | Интерфейс: get(): Promise\<ActiveNutritionPlan \| null\>, set(plan) |
-| `ai/contracts.ts` | DTO для 6 AI-маршрутов (Request/Response пары) |
-| `ai/aiClient.ts` | Типизированный POST-клиент для Cloudflare Worker |
+| `ai/contracts.ts`            | DTO для 6 AI-маршрутов (Request/Response пары)                      |
+| `ai/aiClient.ts`             | Типизированный POST-клиент для Cloudflare Worker                    |
 
 ### `src/infrastructure/` — реализации
-| Файл/папка | Роль |
-|-----------|------|
-| `firebaseApp.ts` | Firebase app singleton (Firestore, Auth, Storage) |
-| `firebaseAuth.ts` | Firebase Auth singleton |
-| `firebaseStorage.ts` | `resolveImageField()` — загрузка base64 data URI в Firebase Storage (`users/{uid}/{folder}/`), возвращает Storage URL; используется репозиториями Recipes/Programs перед записью в Firestore (CRIT-1, `docs/audits/2026-07-19-project-audit-report.md`) |
-| `firestore/FirestoreRecipesRepository.ts` | Реализация, uid-scoped, userId в writes, image-поле прогоняется через `resolveImageField()` |
-| `firestore/FirestorePlannerRepository.ts` | То же для planner |
-| `firestore/FirestoreCartRepository.ts` | То же для cart |
-| `firestore/FirestoreProgramsRepository.ts` | То же для programs; image и subfolders[].image прогоняются через `resolveImageField()` |
-| `firestore/FirestoreUserProfileRepository.ts` | userProfiles/{uid} |
-| `firestore/FirestoreNutritionPlanRepository.ts` | nutritionPlans/{uid} |
-| `firestore/converters.ts` | Timestamp ↔ ISO string |
-| `testing/Fake*.ts` | 6 in-memory реализаций для тестов |
-| `testing/FakeAuthProvider.tsx` | AuthProvider заглушка для тестов |
-| `LocalStorageNutritionPlanRepository.ts` | Не подключён нигде (`RepositoryProvider` использует только `FirestoreNutritionPlanRepository`) — мёртвый код, см. DEAD-1 в отчёте аудита |
+
+| Файл/папка                                      | Роль                                                                                                                                                                                                                                                    |
+| ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `firebaseApp.ts`                                | Firebase app singleton (Firestore, Auth, Storage)                                                                                                                                                                                                       |
+| `firebaseAuth.ts`                               | Firebase Auth singleton                                                                                                                                                                                                                                 |
+| `firebaseStorage.ts`                            | `resolveImageField()` — загрузка base64 data URI в Firebase Storage (`users/{uid}/{folder}/`), возвращает Storage URL; используется репозиториями Recipes/Programs перед записью в Firestore (CRIT-1, `docs/audits/2026-07-19-project-audit-report.md`) |
+| `firestore/FirestoreRecipesRepository.ts`       | Реализация, uid-scoped, userId в writes, image-поле прогоняется через `resolveImageField()`                                                                                                                                                             |
+| `firestore/FirestorePlannerRepository.ts`       | То же для planner                                                                                                                                                                                                                                       |
+| `firestore/FirestoreCartRepository.ts`          | То же для cart                                                                                                                                                                                                                                          |
+| `firestore/FirestoreProgramsRepository.ts`      | То же для programs; image и subfolders[].image прогоняются через `resolveImageField()`                                                                                                                                                                  |
+| `firestore/FirestoreUserProfileRepository.ts`   | userProfiles/{uid}                                                                                                                                                                                                                                      |
+| `firestore/FirestoreNutritionPlanRepository.ts` | nutritionPlans/{uid}                                                                                                                                                                                                                                    |
+| `firestore/converters.ts`                       | Timestamp ↔ ISO string                                                                                                                                                                                                                                  |
+| `testing/Fake*.ts`                              | 6 in-memory реализаций для тестов                                                                                                                                                                                                                       |
+| `testing/FakeAuthProvider.tsx`                  | AuthProvider заглушка для тестов                                                                                                                                                                                                                        |
+| `LocalStorageNutritionPlanRepository.ts`        | Не подключён нигде (`RepositoryProvider` использует только `FirestoreNutritionPlanRepository`) — мёртвый код, см. DEAD-1 в отчёте аудита                                                                                                                |
 
 ### `src/features/` — 6 feature-модулей
-| Папка | Ключевые файлы | Роль |
-|-------|--------------|------|
-| `auth/` | AuthProvider.tsx, AuthContext.ts, useAuth.ts, LandingPage.tsx, LoginScreen.tsx, SignupScreen.tsx | Firebase Auth flow |
-| `recipes/` | RecipesView.tsx | 5 методов импорта: вручную, URL, PDF, фото, ссылка |
-| `planner/` | PlannerView.tsx | Day/week/month/list вьюхи планировщика |
-| `tracker/` | TrackerView.tsx, AISuggestModal.tsx, ProgramSelectionModal.tsx | КБЖУ трекер + AI советы |
-| `cart/` | CartView.tsx, services/staples.ts | Список покупок + классификатор базовых продуктов |
-| `programs/` | ProgramsView.tsx, ProgramDetailModal.tsx | Иерархия программ и подпапок |
-| `settings/` | SettingsModal.tsx | Профиль, аллергии, цели, язык, выход |
+
+| Папка       | Ключевые файлы                                                                                   | Роль                                               |
+| ----------- | ------------------------------------------------------------------------------------------------ | -------------------------------------------------- |
+| `auth/`     | AuthProvider.tsx, AuthContext.ts, useAuth.ts, LandingPage.tsx, LoginScreen.tsx, SignupScreen.tsx | Firebase Auth flow                                 |
+| `recipes/`  | RecipesView.tsx                                                                                  | 5 методов импорта: вручную, URL, PDF, фото, ссылка |
+| `planner/`  | PlannerView.tsx                                                                                  | Day/week/month/list вьюхи планировщика             |
+| `tracker/`  | TrackerView.tsx, AISuggestModal.tsx, ProgramSelectionModal.tsx                                   | КБЖУ трекер + AI советы                            |
+| `cart/`     | CartView.tsx, services/staples.ts                                                                | Список покупок + классификатор базовых продуктов   |
+| `programs/` | ProgramsView.tsx, ProgramDetailModal.tsx                                                         | Иерархия программ и подпапок                       |
+| `settings/` | SettingsModal.tsx                                                                                | Профиль, аллергии, цели, язык, выход               |
 
 ### `src/app/` — providers и layout
-| Файл | Роль |
-|------|------|
-| `providers/RepositoryProvider.tsx` | Инъекция 6 Firestore-реализаций через Context |
-| `providers/DataProvider.tsx` | Reactive onSnapshot подписки (recipes, planner, cart, programs) |
-| `providers/UserProfileProvider.tsx` | userProfile + activeNutritionPlan |
-| `providers/I18nProvider.tsx` | i18next setup |
-| `layout/Shell.tsx` | min-h-screen wrapper с pb-20 для fixed TabBar |
-| `layout/TabBar.tsx` | Нижняя навигация (5 вкладок) |
-| `layout/AppHeader.tsx` | Верхний заголовок |
-| `layout/RecipeSelectionBar.tsx` | Бар выбора рецептов для Programs |
+
+| Файл                                | Роль                                                            |
+| ----------------------------------- | --------------------------------------------------------------- |
+| `providers/RepositoryProvider.tsx`  | Инъекция 6 Firestore-реализаций через Context                   |
+| `providers/DataProvider.tsx`        | Reactive onSnapshot подписки (recipes, planner, cart, programs) |
+| `providers/UserProfileProvider.tsx` | userProfile + activeNutritionPlan                               |
+| `providers/I18nProvider.tsx`        | i18next setup                                                   |
+| `layout/Shell.tsx`                  | min-h-screen wrapper с pb-20 для fixed TabBar                   |
+| `layout/TabBar.tsx`                 | Нижняя навигация (5 вкладок)                                    |
+| `layout/AppHeader.tsx`              | Верхний заголовок                                               |
+| `layout/RecipeSelectionBar.tsx`     | Бар выбора рецептов для Programs                                |
 
 ### `src/locales/` — переводы
+
 `ru.json`, `de.json`, `en.json` — ключи для Shell, TabBar и UI-строк.
 
 ### `worker/` — Cloudflare Worker (Hono)
-| Файл | Роль |
-|------|------|
-| `src/index.ts` | Роутинг: 6 POST маршрутов, CORS, rate limiting middleware |
-| `src/routes/generateImage.ts` | Gemini image generation (gemini-2.5-flash-image) |
-| `src/routes/calculateKbzhu.ts` | Расчёт КБЖУ по ингредиентам |
-| `src/routes/importFromUrl.ts` | Импорт рецепта с URL + og:image |
-| `src/routes/importFromPdf.ts` | Импорт рецепта из PDF (текст + изображение) |
-| `src/routes/importFromPhoto.ts` | Импорт рецепта из фото |
-| `src/routes/fillRemaining.ts` | AI fill remaining КБЖУ (3 варианта) |
-| `src/middleware/rateLimit.ts` | Счётчик по календарной минуте: 10 req/min на IP через KV (ключ `rate:{ip}:{Math.floor(Date.now()/60000)}`) |
-| `src/helpers/generateImageDataUri.ts` | Хелпер генерации data URI через Gemini |
-| `src/types.ts` | Env type: GEMINI_API_KEY (secret), RATE_LIMIT_KV (KV binding) |
+
+| Файл                                  | Роль                                                                                                       |
+| ------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `src/index.ts`                        | Роутинг: 6 POST маршрутов, CORS, rate limiting middleware                                                  |
+| `src/routes/generateImage.ts`         | Gemini image generation (gemini-2.5-flash-image)                                                           |
+| `src/routes/calculateKbzhu.ts`        | Расчёт КБЖУ по ингредиентам                                                                                |
+| `src/routes/importFromUrl.ts`         | Импорт рецепта с URL + og:image                                                                            |
+| `src/routes/importFromPdf.ts`         | Импорт рецепта из PDF (текст + изображение)                                                                |
+| `src/routes/importFromPhoto.ts`       | Импорт рецепта из фото                                                                                     |
+| `src/routes/fillRemaining.ts`         | AI fill remaining КБЖУ (3 варианта)                                                                        |
+| `src/middleware/rateLimit.ts`         | Счётчик по календарной минуте: 10 req/min на IP через KV (ключ `rate:{ip}:{Math.floor(Date.now()/60000)}`) |
+| `src/helpers/generateImageDataUri.ts` | Хелпер генерации data URI через Gemini                                                                     |
+| `src/types.ts`                        | Env type: GEMINI_API_KEY (secret), RATE_LIMIT_KV (KV binding)                                              |
 
 ### `scripts/` — служебные скрипты (запускаются вручную, вне сборки приложения)
-| Файл | Роль |
-|------|------|
+
+| Файл                     | Роль                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `migrate-assign-user.ts` | Одноразовая миграция Firestore: проставляет `userId` во всех документах `recipes`/`planner`/`cart`/`programs`, где поле отсутствует, и переносит singleton-документы `settings/profile` → `userProfiles/{uid}`, `settings/plan` → `nutritionPlans/{uid}`. Нужна была для перехода на uid-scoped данные (multi-user). Переменные окружения: `GOOGLE_APPLICATION_CREDENTIALS` (путь к service account JSON, firebase-admin), `MIGRATION_USER_UID` (uid, на который переносятся данные) |
 
 ---
@@ -191,6 +203,7 @@ StrictMode
 ## 5. Внешние сервисы
 
 ### Firebase
+
 - **Проект:** `rezept-manager-62bd0` (личный аккаунт videnejev@gmail.com)
 - **Dashboard:** console.firebase.google.com → проект `rezept-manager-62bd0`
 - **Firestore:** данные пользователей — коллекции `recipes`, `planner`, `cart`, `programs`, `userProfiles`, `nutritionPlans`. Все uid-scoped (`where('userId', '==', uid)`).
@@ -199,6 +212,7 @@ StrictMode
 - **Storage:** бакет `VITE_FIREBASE_STORAGE_BUCKET`, пути `users/{uid}/{recipeImages|programImages|subfolderImages}/{fileId}`. AI-generated/загруженные base64-изображения рецептов и программ хранятся здесь (не в Firestore) — см. `src/infrastructure/firebaseStorage.ts`. **Security Rules:** `storage.rules` — uid-scoped, лимит 5MB, только `image/*`. Деплоится вручную через Firebase Console → Storage → Rules (как и `firestore.rules`, CLI не настроен).
 
 ### Cloudflare
+
 - **Аккаунт:** связан с videnejev@gmail.com
 - **Dashboard:** dash.cloudflare.com
 - **Pages:** фронтенд, деплоится автоматически из `main` ветки. Домен `rezept-manager.flowgence.de` (CNAME к Cloudflare; основной домен `flowgence.de` у HostEurope).
@@ -206,6 +220,7 @@ StrictMode
 - **KV:** namespace `RATE_LIMIT_KV` — хранение счётчиков rate limiting
 
 ### Google Gemini (AI Studio)
+
 - **Ключ:** Cloudflare secret `GEMINI_API_KEY` — **никогда не в клиентском коде**
 - **Модели:**
   - `gemini-3-flash-preview` — import-from-url, import-from-pdf, import-from-photo, calculate-kbzhu, fill-remaining
@@ -218,25 +233,25 @@ StrictMode
 
 ### Frontend `.env` / `.env.local`
 
-| Переменная | Описание | Где получить | Кто использует |
-|-----------|---------|------------|--------------|
-| `VITE_FIREBASE_API_KEY` | Firebase web API key | Firebase Console → Project Settings → General → Your apps | `src/infrastructure/firebaseApp.ts` |
-| `VITE_FIREBASE_AUTH_DOMAIN` | Firebase Auth domain | Firebase Console | `src/infrastructure/firebaseApp.ts` |
-| `VITE_FIREBASE_PROJECT_ID` | Firebase project ID (`rezept-manager-62bd0`) | Firebase Console | `src/infrastructure/firebaseApp.ts` |
-| `VITE_FIREBASE_STORAGE_BUCKET` | Firebase Storage bucket | Firebase Console | `src/infrastructure/firebaseApp.ts` |
-| `VITE_FIREBASE_MESSAGING_SENDER_ID` | Firebase Cloud Messaging sender ID | Firebase Console | `src/infrastructure/firebaseApp.ts` |
-| `VITE_FIREBASE_APP_ID` | Firebase app ID | Firebase Console | `src/infrastructure/firebaseApp.ts` |
-| `VITE_FIREBASE_MEASUREMENT_ID` | Firebase Analytics ID (опционально) | Firebase Console | `src/infrastructure/firebaseApp.ts` |
-| `VITE_AI_WORKER_URL` | URL Cloudflare Worker. В dev: пусто (Vite proxy `/api → :8787`). В prod: `https://rezept-manager-ai-proxy.<account>.workers.dev` | Cloudflare Dashboard → Workers | `src/services/ai/aiClient.ts` |
+| Переменная                          | Описание                                                                                                                         | Где получить                                              | Кто использует                      |
+| ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------- | ----------------------------------- |
+| `VITE_FIREBASE_API_KEY`             | Firebase web API key                                                                                                             | Firebase Console → Project Settings → General → Your apps | `src/infrastructure/firebaseApp.ts` |
+| `VITE_FIREBASE_AUTH_DOMAIN`         | Firebase Auth domain                                                                                                             | Firebase Console                                          | `src/infrastructure/firebaseApp.ts` |
+| `VITE_FIREBASE_PROJECT_ID`          | Firebase project ID (`rezept-manager-62bd0`)                                                                                     | Firebase Console                                          | `src/infrastructure/firebaseApp.ts` |
+| `VITE_FIREBASE_STORAGE_BUCKET`      | Firebase Storage bucket                                                                                                          | Firebase Console                                          | `src/infrastructure/firebaseApp.ts` |
+| `VITE_FIREBASE_MESSAGING_SENDER_ID` | Firebase Cloud Messaging sender ID                                                                                               | Firebase Console                                          | `src/infrastructure/firebaseApp.ts` |
+| `VITE_FIREBASE_APP_ID`              | Firebase app ID                                                                                                                  | Firebase Console                                          | `src/infrastructure/firebaseApp.ts` |
+| `VITE_FIREBASE_MEASUREMENT_ID`      | Firebase Analytics ID (опционально)                                                                                              | Firebase Console                                          | `src/infrastructure/firebaseApp.ts` |
+| `VITE_AI_WORKER_URL`                | URL Cloudflare Worker. В dev: пусто (Vite proxy `/api → :8787`). В prod: `https://rezept-manager-ai-proxy.<account>.workers.dev` | Cloudflare Dashboard → Workers                            | `src/services/ai/aiClient.ts`       |
 
 Шаблон: `.env.example` в корне.
 
 ### Worker `worker/.dev.vars` (локально) / Cloudflare secrets (продакшн)
 
-| Переменная | Тип | Описание | Как задать |
-|-----------|-----|---------|------------|
-| `GEMINI_API_KEY` | Secret | Google Gemini API ключ | Локально: `worker/.dev.vars`. Продакшн: `wrangler secret put GEMINI_API_KEY` |
-| `RATE_LIMIT_KV` | KV binding | Namespace для rate limiting — не строка, а binding | `wrangler.toml` → `kv_namespaces`, создать в Cloudflare Dashboard |
+| Переменная       | Тип        | Описание                                           | Как задать                                                                   |
+| ---------------- | ---------- | -------------------------------------------------- | ---------------------------------------------------------------------------- |
+| `GEMINI_API_KEY` | Secret     | Google Gemini API ключ                             | Локально: `worker/.dev.vars`. Продакшн: `wrangler secret put GEMINI_API_KEY` |
+| `RATE_LIMIT_KV`  | KV binding | Namespace для rate limiting — не строка, а binding | `wrangler.toml` → `kv_namespaces`, создать в Cloudflare Dashboard            |
 
 ---
 
@@ -271,6 +286,7 @@ npm run dev   # http://localhost:5173
 ## 8. Деплой
 
 ### Фронтенд (Cloudflare Pages)
+
 ```bash
 git push origin main
 # Pages деплоится автоматически
@@ -278,6 +294,7 @@ git push origin main
 ```
 
 ### Worker (Cloudflare Workers)
+
 ```bash
 cd worker
 npx wrangler deploy
@@ -295,6 +312,7 @@ npm run coverage      # с coverage report
 ```
 
 **Что покрыто (112 тестов):**
+
 - `src/shared/domain/` — 100%: macros (sumMacros, remainingMacros, resolveActiveTargets), allergies (recipeAllergens, recipeHasAllergens), staples (isStaple)
 - `src/infrastructure/testing/` — contract tests для 6 Fake-репозиториев
 - `src/infrastructure/firestore/converters.ts` — Timestamp ↔ ISO
@@ -305,6 +323,7 @@ npm run coverage      # с coverage report
 - `src/features/tracker/` — TrackerView smoke tests
 
 **Что НЕ покрыто:**
+
 - `worker/` — Cloudflare Worker (требует `@cloudflare/vitest-pool-workers`, TODO в Phase 0b)
 - E2E тесты (Playwright не настроен)
 - `RecipesView`, `ProgramsView`, `CartView` — только ручное тестирование
@@ -314,9 +333,9 @@ npm run coverage      # с coverage report
 
 ## 10. Технические ограничения
 
-| Ограничение | Причина | Как обойти |
-|------------|---------|-----------|
-| Firestore: не хранить base64-картинки | Лимит документа ~1 МБ; AI-generated images ~700 КБ+ | Решено (CRIT-1): `resolveImageField()` (`src/infrastructure/firebaseStorage.ts`) грузит `data:` URI в Firebase Storage, в Firestore пишется только URL |
-| `GEMINI_API_KEY` только в Cloudflare secret | Безопасность — ключ не должен попасть в клиентский бандл | Всегда через Worker proxy `/api/ai/*` |
-| Canvas API недоступен в Cloudflare Worker | Workers runtime не поддерживает Canvas | PDF-операции (`extractImageFromPDF`) только на клиенте через `pdfjs-dist` |
-| `App.tsx` < 300 строк (не < 200) | Достигнуто 277; < 200 требует отдельного RecipeSelectionContext | Запланировано как future TODO |
+| Ограничение                                 | Причина                                                         | Как обойти                                                                                                                                             |
+| ------------------------------------------- | --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Firestore: не хранить base64-картинки       | Лимит документа ~1 МБ; AI-generated images ~700 КБ+             | Решено (CRIT-1): `resolveImageField()` (`src/infrastructure/firebaseStorage.ts`) грузит `data:` URI в Firebase Storage, в Firestore пишется только URL |
+| `GEMINI_API_KEY` только в Cloudflare secret | Безопасность — ключ не должен попасть в клиентский бандл        | Всегда через Worker proxy `/api/ai/*`                                                                                                                  |
+| Canvas API недоступен в Cloudflare Worker   | Workers runtime не поддерживает Canvas                          | PDF-операции (`extractImageFromPDF`) только на клиенте через `pdfjs-dist`                                                                              |
+| `App.tsx` < 300 строк (не < 200)            | Достигнуто 277; < 200 требует отдельного RecipeSelectionContext | Запланировано как future TODO                                                                                                                          |

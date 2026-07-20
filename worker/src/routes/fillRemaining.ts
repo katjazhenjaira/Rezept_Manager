@@ -1,11 +1,11 @@
-import type { Context } from "hono";
-import { GoogleGenAI } from "@google/genai";
+import type { Context } from 'hono';
+import { GoogleGenAI } from '@google/genai';
 import type {
   FillRemainingRequest,
   FillRemainingResponse,
   FillRemainingOption,
-} from "../../../src/services/ai/contracts";
-import type { Env } from "../types";
+} from '../../../src/services/ai/contracts';
+import type { Env } from '../types';
 
 export async function fillRemaining(c: Context<{ Bindings: Env }>) {
   const body = await c.req.json<FillRemainingRequest>();
@@ -13,30 +13,39 @@ export async function fillRemaining(c: Context<{ Bindings: Env }>) {
 
   if (
     !remaining ||
-    typeof remaining.calories !== "number" ||
-    typeof remaining.proteins !== "number" ||
-    typeof remaining.fats !== "number" ||
-    typeof remaining.carbs !== "number" ||
+    typeof remaining.calories !== 'number' ||
+    typeof remaining.proteins !== 'number' ||
+    typeof remaining.fats !== 'number' ||
+    typeof remaining.carbs !== 'number' ||
     !Array.isArray(allergies) ||
     !Array.isArray(userRecipes)
   ) {
-    return c.json({ error: "Expected { remaining: Macros, planName: string, allergies: string[], userRecipes: [...] }" }, 400);
+    return c.json(
+      {
+        error:
+          'Expected { remaining: Macros, planName: string, allergies: string[], userRecipes: [...] }',
+      },
+      400,
+    );
   }
 
   const ai = new GoogleGenAI({ apiKey: c.env.GEMINI_API_KEY });
 
   const allowedText =
     activeProgramRules?.allowedProducts && activeProgramRules.allowedProducts.length > 0
-      ? `Разрешенные продукты: ${activeProgramRules.allowedProducts.join(", ")}.`
-      : "";
+      ? `Разрешенные продукты: ${activeProgramRules.allowedProducts.join(', ')}.`
+      : '';
   const forbiddenText =
     activeProgramRules?.forbiddenProducts && activeProgramRules.forbiddenProducts.length > 0
-      ? `Запрещенные продукты: ${activeProgramRules.forbiddenProducts.join(", ")}.`
-      : "";
-  const allergiesText = allergies.length > 0 ? allergies.join(", ") : "нет";
+      ? `Запрещенные продукты: ${activeProgramRules.forbiddenProducts.join(', ')}.`
+      : '';
+  const allergiesText = allergies.length > 0 ? allergies.join(', ') : 'нет';
   const recipesText = userRecipes
-    .map((r) => `${r.title} (ID: ${r.id}, КБЖУ на порцию: ${r.macros.calories}/${r.macros.proteins}/${r.macros.fats}/${r.macros.carbs})`)
-    .join(", ");
+    .map(
+      (r) =>
+        `${r.title} (ID: ${r.id}, КБЖУ на порцию: ${r.macros.calories}/${r.macros.proteins}/${r.macros.fats}/${r.macros.carbs})`,
+    )
+    .join(', ');
 
   const prompt = `У меня осталось ${remaining.calories} ккал, ${remaining.proteins}г белков, ${remaining.fats}г жиров, ${remaining.carbs}г углеводов на сегодня.
 Посоветуй 3 варианта перекуса.
@@ -69,27 +78,32 @@ ${forbiddenText}
 
   try {
     const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview",
+      model: 'gemini-3-flash-preview',
       contents: prompt,
       config: {
-        responseMimeType: "application/json",
+        responseMimeType: 'application/json',
       },
     });
 
-    data = JSON.parse(response.text ?? "{}") as typeof data;
+    data = JSON.parse(response.text ?? '{}') as typeof data;
   } catch (err) {
-    console.error("[fillRemaining] error:", err);
-    return c.json({ error: "Failed to generate suggestions" }, 502);
+    console.error('[fillRemaining] error:', err);
+    return c.json({ error: 'Failed to generate suggestions' }, 502);
   }
 
   if (!Array.isArray(data.options) || data.options.length !== 3) {
-    console.error("fillRemaining: Gemini returned", data.options?.length ?? 0, "options instead of 3", data);
-    return c.json({ error: "AI response did not contain exactly 3 options" }, 502);
+    console.error(
+      'fillRemaining: Gemini returned',
+      data.options?.length ?? 0,
+      'options instead of 3',
+      data,
+    );
+    return c.json({ error: 'AI response did not contain exactly 3 options' }, 502);
   }
 
   const payload: FillRemainingResponse = {
     options: data.options as [FillRemainingOption, FillRemainingOption, FillRemainingOption],
-    reason: data.reason ?? "",
+    reason: data.reason ?? '',
   };
   return c.json(payload);
 }

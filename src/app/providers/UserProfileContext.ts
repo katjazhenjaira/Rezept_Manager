@@ -11,7 +11,9 @@ export type NutritionPlanState = {
   setActivePlan: (plan: ActiveNutritionPlan | null) => Promise<void>;
 };
 
-export const UserProfileContext = createContext<(UserProfileState & NutritionPlanState) | null>(null);
+export const UserProfileContext = createContext<(UserProfileState & NutritionPlanState) | null>(
+  null,
+);
 
 export function useUserProfile(): UserProfileState {
   const ctx = useContext(UserProfileContext);

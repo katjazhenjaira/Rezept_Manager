@@ -12,20 +12,21 @@
 
 ## File map
 
-| Action | File | Purpose |
-|--------|------|---------|
-| Modify | `src/services/ai/contracts.ts` | Fix `ImportedRecipe.ingredients` and `.steps` to `string[]` |
-| Create | `worker/src/helpers/generateImageDataUri.ts` | Pure Gemini image helper (no Hono context) |
-| Modify | `worker/src/routes/generateImage.ts` | Use the extracted helper |
-| Create | `worker/src/routes/importFromUrl.ts` | New route handler |
-| Modify | `worker/src/index.ts` | Replace 501 stub with real route |
-| Modify | `src/App.tsx` | Replace direct Gemini call with `aiClient.importFromUrl()` |
+| Action | File                                         | Purpose                                                     |
+| ------ | -------------------------------------------- | ----------------------------------------------------------- |
+| Modify | `src/services/ai/contracts.ts`               | Fix `ImportedRecipe.ingredients` and `.steps` to `string[]` |
+| Create | `worker/src/helpers/generateImageDataUri.ts` | Pure Gemini image helper (no Hono context)                  |
+| Modify | `worker/src/routes/generateImage.ts`         | Use the extracted helper                                    |
+| Create | `worker/src/routes/importFromUrl.ts`         | New route handler                                           |
+| Modify | `worker/src/index.ts`                        | Replace 501 stub with real route                            |
+| Modify | `src/App.tsx`                                | Replace direct Gemini call with `aiClient.importFromUrl()`  |
 
 ---
 
 ### Task 1: Fix `ImportedRecipe` contract types
 
 **Files:**
+
 - Modify: `src/services/ai/contracts.ts`
 
 - [ ] **Step 1: Update `ingredients` and `steps` from `string` to `string[]`**
@@ -36,8 +37,8 @@ In `src/services/ai/contracts.ts`, find `ImportedRecipe` and change:
 export type ImportedRecipe = {
   title: string;
   author?: string;
-  ingredients: string[];   // was: string
-  steps: string[];         // was: string
+  ingredients: string[]; // was: string
+  steps: string[]; // was: string
   time: string;
   categories: string[];
   servings: number;
@@ -69,6 +70,7 @@ git commit -m "fix(contracts): ImportedRecipe ingredients and steps as string[]"
 ### Task 2: Extract `generateImageDataUri` helper
 
 **Files:**
+
 - Create: `worker/src/helpers/generateImageDataUri.ts`
 - Modify: `worker/src/routes/generateImage.ts`
 
@@ -77,26 +79,26 @@ git commit -m "fix(contracts): ImportedRecipe ingredients and steps as string[]"
 Create `worker/src/helpers/generateImageDataUri.ts`:
 
 ```ts
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenAI } from '@google/genai';
 
 export async function generateImageDataUri(
   ai: GoogleGenAI,
   title: string,
-  ingredients: string[]
+  ingredients: string[],
 ): Promise<string | null> {
   const response = await ai.models.generateContent({
-    model: "gemini-2.5-flash-image",
+    model: 'gemini-2.5-flash-image',
     contents: {
       parts: [
         {
-          text: `A professional food photography of ${title}. Ingredients: ${ingredients.join(", ")}. High quality, appetizing, top view or 45 degree angle.`,
+          text: `A professional food photography of ${title}. Ingredients: ${ingredients.join(', ')}. High quality, appetizing, top view or 45 degree angle.`,
         },
       ],
     },
     config: {
       imageConfig: {
-        aspectRatio: "4:3",
-        imageSize: "1K",
+        aspectRatio: '4:3',
+        imageSize: '1K',
       },
     },
   });
@@ -115,13 +117,13 @@ export async function generateImageDataUri(
 Replace the body of `worker/src/routes/generateImage.ts` with:
 
 ```ts
-import type { Context } from "hono";
-import { GoogleGenAI } from "@google/genai";
+import type { Context } from 'hono';
+import { GoogleGenAI } from '@google/genai';
 import type {
   GenerateImageRequest,
   GenerateImageResponse,
-} from "../../../src/services/ai/contracts";
-import { generateImageDataUri } from "../helpers/generateImageDataUri";
+} from '../../../src/services/ai/contracts';
+import { generateImageDataUri } from '../helpers/generateImageDataUri';
 
 type Bindings = { GEMINI_API_KEY: string };
 
@@ -130,14 +132,14 @@ export async function generateImage(c: Context<{ Bindings: Bindings }>) {
   const { title, ingredients } = body;
 
   if (!title || !Array.isArray(ingredients)) {
-    return c.json({ error: "Expected { title: string, ingredients: string[] }" }, 400);
+    return c.json({ error: 'Expected { title: string, ingredients: string[] }' }, 400);
   }
 
   const ai = new GoogleGenAI({ apiKey: c.env.GEMINI_API_KEY });
   const dataUri = await generateImageDataUri(ai, title, ingredients);
 
   if (!dataUri) {
-    return c.json({ error: "Gemini returned no inline image data" }, 502);
+    return c.json({ error: 'Gemini returned no inline image data' }, 502);
   }
 
   const payload: GenerateImageResponse = { imageDataUri: dataUri };
@@ -166,6 +168,7 @@ git commit -m "refactor(worker): extract generateImageDataUri helper"
 ### Task 3: Create `importFromUrl` route
 
 **Files:**
+
 - Create: `worker/src/routes/importFromUrl.ts`
 
 - [ ] **Step 1: Create the route file**
@@ -173,14 +176,14 @@ git commit -m "refactor(worker): extract generateImageDataUri helper"
 Create `worker/src/routes/importFromUrl.ts`:
 
 ```ts
-import type { Context } from "hono";
-import { GoogleGenAI, Type } from "@google/genai";
+import type { Context } from 'hono';
+import { GoogleGenAI, Type } from '@google/genai';
 import type {
   ImportFromUrlRequest,
   ImportFromUrlResponse,
   ImportedRecipe,
-} from "../../../src/services/ai/contracts";
-import { generateImageDataUri } from "../helpers/generateImageDataUri";
+} from '../../../src/services/ai/contracts';
+import { generateImageDataUri } from '../helpers/generateImageDataUri';
 
 type Bindings = { GEMINI_API_KEY: string };
 
@@ -188,23 +191,26 @@ export async function importFromUrl(c: Context<{ Bindings: Bindings }>) {
   const body = await c.req.json<ImportFromUrlRequest>();
   const { url, availableCategories } = body;
 
-  if (typeof url !== "string" || !url.trim()) {
-    return c.json({ error: "Expected { url: string, availableCategories: string[] }" }, 400);
+  if (typeof url !== 'string' || !url.trim()) {
+    return c.json({ error: 'Expected { url: string, availableCategories: string[] }' }, 400);
   }
 
   const ai = new GoogleGenAI({ apiKey: c.env.GEMINI_API_KEY });
 
   const response = await ai.models.generateContent({
-    model: "gemini-3-flash-preview",
+    model: 'gemini-3-flash-preview',
     config: {
-      systemInstruction: `You are a precise recipe extraction engine. Your goal is to extract recipe data ONLY from the provided URL. For categories, ONLY choose from this list: ${availableCategories.join(", ")}. If the content is not a recipe or cannot be accessed, return an error or a very minimal object. NEVER hallucinate a recipe from a different source.`,
+      systemInstruction: `You are a precise recipe extraction engine. Your goal is to extract recipe data ONLY from the provided URL. For categories, ONLY choose from this list: ${availableCategories.join(', ')}. If the content is not a recipe or cannot be accessed, return an error or a very minimal object. NEVER hallucinate a recipe from a different source.`,
       tools: [{ urlContext: {} }],
-      responseMimeType: "application/json",
+      responseMimeType: 'application/json',
       responseSchema: {
         type: Type.OBJECT,
         properties: {
           title: { type: Type.STRING },
-          author: { type: Type.STRING, description: "Name of the author, channel name, or creator" },
+          author: {
+            type: Type.STRING,
+            description: 'Name of the author, channel name, or creator',
+          },
           ingredients: { type: Type.ARRAY, items: { type: Type.STRING } },
           steps: { type: Type.ARRAY, items: { type: Type.STRING } },
           time: { type: Type.STRING },
@@ -214,9 +220,23 @@ export async function importFromUrl(c: Context<{ Bindings: Bindings }>) {
           carbs: { type: Type.NUMBER },
           categories: { type: Type.ARRAY, items: { type: Type.STRING } },
           servings: { type: Type.NUMBER },
-          imageUrl: { type: Type.STRING, description: "Direct URL to the recipe image or video thumbnail" },
+          imageUrl: {
+            type: Type.STRING,
+            description: 'Direct URL to the recipe image or video thumbnail',
+          },
         },
-        required: ["title", "ingredients", "steps", "time", "calories", "proteins", "fats", "carbs", "categories", "servings"],
+        required: [
+          'title',
+          'ingredients',
+          'steps',
+          'time',
+          'calories',
+          'proteins',
+          'fats',
+          'carbs',
+          'categories',
+          'servings',
+        ],
       },
     },
     contents: `TASK: Extract the recipe details ONLY from the provided URL: ${url}.
@@ -232,7 +252,7 @@ INSTRUCTIONS:
 8. Return the data in Russian.`,
   });
 
-  const data = JSON.parse(response.text ?? "{}") as {
+  const data = JSON.parse(response.text ?? '{}') as {
     title?: string;
     author?: string;
     ingredients?: string[];
@@ -251,21 +271,21 @@ INSTRUCTIONS:
   if (!dishImage) {
     const generated = await generateImageDataUri(
       ai,
-      data.title ?? "Новый рецепт",
-      data.ingredients ?? []
+      data.title ?? 'Новый рецепт',
+      data.ingredients ?? [],
     );
     if (generated) dishImage = generated;
   }
 
   const recipe: ImportedRecipe = {
-    title: data.title ?? "Новый рецепт",
+    title: data.title ?? 'Новый рецепт',
     author: data.author,
     ingredients: data.ingredients ?? [],
     steps: data.steps ?? [],
-    time: data.time ?? "30 мин",
+    time: data.time ?? '30 мин',
     servings: data.servings ?? 2,
     categories: (data.categories ?? []).filter((cat) =>
-      availableCategories.map((c) => c.toLowerCase()).includes(cat.toLowerCase())
+      availableCategories.map((c) => c.toLowerCase()).includes(cat.toLowerCase()),
     ),
     macros: {
       calories: data.calories ?? 0,
@@ -302,6 +322,7 @@ git commit -m "feat(worker): add import-from-url route"
 ### Task 4: Register route in worker index
 
 **Files:**
+
 - Modify: `worker/src/index.ts`
 
 - [ ] **Step 1: Replace the 501 stub**
@@ -309,11 +330,11 @@ git commit -m "feat(worker): add import-from-url route"
 In `worker/src/index.ts`, add the import and replace the stub line:
 
 ```ts
-import { Hono } from "hono";
-import { cors } from "hono/cors";
-import { generateImage } from "./routes/generateImage";
-import { calculateKbzhu } from "./routes/calculateKbzhu";
-import { importFromUrl } from "./routes/importFromUrl";
+import { Hono } from 'hono';
+import { cors } from 'hono/cors';
+import { generateImage } from './routes/generateImage';
+import { calculateKbzhu } from './routes/calculateKbzhu';
+import { importFromUrl } from './routes/importFromUrl';
 
 type Bindings = {
   GEMINI_API_KEY: string;
@@ -321,24 +342,24 @@ type Bindings = {
 
 const app = new Hono<{ Bindings: Bindings }>();
 
-app.use("*", cors());
+app.use('*', cors());
 
-app.get("/", (c) => c.text("Rezept Manager AI proxy"));
+app.get('/', (c) => c.text('Rezept Manager AI proxy'));
 
 app.onError((err, c) => {
-  console.error("AI proxy error:", err);
-  return c.json({ error: err.message || "Internal error" }, 500);
+  console.error('AI proxy error:', err);
+  return c.json({ error: err.message || 'Internal error' }, 500);
 });
 
-app.post("/api/ai/generate-image", generateImage);
-app.post("/api/ai/calculate-kbzhu", calculateKbzhu);
-app.post("/api/ai/import-from-url", importFromUrl);
+app.post('/api/ai/generate-image', generateImage);
+app.post('/api/ai/calculate-kbzhu', calculateKbzhu);
+app.post('/api/ai/import-from-url', importFromUrl);
 
 // Остальные 3 ещё не портированы — stubs.
-const NOT_IMPLEMENTED = { error: "Not implemented yet (Phase 0b)" };
-app.post("/api/ai/import-from-pdf", (c) => c.json(NOT_IMPLEMENTED, 501));
-app.post("/api/ai/import-from-photo", (c) => c.json(NOT_IMPLEMENTED, 501));
-app.post("/api/ai/fill-remaining", (c) => c.json(NOT_IMPLEMENTED, 501));
+const NOT_IMPLEMENTED = { error: 'Not implemented yet (Phase 0b)' };
+app.post('/api/ai/import-from-pdf', (c) => c.json(NOT_IMPLEMENTED, 501));
+app.post('/api/ai/import-from-photo', (c) => c.json(NOT_IMPLEMENTED, 501));
+app.post('/api/ai/fill-remaining', (c) => c.json(NOT_IMPLEMENTED, 501));
 
 export default app;
 ```
@@ -355,12 +376,14 @@ Expected: build succeeds.
 - [ ] **Step 3: Smoke-test with wrangler dev + curl**
 
 In one terminal:
+
 ```bash
 cd /Users/evidenee/Flowgence/Rezept_Manager/worker
 npx wrangler dev --local
 ```
 
 In another terminal (replace URL with any real recipe page):
+
 ```bash
 curl -s -X POST http://localhost:8787/api/ai/import-from-url \
   -H "Content-Type: application/json" \
@@ -382,6 +405,7 @@ git commit -m "feat(worker): register import-from-url route"
 ### Task 5: Update App.tsx to use aiClient
 
 **Files:**
+
 - Modify: `src/App.tsx` (lines ~1053–1141)
 
 - [ ] **Step 1: Replace `handleLinkSubmit` body**
@@ -403,7 +427,7 @@ const handleLinkSubmit = async (e: React.FormEvent) => {
 
     const recipeData = {
       title: r.title,
-      author: r.author ?? "",
+      author: r.author ?? '',
       image: r.dishImage ?? null,
       sourceUrl: recipeLink,
       time: r.time,
@@ -416,17 +440,17 @@ const handleLinkSubmit = async (e: React.FormEvent) => {
       createdAt: new Date().toISOString(),
     };
 
-    const docRef = await addDoc(collection(db, "recipes"), recipeData);
+    const docRef = await addDoc(collection(db, 'recipes'), recipeData);
     if (recipeTarget) {
       await addRecipeToTarget(docRef.id);
     }
 
     setIsAddingLink(false);
     setRecipeLink('');
-    alert("Рецепт успешно добавлен!");
+    alert('Рецепт успешно добавлен!');
   } catch (error) {
-    console.error("Error scanning link:", error);
-    alert("Не удалось распознать рецепт по ссылке. Попробуйте другую ссылку или добавьте вручную.");
+    console.error('Error scanning link:', error);
+    alert('Не удалось распознать рецепт по ссылке. Попробуйте другую ссылку или добавьте вручную.');
   } finally {
     setIsScanning(false);
   }
@@ -436,11 +460,13 @@ const handleLinkSubmit = async (e: React.FormEvent) => {
 - [ ] **Step 2: Add `aiClient` import at the top of App.tsx (if not already present)**
 
 Check if `aiClient` is already imported:
+
 ```bash
 grep -n "aiClient" /Users/evidenee/Flowgence/Rezept_Manager/src/App.tsx | head -5
 ```
 
 If not found, add after the existing imports:
+
 ```ts
 import { aiClient } from './services/ai/aiClient';
 ```
@@ -465,6 +491,7 @@ Expected: 0 errors (or only pre-existing errors unrelated to this change).
 - [ ] **Step 5: Browser smoke-test**
 
 Start dev servers:
+
 ```bash
 # Terminal 1 — worker
 cd worker && npx wrangler dev --local
@@ -474,6 +501,7 @@ cd /Users/evidenee/Flowgence/Rezept_Manager && npm run dev
 ```
 
 Open the app → add recipe → paste a real recipe URL → click scan. Verify:
+
 - Recipe title, ingredients (list), steps (list) appear correctly
 - КБЖУ populated
 - Image present (either from page or generated)

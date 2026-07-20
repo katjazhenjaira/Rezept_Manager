@@ -23,16 +23,19 @@ function fromFirestore(data: Record<string, unknown>): UserProfile {
 export class FirestoreUserProfileRepository implements UserProfileRepository {
   constructor(private readonly uid: string) {}
 
-  subscribe(callback: (profile: UserProfile | null) => void, onError?: (error: Error) => void): () => void {
+  subscribe(
+    callback: (profile: UserProfile | null) => void,
+    onError?: (error: Error) => void,
+  ): () => void {
     return onSnapshot(
       doc(db, 'userProfiles', this.uid),
-      snap => {
+      (snap) => {
         callback(snap.exists() ? fromFirestore(snap.data()) : null);
       },
-      error => {
+      (error) => {
         console.error('FirestoreUserProfileRepository.subscribe failed:', error);
         onError?.(error);
-      }
+      },
     );
   }
 

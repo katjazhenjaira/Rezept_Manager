@@ -1,13 +1,12 @@
-import type { Context, Next } from "hono";
-import type { Env } from "../types";
+import type { Context, Next } from 'hono';
+import type { Env } from '../types';
 
 const LIMIT = 10;
 const TTL_SECONDS = 65;
 
 export async function rateLimit(c: Context<{ Bindings: Env }>, next: Next) {
   const ip =
-    c.req.header("CF-Connecting-IP") ??
-    c.req.header("X-Forwarded-For")?.split(",")[0]?.trim();
+    c.req.header('CF-Connecting-IP') ?? c.req.header('X-Forwarded-For')?.split(',')[0]?.trim();
 
   // No IP header means local dev (wrangler dev has no CF headers) — skip rate limit.
   if (!ip) return next();
@@ -25,11 +24,9 @@ export async function rateLimit(c: Context<{ Bindings: Env }>, next: Next) {
 
   if (count >= LIMIT) {
     const secondsUntilNextMinute = 60 - (Math.floor(Date.now() / 1000) % 60);
-    return c.json(
-      { error: "Rate limit exceeded. Maximum 10 requests per minute." },
-      429,
-      { "Retry-After": String(secondsUntilNextMinute) }
-    );
+    return c.json({ error: 'Rate limit exceeded. Maximum 10 requests per minute.' }, 429, {
+      'Retry-After': String(secondsUntilNextMinute),
+    });
   }
 
   await c.env.RATE_LIMIT_KV.put(key, String(count + 1), {

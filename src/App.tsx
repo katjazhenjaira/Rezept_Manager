@@ -14,12 +14,7 @@ import { RecipeSelectionBar } from '@/app/layout/RecipeSelectionBar';
 import { SettingsModal } from '@/features/settings/SettingsModal';
 import { CartView } from '@/features/cart/CartView';
 import { ProgramsView } from '@/features/programs/ProgramsView';
-import type {
-  Tab,
-  Recipe,
-  UserProfile,
-  Program,
-} from '@/shared/domain/types';
+import type { Tab, Recipe, UserProfile, Program } from '@/shared/domain/types';
 import { DEFAULT_PROFILE } from '@/shared/domain/defaults';
 import { RecipesView } from '@/features/recipes/RecipesView';
 import { PlannerView } from '@/features/planner/PlannerView';
@@ -36,17 +31,34 @@ export default function App() {
   const [isAddingPDF, setIsAddingPDF] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
 
-
   // Categories state
   const [availableCategories, setAvailableCategories] = useState([
-    'Завтрак', 'Обед', 'Ужин', 'Перекус', 'Десерт', 'Мясо', 'Рыба', 'Веган', 'Вегетарианское', 'Напитки', 'Основное блюдо', 'Гарниры', 'Салаты', 'Супы'
+    'Завтрак',
+    'Обед',
+    'Ужин',
+    'Перекус',
+    'Десерт',
+    'Мясо',
+    'Рыба',
+    'Веган',
+    'Вегетарианское',
+    'Напитки',
+    'Основное блюдо',
+    'Гарниры',
+    'Салаты',
+    'Супы',
   ]);
-
 
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isRecipeSelectionMode, setIsRecipeSelectionMode] = useState(false);
-  const [selectionTarget, setSelectionTarget] = useState<{ programId: string, subfolderId: string | 'main' } | null>(null);
-  const [recipeTarget, setRecipeTarget] = useState<{ programId: string, subfolderId: string | 'main' } | null>(null);
+  const [selectionTarget, setSelectionTarget] = useState<{
+    programId: string;
+    subfolderId: string | 'main';
+  } | null>(null);
+  const [recipeTarget, setRecipeTarget] = useState<{
+    programId: string;
+    subfolderId: string | 'main';
+  } | null>(null);
   const [selectedRecipeIds, setSelectedRecipeIds] = useState<string[]>([]);
   const [checkedEntries, setCheckedEntries] = useState<string[]>([]);
   const [mealTypes, setMealTypes] = useState(['Завтрак', 'Обед', 'Ужин', 'Перекус']);
@@ -68,7 +80,7 @@ export default function App() {
   const handleAddSelectedRecipes = async () => {
     if (!selectionTarget) return;
     const { programId, subfolderId } = selectionTarget;
-    const program = programs.find(p => p.id === programId);
+    const program = programs.find((p) => p.id === programId);
     if (!program) return;
 
     try {
@@ -76,9 +88,12 @@ export default function App() {
         const newRecipeIds = Array.from(new Set([...program.recipeIds, ...selectedRecipeIds]));
         await programsRepo.update(programId, { recipeIds: newRecipeIds });
       } else {
-        const newSubfolders = program.subfolders?.map(sf => {
+        const newSubfolders = program.subfolders?.map((sf) => {
           if (sf.id === subfolderId) {
-            return { ...sf, recipeIds: Array.from(new Set([...sf.recipeIds, ...selectedRecipeIds])) };
+            return {
+              ...sf,
+              recipeIds: Array.from(new Set([...sf.recipeIds, ...selectedRecipeIds])),
+            };
           }
           return sf;
         });
@@ -90,8 +105,8 @@ export default function App() {
       setSelectedRecipeIds([]);
       setOpenProgramId(programId);
     } catch (error) {
-      console.error("Error adding recipes:", error);
-      alert("Не удалось добавить рецепты");
+      console.error('Error adding recipes:', error);
+      alert('Не удалось добавить рецепты');
     }
   };
 
@@ -108,7 +123,7 @@ export default function App() {
             window.history.replaceState({}, document.title, window.location.pathname);
           }
         } else {
-          alert("Программа не найдена.");
+          alert('Программа не найдена.');
         }
       };
       handleSharedProgram();
@@ -119,12 +134,12 @@ export default function App() {
     const urlParams = new URLSearchParams(window.location.search);
     const recipeId = urlParams.get('recipeId');
     if (!recipeId || recipes.length === 0) return;
-    const recipe = recipes.find(r => r.id === recipeId);
+    const recipe = recipes.find((r) => r.id === recipeId);
     if (recipe) {
       setSelectedRecipe(recipe);
       setActiveTab('recipes');
     } else {
-      alert("Рецепт не найден.");
+      alert('Рецепт не найден.');
     }
     window.history.replaceState({}, document.title, window.location.pathname);
   }, [recipes]);
@@ -135,7 +150,7 @@ export default function App() {
       try {
         setAvailableCategories(JSON.parse(savedCategories));
       } catch (e) {
-        console.error("Error parsing saved categories:", e);
+        console.error('Error parsing saved categories:', e);
       }
     }
   }, []);
@@ -143,9 +158,6 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem('availableCategories', JSON.stringify(availableCategories));
   }, [availableCategories]);
-
-
-
 
   const renderContent = () => {
     switch (activeTab) {
@@ -220,10 +232,14 @@ export default function App() {
             onRecipeTargetCleared={() => setRecipeTarget(null)}
             onRecipeTargetSet={setRecipeTarget}
             photoInputRef={photoInputRef}
-            isAddingManual={isAddingManual} onIsAddingManualChange={setIsAddingManual}
-            isAddingLink={isAddingLink} onIsAddingLinkChange={setIsAddingLink}
-            isAddingPDF={isAddingPDF} onIsAddingPDFChange={setIsAddingPDF}
-            isScanning={isScanning} onIsScanningChange={setIsScanning}
+            isAddingManual={isAddingManual}
+            onIsAddingManualChange={setIsAddingManual}
+            isAddingLink={isAddingLink}
+            onIsAddingLinkChange={setIsAddingLink}
+            isAddingPDF={isAddingPDF}
+            onIsAddingPDFChange={setIsAddingPDF}
+            isScanning={isScanning}
+            onIsScanningChange={setIsScanning}
             onSelectRecipe={setSelectedRecipe}
           />
         );
@@ -234,7 +250,6 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-zinc-50 text-zinc-900 font-sans">
-
       <AppHeader onOpenSettings={() => setIsSettingsOpen(true)} />
 
       {/* Main Content */}

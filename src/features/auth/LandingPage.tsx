@@ -10,8 +10,8 @@ export function LandingPage({ onGoToLogin, onGoToSignup }: Props) {
         <div className="space-y-2">
           <h1 className="text-3xl font-bold text-gray-900">Rezept Manager</h1>
           <p className="text-gray-600 text-sm leading-relaxed">
-            Умная кулинарная книга с планером питания и AI-диетологом.
-            Считайте КБЖУ, планируйте меню и получайте персональные рекомендации.
+            Умная кулинарная книга с планером питания и AI-диетологом. Считайте КБЖУ, планируйте
+            меню и получайте персональные рекомендации.
           </p>
         </div>
         <div className="space-y-3">

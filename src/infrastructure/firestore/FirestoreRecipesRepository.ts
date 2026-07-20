@@ -1,12 +1,25 @@
 import {
-  collection, addDoc, updateDoc, deleteDoc, doc,
-  onSnapshot, query, getDoc, where,
+  collection,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+  doc,
+  onSnapshot,
+  query,
+  getDoc,
+  where,
 } from 'firebase/firestore';
 import { db } from '@/infrastructure/firebaseApp';
 import { resolveImageField } from '@/infrastructure/firebaseStorage';
 import type { Recipe } from '@/shared/domain/types';
 import type { RecipesRepository } from '@/services/RecipesRepository';
-import { timestampToISO, requiredString, requiredNumber, requiredMacros, type TimestampLike } from './converters';
+import {
+  timestampToISO,
+  requiredString,
+  requiredNumber,
+  requiredMacros,
+  type TimestampLike,
+} from './converters';
 
 function fromFirestore(id: string, data: Record<string, unknown>): Recipe {
   return {
@@ -30,18 +43,21 @@ function fromFirestore(id: string, data: Record<string, unknown>): Recipe {
 export class FirestoreRecipesRepository implements RecipesRepository {
   constructor(private readonly uid: string) {}
 
-  subscribeAll(callback: (recipes: Recipe[]) => void, onError?: (error: Error) => void): () => void {
+  subscribeAll(
+    callback: (recipes: Recipe[]) => void,
+    onError?: (error: Error) => void,
+  ): () => void {
     return onSnapshot(
       query(collection(db, 'recipes'), where('userId', '==', this.uid)),
-      snapshot => {
+      (snapshot) => {
         const recipes: Recipe[] = [];
-        snapshot.forEach(d => recipes.push(fromFirestore(d.id, d.data())));
+        snapshot.forEach((d) => recipes.push(fromFirestore(d.id, d.data())));
         callback(recipes);
       },
-      error => {
+      (error) => {
         console.error('FirestoreRecipesRepository.subscribeAll failed:', error);
         onError?.(error);
-      }
+      },
     );
   }
 

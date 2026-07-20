@@ -1,6 +1,13 @@
 import {
-  collection, addDoc, updateDoc, deleteDoc, doc,
-  onSnapshot, query, getDocs, where,
+  collection,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+  doc,
+  onSnapshot,
+  query,
+  getDocs,
+  where,
 } from 'firebase/firestore';
 import { db } from '@/infrastructure/firebaseApp';
 import type { CartItem } from '@/shared/domain/types';
@@ -22,20 +29,23 @@ function fromFirestore(id: string, data: Record<string, unknown>): CartItem {
 export class FirestoreCartRepository implements CartRepository {
   constructor(private readonly uid: string) {}
 
-  subscribeAll(callback: (items: CartItem[]) => void, onError?: (error: Error) => void): () => void {
+  subscribeAll(
+    callback: (items: CartItem[]) => void,
+    onError?: (error: Error) => void,
+  ): () => void {
     return onSnapshot(
       query(collection(db, 'cart'), where('userId', '==', this.uid)),
-      snap => {
+      (snap) => {
         const items: CartItem[] = [];
-        snap.forEach(d => items.push(fromFirestore(d.id, d.data())));
+        snap.forEach((d) => items.push(fromFirestore(d.id, d.data())));
         callback(
-          items.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+          items.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()),
         );
       },
-      error => {
+      (error) => {
         console.error('FirestoreCartRepository.subscribeAll failed:', error);
         onError?.(error);
-      }
+      },
     );
   }
 
@@ -54,6 +64,6 @@ export class FirestoreCartRepository implements CartRepository {
 
   async deleteAll(): Promise<void> {
     const snap = await getDocs(query(collection(db, 'cart'), where('userId', '==', this.uid)));
-    await Promise.all(snap.docs.map(d => deleteDoc(doc(db, 'cart', d.id))));
+    await Promise.all(snap.docs.map((d) => deleteDoc(doc(db, 'cart', d.id))));
   }
 }

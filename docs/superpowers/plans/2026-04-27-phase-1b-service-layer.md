@@ -12,43 +12,44 @@
 
 ## File Map
 
-| File | Action | Responsibility |
-|------|--------|----------------|
-| `src/App.tsx` | Modify (3 lines) | Replace three inline `BASIC_KEYWORDS` arrays with `import { isStaple }` from `staples.ts` |
-| `src/infrastructure/firestore/converters.ts` | Create | `timestampToISO` utility: Firestore `Timestamp` or string → ISO string |
-| `src/infrastructure/firestore/__tests__/converters.test.ts` | Create | 100% coverage for converters |
-| `src/services/RecipesRepository.ts` | Create | Interface: subscribeAll, add, update, delete, getById |
-| `src/services/PlannerRepository.ts` | Create | Interface: subscribeAll, add, delete |
-| `src/services/ProgramsRepository.ts` | Create | Interface: subscribeAll, add, update, delete, getById |
-| `src/services/CartRepository.ts` | Create | Interface: subscribeAll, add, update, delete, deleteAll |
-| `src/services/UserProfileRepository.ts` | Create | Interface: subscribe, save (singleton doc) |
-| `src/services/NutritionPlanRepository.ts` | Create | Interface: get, set (localStorage-backed for now) |
-| `src/infrastructure/testing/FakeRecipesRepository.ts` | Create | In-memory implementation of RecipesRepository |
-| `src/infrastructure/testing/FakePlannerRepository.ts` | Create | In-memory implementation of PlannerRepository |
-| `src/infrastructure/testing/FakeProgramsRepository.ts` | Create | In-memory implementation of ProgramsRepository |
-| `src/infrastructure/testing/FakeCartRepository.ts` | Create | In-memory implementation of CartRepository |
-| `src/infrastructure/testing/FakeUserProfileRepository.ts` | Create | In-memory implementation of UserProfileRepository |
-| `src/infrastructure/testing/FakeNutritionPlanRepository.ts` | Create | In-memory implementation of NutritionPlanRepository |
-| `src/infrastructure/testing/__tests__/FakeRecipesRepository.test.ts` | Create | Contract tests for FakeRecipesRepository |
-| `src/infrastructure/testing/__tests__/FakePlannerRepository.test.ts` | Create | Contract tests for FakePlannerRepository |
-| `src/infrastructure/testing/__tests__/FakeProgramsRepository.test.ts` | Create | Contract tests for FakeProgramsRepository |
-| `src/infrastructure/testing/__tests__/FakeCartRepository.test.ts` | Create | Contract tests for FakeCartRepository |
-| `src/infrastructure/testing/__tests__/FakeUserProfileRepository.test.ts` | Create | Contract tests for FakeUserProfileRepository |
-| `src/infrastructure/testing/__tests__/FakeNutritionPlanRepository.test.ts` | Create | Contract tests for FakeNutritionPlanRepository |
-| `src/infrastructure/LocalStorageNutritionPlanRepository.ts` | Create | localStorage implementation of NutritionPlanRepository |
-| `src/infrastructure/__tests__/LocalStorageNutritionPlanRepository.test.ts` | Create | Tests using jsdom localStorage stub |
-| `src/infrastructure/firestore/FirestoreRecipesRepository.ts` | Create | Firestore implementation |
-| `src/infrastructure/firestore/FirestorePlannerRepository.ts` | Create | Firestore implementation |
-| `src/infrastructure/firestore/FirestoreProgramsRepository.ts` | Create | Firestore implementation |
-| `src/infrastructure/firestore/FirestoreCartRepository.ts` | Create | Firestore implementation |
-| `src/infrastructure/firestore/FirestoreUserProfileRepository.ts` | Create | Firestore implementation |
-| `vitest.config.ts` | Modify | Expand coverage `include` for new testable files |
+| File                                                                       | Action           | Responsibility                                                                            |
+| -------------------------------------------------------------------------- | ---------------- | ----------------------------------------------------------------------------------------- |
+| `src/App.tsx`                                                              | Modify (3 lines) | Replace three inline `BASIC_KEYWORDS` arrays with `import { isStaple }` from `staples.ts` |
+| `src/infrastructure/firestore/converters.ts`                               | Create           | `timestampToISO` utility: Firestore `Timestamp` or string → ISO string                    |
+| `src/infrastructure/firestore/__tests__/converters.test.ts`                | Create           | 100% coverage for converters                                                              |
+| `src/services/RecipesRepository.ts`                                        | Create           | Interface: subscribeAll, add, update, delete, getById                                     |
+| `src/services/PlannerRepository.ts`                                        | Create           | Interface: subscribeAll, add, delete                                                      |
+| `src/services/ProgramsRepository.ts`                                       | Create           | Interface: subscribeAll, add, update, delete, getById                                     |
+| `src/services/CartRepository.ts`                                           | Create           | Interface: subscribeAll, add, update, delete, deleteAll                                   |
+| `src/services/UserProfileRepository.ts`                                    | Create           | Interface: subscribe, save (singleton doc)                                                |
+| `src/services/NutritionPlanRepository.ts`                                  | Create           | Interface: get, set (localStorage-backed for now)                                         |
+| `src/infrastructure/testing/FakeRecipesRepository.ts`                      | Create           | In-memory implementation of RecipesRepository                                             |
+| `src/infrastructure/testing/FakePlannerRepository.ts`                      | Create           | In-memory implementation of PlannerRepository                                             |
+| `src/infrastructure/testing/FakeProgramsRepository.ts`                     | Create           | In-memory implementation of ProgramsRepository                                            |
+| `src/infrastructure/testing/FakeCartRepository.ts`                         | Create           | In-memory implementation of CartRepository                                                |
+| `src/infrastructure/testing/FakeUserProfileRepository.ts`                  | Create           | In-memory implementation of UserProfileRepository                                         |
+| `src/infrastructure/testing/FakeNutritionPlanRepository.ts`                | Create           | In-memory implementation of NutritionPlanRepository                                       |
+| `src/infrastructure/testing/__tests__/FakeRecipesRepository.test.ts`       | Create           | Contract tests for FakeRecipesRepository                                                  |
+| `src/infrastructure/testing/__tests__/FakePlannerRepository.test.ts`       | Create           | Contract tests for FakePlannerRepository                                                  |
+| `src/infrastructure/testing/__tests__/FakeProgramsRepository.test.ts`      | Create           | Contract tests for FakeProgramsRepository                                                 |
+| `src/infrastructure/testing/__tests__/FakeCartRepository.test.ts`          | Create           | Contract tests for FakeCartRepository                                                     |
+| `src/infrastructure/testing/__tests__/FakeUserProfileRepository.test.ts`   | Create           | Contract tests for FakeUserProfileRepository                                              |
+| `src/infrastructure/testing/__tests__/FakeNutritionPlanRepository.test.ts` | Create           | Contract tests for FakeNutritionPlanRepository                                            |
+| `src/infrastructure/LocalStorageNutritionPlanRepository.ts`                | Create           | localStorage implementation of NutritionPlanRepository                                    |
+| `src/infrastructure/__tests__/LocalStorageNutritionPlanRepository.test.ts` | Create           | Tests using jsdom localStorage stub                                                       |
+| `src/infrastructure/firestore/FirestoreRecipesRepository.ts`               | Create           | Firestore implementation                                                                  |
+| `src/infrastructure/firestore/FirestorePlannerRepository.ts`               | Create           | Firestore implementation                                                                  |
+| `src/infrastructure/firestore/FirestoreProgramsRepository.ts`              | Create           | Firestore implementation                                                                  |
+| `src/infrastructure/firestore/FirestoreCartRepository.ts`                  | Create           | Firestore implementation                                                                  |
+| `src/infrastructure/firestore/FirestoreUserProfileRepository.ts`           | Create           | Firestore implementation                                                                  |
+| `vitest.config.ts`                                                         | Modify           | Expand coverage `include` for new testable files                                          |
 
 ---
 
 ## Task 1: Replace BASIC_KEYWORDS in App.tsx
 
 **Files:**
+
 - Modify: `src/App.tsx:593,1946,3481`
 
 No new tests needed — `isStaple` already has 100% coverage from Phase 1a.
@@ -58,21 +59,38 @@ No new tests needed — `isStaple` already has 100% coverage from Phase 1a.
 At line 51 (just below the existing `aiClient` import), add:
 
 ```typescript
-import { isStaple } from "@/features/cart/services/staples";
+import { isStaple } from '@/features/cart/services/staples';
 ```
 
 - [ ] **Step 2: Replace occurrence at line 593**
 
 Find (lines 593–612, inside `addProductsToCart`):
+
 ```typescript
-const BASIC_KEYWORDS = ['соль', 'сахар', 'перец', 'лук', 'чеснок', 'масло', 'мука', 'сода', 'уксус', 'вода', 'специи', 'приправа'];
+const BASIC_KEYWORDS = [
+  'соль',
+  'сахар',
+  'перец',
+  'лук',
+  'чеснок',
+  'масло',
+  'мука',
+  'сода',
+  'уксус',
+  'вода',
+  'специи',
+  'приправа',
+];
 ```
+
 and the usage:
+
 ```typescript
-const isBasic = BASIC_KEYWORDS.some(k => name.toLowerCase().includes(k));
+const isBasic = BASIC_KEYWORDS.some((k) => name.toLowerCase().includes(k));
 ```
 
 Replace both lines with a single call:
+
 ```typescript
 const isBasic = isStaple(name);
 ```
@@ -80,15 +98,32 @@ const isBasic = isStaple(name);
 - [ ] **Step 3: Replace occurrence at line 1946**
 
 Find (inside the Planner's ingredient-map block):
+
 ```typescript
-const BASIC_KEYWORDS = ['соль', 'сахар', 'перец', 'лук', 'чеснок', 'масло', 'мука', 'сода', 'уксус', 'вода', 'специи', 'приправа'];
+const BASIC_KEYWORDS = [
+  'соль',
+  'сахар',
+  'перец',
+  'лук',
+  'чеснок',
+  'масло',
+  'мука',
+  'сода',
+  'уксус',
+  'вода',
+  'специи',
+  'приправа',
+];
 ```
+
 and:
+
 ```typescript
-const isBasic = BASIC_KEYWORDS.some(k => lowerIng.includes(k));
+const isBasic = BASIC_KEYWORDS.some((k) => lowerIng.includes(k));
 ```
 
 Replace both lines with:
+
 ```typescript
 const isBasic = isStaple(ing);
 ```
@@ -96,12 +131,27 @@ const isBasic = isStaple(ing);
 - [ ] **Step 4: Replace occurrence at line 3481**
 
 Find (inside `renderCart` → `handleAddManualCartItem`):
+
 ```typescript
-const BASIC_KEYWORDS = ['соль', 'сахар', 'перец', 'лук', 'чеснок', 'масло', 'мука', 'сода', 'уксус', 'вода', 'специи', 'приправа'];
-const isBasic = BASIC_KEYWORDS.some(k => newCartItemName.toLowerCase().includes(k));
+const BASIC_KEYWORDS = [
+  'соль',
+  'сахар',
+  'перец',
+  'лук',
+  'чеснок',
+  'масло',
+  'мука',
+  'сода',
+  'уксус',
+  'вода',
+  'специи',
+  'приправа',
+];
+const isBasic = BASIC_KEYWORDS.some((k) => newCartItemName.toLowerCase().includes(k));
 ```
 
 Replace both lines with:
+
 ```typescript
 const isBasic = isStaple(newCartItemName);
 ```
@@ -134,6 +184,7 @@ git commit -m "refactor: replace inline BASIC_KEYWORDS with isStaple() import"
 ## Task 2: Timestamp converter utility
 
 **Files:**
+
 - Create: `src/infrastructure/firestore/converters.ts`
 - Create: `src/infrastructure/firestore/__tests__/converters.test.ts`
 
@@ -191,9 +242,7 @@ Create `src/infrastructure/firestore/converters.ts`:
 ```typescript
 type TimestampLike = { toDate(): Date };
 
-export function timestampToISO(
-  value: TimestampLike | string | null | undefined
-): string {
+export function timestampToISO(value: TimestampLike | string | null | undefined): string {
   if (!value) return new Date().toISOString();
   if (typeof value === 'string') return value;
   return value.toDate().toISOString();
@@ -221,6 +270,7 @@ git commit -m "feat(infra): add timestampToISO converter with tests"
 ## Task 3: RecipesRepository — interface, fake, tests
 
 **Files:**
+
 - Create: `src/services/RecipesRepository.ts`
 - Create: `src/infrastructure/testing/FakeRecipesRepository.ts`
 - Create: `src/infrastructure/testing/__tests__/FakeRecipesRepository.test.ts`
@@ -270,14 +320,14 @@ describe('FakeRecipesRepository', () => {
 
   it('subscribeAll immediately emits empty array', () => {
     const calls: Recipe[][] = [];
-    repo.subscribeAll(r => calls.push(r));
+    repo.subscribeAll((r) => calls.push(r));
     expect(calls).toHaveLength(1);
     expect(calls[0]).toEqual([]);
   });
 
   it('add returns incremental id and notifies subscribers', async () => {
     const calls: Recipe[][] = [];
-    repo.subscribeAll(r => calls.push(r));
+    repo.subscribeAll((r) => calls.push(r));
     const id = await repo.add(recipe());
     expect(id).toBe('1');
     expect(calls).toHaveLength(2);
@@ -293,7 +343,7 @@ describe('FakeRecipesRepository', () => {
   it('update changes a field and notifies', async () => {
     const id = await repo.add(recipe());
     const calls: Recipe[][] = [];
-    repo.subscribeAll(r => calls.push(r));
+    repo.subscribeAll((r) => calls.push(r));
     await repo.update(id, { title: 'Risotto' });
     expect(calls[calls.length - 1]![0]!.title).toBe('Risotto');
   });
@@ -320,7 +370,7 @@ describe('FakeRecipesRepository', () => {
 
   it('unsubscribe stops future notifications', async () => {
     const calls: Recipe[][] = [];
-    const unsub = repo.subscribeAll(r => calls.push(r));
+    const unsub = repo.subscribeAll((r) => calls.push(r));
     unsub();
     await repo.add(recipe());
     expect(calls).toHaveLength(1); // only the initial emit
@@ -351,7 +401,7 @@ export class FakeRecipesRepository implements RecipesRepository {
 
   private emit(): void {
     const snapshot = [...this.items];
-    this.listeners.forEach(cb => cb(snapshot));
+    this.listeners.forEach((cb) => cb(snapshot));
   }
 
   subscribeAll(callback: (recipes: Recipe[]) => void): () => void {
@@ -368,19 +418,19 @@ export class FakeRecipesRepository implements RecipesRepository {
   }
 
   async update(id: string, data: Partial<Omit<Recipe, 'id'>>): Promise<void> {
-    const idx = this.items.findIndex(r => r.id === id);
+    const idx = this.items.findIndex((r) => r.id === id);
     if (idx === -1) return;
     this.items[idx] = { ...this.items[idx]!, ...data };
     this.emit();
   }
 
   async delete(id: string): Promise<void> {
-    this.items = this.items.filter(r => r.id !== id);
+    this.items = this.items.filter((r) => r.id !== id);
     this.emit();
   }
 
   async getById(id: string): Promise<Recipe | null> {
-    return this.items.find(r => r.id === id) ?? null;
+    return this.items.find((r) => r.id === id) ?? null;
   }
 
   reset(): void {
@@ -413,6 +463,7 @@ git commit -m "feat(infra): add RecipesRepository interface and fake with tests"
 ## Task 4: PlannerRepository — interface, fake, tests
 
 **Files:**
+
 - Create: `src/services/PlannerRepository.ts`
 - Create: `src/infrastructure/testing/FakePlannerRepository.ts`
 - Create: `src/infrastructure/testing/__tests__/FakePlannerRepository.test.ts`
@@ -456,13 +507,13 @@ describe('FakePlannerRepository', () => {
 
   it('subscribeAll immediately emits empty array', () => {
     const calls: PlannerEntry[][] = [];
-    repo.subscribeAll(e => calls.push(e));
+    repo.subscribeAll((e) => calls.push(e));
     expect(calls[0]).toEqual([]);
   });
 
   it('add returns id and notifies subscribers', async () => {
     const calls: PlannerEntry[][] = [];
-    repo.subscribeAll(e => calls.push(e));
+    repo.subscribeAll((e) => calls.push(e));
     const id = await repo.add(entry());
     expect(id).toBe('1');
     expect(calls[1]![0]!.recipeId).toBe('r1');
@@ -471,14 +522,14 @@ describe('FakePlannerRepository', () => {
   it('delete removes entry and notifies', async () => {
     const id = await repo.add(entry());
     const calls: PlannerEntry[][] = [];
-    repo.subscribeAll(e => calls.push(e));
+    repo.subscribeAll((e) => calls.push(e));
     await repo.delete(id);
     expect(calls[calls.length - 1]).toEqual([]);
   });
 
   it('unsubscribe stops notifications', async () => {
     const calls: PlannerEntry[][] = [];
-    const unsub = repo.subscribeAll(e => calls.push(e));
+    const unsub = repo.subscribeAll((e) => calls.push(e));
     unsub();
     await repo.add(entry());
     expect(calls).toHaveLength(1);
@@ -509,7 +560,7 @@ export class FakePlannerRepository implements PlannerRepository {
 
   private emit(): void {
     const snapshot = [...this.items];
-    this.listeners.forEach(cb => cb(snapshot));
+    this.listeners.forEach((cb) => cb(snapshot));
   }
 
   subscribeAll(callback: (entries: PlannerEntry[]) => void): () => void {
@@ -526,7 +577,7 @@ export class FakePlannerRepository implements PlannerRepository {
   }
 
   async delete(id: string): Promise<void> {
-    this.items = this.items.filter(e => e.id !== id);
+    this.items = this.items.filter((e) => e.id !== id);
     this.emit();
   }
 
@@ -560,6 +611,7 @@ git commit -m "feat(infra): add PlannerRepository interface and fake with tests"
 ## Task 5: ProgramsRepository — interface, fake, tests
 
 **Files:**
+
 - Create: `src/services/ProgramsRepository.ts`
 - Create: `src/infrastructure/testing/FakeProgramsRepository.ts`
 - Create: `src/infrastructure/testing/__tests__/FakeProgramsRepository.test.ts`
@@ -607,13 +659,13 @@ describe('FakeProgramsRepository', () => {
 
   it('subscribeAll immediately emits empty array', () => {
     const calls: Program[][] = [];
-    repo.subscribeAll(p => calls.push(p));
+    repo.subscribeAll((p) => calls.push(p));
     expect(calls[0]).toEqual([]);
   });
 
   it('add returns id and notifies', async () => {
     const calls: Program[][] = [];
-    repo.subscribeAll(p => calls.push(p));
+    repo.subscribeAll((p) => calls.push(p));
     const id = await repo.add(program());
     expect(id).toBe('1');
     expect(calls[1]![0]!.name).toBe('Похудение');
@@ -642,7 +694,7 @@ describe('FakeProgramsRepository', () => {
 
   it('unsubscribe stops notifications', async () => {
     const calls: Program[][] = [];
-    const unsub = repo.subscribeAll(p => calls.push(p));
+    const unsub = repo.subscribeAll((p) => calls.push(p));
     unsub();
     await repo.add(program());
     expect(calls).toHaveLength(1);
@@ -673,7 +725,7 @@ export class FakeProgramsRepository implements ProgramsRepository {
 
   private emit(): void {
     const snapshot = [...this.items];
-    this.listeners.forEach(cb => cb(snapshot));
+    this.listeners.forEach((cb) => cb(snapshot));
   }
 
   subscribeAll(callback: (programs: Program[]) => void): () => void {
@@ -690,19 +742,19 @@ export class FakeProgramsRepository implements ProgramsRepository {
   }
 
   async update(id: string, data: Partial<Omit<Program, 'id'>>): Promise<void> {
-    const idx = this.items.findIndex(p => p.id === id);
+    const idx = this.items.findIndex((p) => p.id === id);
     if (idx === -1) return;
     this.items[idx] = { ...this.items[idx]!, ...data };
     this.emit();
   }
 
   async delete(id: string): Promise<void> {
-    this.items = this.items.filter(p => p.id !== id);
+    this.items = this.items.filter((p) => p.id !== id);
     this.emit();
   }
 
   async getById(id: string): Promise<Program | null> {
-    return this.items.find(p => p.id === id) ?? null;
+    return this.items.find((p) => p.id === id) ?? null;
   }
 
   reset(): void {
@@ -735,6 +787,7 @@ git commit -m "feat(infra): add ProgramsRepository interface and fake with tests
 ## Task 6: CartRepository — interface, fake, tests
 
 **Files:**
+
 - Create: `src/services/CartRepository.ts`
 - Create: `src/infrastructure/testing/FakeCartRepository.ts`
 - Create: `src/infrastructure/testing/__tests__/FakeCartRepository.test.ts`
@@ -781,13 +834,13 @@ describe('FakeCartRepository', () => {
 
   it('subscribeAll immediately emits empty array', () => {
     const calls: CartItem[][] = [];
-    repo.subscribeAll(i => calls.push(i));
+    repo.subscribeAll((i) => calls.push(i));
     expect(calls[0]).toEqual([]);
   });
 
   it('add returns id and notifies', async () => {
     const calls: CartItem[][] = [];
-    repo.subscribeAll(i => calls.push(i));
+    repo.subscribeAll((i) => calls.push(i));
     const id = await repo.add(item());
     expect(id).toBe('1');
     expect(calls[1]![0]!.name).toBe('Молоко');
@@ -797,7 +850,7 @@ describe('FakeCartRepository', () => {
     const id = await repo.add(item());
     await repo.update(id, { checked: true });
     const calls: CartItem[][] = [];
-    repo.subscribeAll(i => calls.push(i));
+    repo.subscribeAll((i) => calls.push(i));
     expect(calls[0]![0]!.checked).toBe(true);
   });
 
@@ -809,7 +862,7 @@ describe('FakeCartRepository', () => {
     const id = await repo.add(item());
     await repo.delete(id);
     const calls: CartItem[][] = [];
-    repo.subscribeAll(i => calls.push(i));
+    repo.subscribeAll((i) => calls.push(i));
     expect(calls[0]).toEqual([]);
   });
 
@@ -818,13 +871,13 @@ describe('FakeCartRepository', () => {
     await repo.add({ ...item(), name: 'Кефир' });
     await repo.deleteAll();
     const calls: CartItem[][] = [];
-    repo.subscribeAll(i => calls.push(i));
+    repo.subscribeAll((i) => calls.push(i));
     expect(calls[0]).toEqual([]);
   });
 
   it('unsubscribe stops notifications', async () => {
     const calls: CartItem[][] = [];
-    const unsub = repo.subscribeAll(i => calls.push(i));
+    const unsub = repo.subscribeAll((i) => calls.push(i));
     unsub();
     await repo.add(item());
     expect(calls).toHaveLength(1);
@@ -855,7 +908,7 @@ export class FakeCartRepository implements CartRepository {
 
   private emit(): void {
     const snapshot = [...this.items];
-    this.listeners.forEach(cb => cb(snapshot));
+    this.listeners.forEach((cb) => cb(snapshot));
   }
 
   subscribeAll(callback: (items: CartItem[]) => void): () => void {
@@ -872,14 +925,14 @@ export class FakeCartRepository implements CartRepository {
   }
 
   async update(id: string, data: Partial<Omit<CartItem, 'id'>>): Promise<void> {
-    const idx = this.items.findIndex(i => i.id === id);
+    const idx = this.items.findIndex((i) => i.id === id);
     if (idx === -1) return;
     this.items[idx] = { ...this.items[idx]!, ...data };
     this.emit();
   }
 
   async delete(id: string): Promise<void> {
-    this.items = this.items.filter(i => i.id !== id);
+    this.items = this.items.filter((i) => i.id !== id);
     this.emit();
   }
 
@@ -918,6 +971,7 @@ git commit -m "feat(infra): add CartRepository interface and fake with tests"
 ## Task 7: UserProfileRepository — interface, fake, tests
 
 **Files:**
+
 - Create: `src/services/UserProfileRepository.ts`
 - Create: `src/infrastructure/testing/FakeUserProfileRepository.ts`
 - Create: `src/infrastructure/testing/__tests__/FakeUserProfileRepository.test.ts`
@@ -967,13 +1021,13 @@ describe('FakeUserProfileRepository', () => {
 
   it('subscribe immediately emits null when no profile saved', () => {
     const calls: (UserProfile | null)[] = [];
-    repo.subscribe(p => calls.push(p));
+    repo.subscribe((p) => calls.push(p));
     expect(calls[0]).toBeNull();
   });
 
   it('save persists profile and notifies subscriber', async () => {
     const calls: (UserProfile | null)[] = [];
-    repo.subscribe(p => calls.push(p));
+    repo.subscribe((p) => calls.push(p));
     await repo.save(profile());
     expect(calls).toHaveLength(2);
     expect(calls[1]!.name).toBe('Анна');
@@ -983,13 +1037,13 @@ describe('FakeUserProfileRepository', () => {
     await repo.save(profile());
     await repo.save({ ...profile(), name: 'Мария' });
     const calls: (UserProfile | null)[] = [];
-    repo.subscribe(p => calls.push(p));
+    repo.subscribe((p) => calls.push(p));
     expect(calls[0]!.name).toBe('Мария');
   });
 
   it('unsubscribe stops notifications', async () => {
     const calls: (UserProfile | null)[] = [];
-    const unsub = repo.subscribe(p => calls.push(p));
+    const unsub = repo.subscribe((p) => calls.push(p));
     unsub();
     await repo.save(profile());
     expect(calls).toHaveLength(1);
@@ -1018,7 +1072,7 @@ export class FakeUserProfileRepository implements UserProfileRepository {
   private listeners = new Set<(profile: UserProfile | null) => void>();
 
   private emit(): void {
-    this.listeners.forEach(cb => cb(this.current));
+    this.listeners.forEach((cb) => cb(this.current));
   }
 
   subscribe(callback: (profile: UserProfile | null) => void): () => void {
@@ -1061,6 +1115,7 @@ git commit -m "feat(infra): add UserProfileRepository interface and fake with te
 ## Task 8: NutritionPlanRepository — interface, localStorage impl, fake, tests
 
 **Files:**
+
 - Create: `src/services/NutritionPlanRepository.ts`
 - Create: `src/infrastructure/LocalStorageNutritionPlanRepository.ts`
 - Create: `src/infrastructure/__tests__/LocalStorageNutritionPlanRepository.test.ts`
@@ -1282,6 +1337,7 @@ git commit -m "feat(infra): add NutritionPlanRepository interface, localStorage 
 ## Task 9: Firestore implementations
 
 **Files:**
+
 - Create: `src/infrastructure/firestore/FirestoreRecipesRepository.ts`
 - Create: `src/infrastructure/firestore/FirestorePlannerRepository.ts`
 - Create: `src/infrastructure/firestore/FirestoreProgramsRepository.ts`
@@ -1296,8 +1352,14 @@ Create `src/infrastructure/firestore/FirestoreRecipesRepository.ts`:
 
 ```typescript
 import {
-  collection, addDoc, updateDoc, deleteDoc, doc,
-  onSnapshot, query, getDoc,
+  collection,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+  doc,
+  onSnapshot,
+  query,
+  getDoc,
 } from 'firebase/firestore';
 import { db } from '@/infrastructure/firebaseApp';
 import type { Recipe } from '@/shared/domain/types';
@@ -1325,9 +1387,9 @@ function fromFirestore(id: string, data: Record<string, unknown>): Recipe {
 
 export class FirestoreRecipesRepository implements RecipesRepository {
   subscribeAll(callback: (recipes: Recipe[]) => void): () => void {
-    return onSnapshot(query(collection(db, 'recipes')), snapshot => {
+    return onSnapshot(query(collection(db, 'recipes')), (snapshot) => {
       const recipes: Recipe[] = [];
-      snapshot.forEach(d => recipes.push(fromFirestore(d.id, d.data())));
+      snapshot.forEach((d) => recipes.push(fromFirestore(d.id, d.data())));
       callback(recipes);
     });
   }
@@ -1358,10 +1420,7 @@ export class FirestoreRecipesRepository implements RecipesRepository {
 Create `src/infrastructure/firestore/FirestorePlannerRepository.ts`:
 
 ```typescript
-import {
-  collection, addDoc, deleteDoc, doc,
-  onSnapshot, query,
-} from 'firebase/firestore';
+import { collection, addDoc, deleteDoc, doc, onSnapshot, query } from 'firebase/firestore';
 import { db } from '@/infrastructure/firebaseApp';
 import type { PlannerEntry } from '@/shared/domain/types';
 import type { PlannerRepository } from '@/services/PlannerRepository';
@@ -1381,9 +1440,9 @@ function fromFirestore(id: string, data: Record<string, unknown>): PlannerEntry 
 
 export class FirestorePlannerRepository implements PlannerRepository {
   subscribeAll(callback: (entries: PlannerEntry[]) => void): () => void {
-    return onSnapshot(query(collection(db, 'planner')), snapshot => {
+    return onSnapshot(query(collection(db, 'planner')), (snapshot) => {
       const entries: PlannerEntry[] = [];
-      snapshot.forEach(d => entries.push(fromFirestore(d.id, d.data())));
+      snapshot.forEach((d) => entries.push(fromFirestore(d.id, d.data())));
       callback(entries);
     });
   }
@@ -1405,8 +1464,14 @@ Create `src/infrastructure/firestore/FirestoreProgramsRepository.ts`:
 
 ```typescript
 import {
-  collection, addDoc, updateDoc, deleteDoc, doc,
-  onSnapshot, query, getDoc,
+  collection,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+  doc,
+  onSnapshot,
+  query,
+  getDoc,
 } from 'firebase/firestore';
 import { db } from '@/infrastructure/firebaseApp';
 import type { Program } from '@/shared/domain/types';
@@ -1437,9 +1502,9 @@ function fromFirestore(id: string, data: Record<string, unknown>): Program {
 
 export class FirestoreProgramsRepository implements ProgramsRepository {
   subscribeAll(callback: (programs: Program[]) => void): () => void {
-    return onSnapshot(query(collection(db, 'programs')), snapshot => {
+    return onSnapshot(query(collection(db, 'programs')), (snapshot) => {
       const programs: Program[] = [];
-      snapshot.forEach(d => programs.push(fromFirestore(d.id, d.data())));
+      snapshot.forEach((d) => programs.push(fromFirestore(d.id, d.data())));
       callback(programs);
     });
   }
@@ -1471,8 +1536,13 @@ Create `src/infrastructure/firestore/FirestoreCartRepository.ts`:
 
 ```typescript
 import {
-  collection, addDoc, updateDoc, deleteDoc, doc,
-  onSnapshot, query,
+  collection,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+  doc,
+  onSnapshot,
+  query,
 } from 'firebase/firestore';
 import { db } from '@/infrastructure/firebaseApp';
 import type { CartItem } from '@/shared/domain/types';
@@ -1495,11 +1565,11 @@ export class FirestoreCartRepository implements CartRepository {
   private snapshot: CartItem[] = [];
 
   subscribeAll(callback: (items: CartItem[]) => void): () => void {
-    return onSnapshot(query(collection(db, 'cart')), snap => {
+    return onSnapshot(query(collection(db, 'cart')), (snap) => {
       const items: CartItem[] = [];
-      snap.forEach(d => items.push(fromFirestore(d.id, d.data())));
+      snap.forEach((d) => items.push(fromFirestore(d.id, d.data())));
       this.snapshot = items.sort(
-        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
       );
       callback(this.snapshot);
     });
@@ -1519,7 +1589,7 @@ export class FirestoreCartRepository implements CartRepository {
   }
 
   async deleteAll(): Promise<void> {
-    await Promise.all(this.snapshot.map(item => deleteDoc(doc(db, 'cart', item.id))));
+    await Promise.all(this.snapshot.map((item) => deleteDoc(doc(db, 'cart', item.id))));
   }
 }
 ```
@@ -1536,7 +1606,7 @@ import type { UserProfileRepository } from '@/services/UserProfileRepository';
 
 export class FirestoreUserProfileRepository implements UserProfileRepository {
   subscribe(callback: (profile: UserProfile | null) => void): () => void {
-    return onSnapshot(doc(db, 'settings', 'profile'), snap => {
+    return onSnapshot(doc(db, 'settings', 'profile'), (snap) => {
       callback(snap.exists() ? (snap.data() as UserProfile) : null);
     });
   }
@@ -1579,6 +1649,7 @@ git commit -m "feat(infra): add Firestore repository implementations"
 ## Task 10: Update vitest coverage config
 
 **Files:**
+
 - Modify: `vitest.config.ts`
 
 - [ ] **Step 1: Update coverage `include`**

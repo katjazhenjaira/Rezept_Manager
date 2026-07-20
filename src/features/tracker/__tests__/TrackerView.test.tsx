@@ -71,7 +71,12 @@ const mockEntry: PlannerEntry = {
 };
 
 const emptyData: DataState = { recipes: [], plannerEntries: [], cartItems: [], programs: [] };
-const dataWithEntry: DataState = { recipes: [mockRecipe], plannerEntries: [mockEntry], cartItems: [], programs: [] };
+const dataWithEntry: DataState = {
+  recipes: [mockRecipe],
+  plannerEntries: [mockEntry],
+  cartItems: [],
+  programs: [],
+};
 
 const fakeRepos = {
   recipes: new FakeRecipesRepository(),
@@ -94,9 +99,7 @@ function makeWrapper(data: typeof emptyData) {
             setActivePlan: mockSetActivePlan,
           }}
         >
-          <DataContext.Provider value={data}>
-            {children}
-          </DataContext.Provider>
+          <DataContext.Provider value={data}>{children}</DataContext.Provider>
         </UserProfileContext.Provider>
       </RepositoryContext.Provider>
     );

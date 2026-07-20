@@ -13,18 +13,17 @@ type Props = {
 };
 
 export function RepositoryProvider({ uid, children }: Props) {
-  const repositories = useMemo<Repositories>(() => ({
-    recipes: new FirestoreRecipesRepository(uid),
-    planner: new FirestorePlannerRepository(uid),
-    cart: new FirestoreCartRepository(uid),
-    programs: new FirestoreProgramsRepository(uid),
-    userProfile: new FirestoreUserProfileRepository(uid),
-    nutritionPlan: new FirestoreNutritionPlanRepository(uid),
-  }), [uid]);
-
-  return (
-    <RepositoryContext.Provider value={repositories}>
-      {children}
-    </RepositoryContext.Provider>
+  const repositories = useMemo<Repositories>(
+    () => ({
+      recipes: new FirestoreRecipesRepository(uid),
+      planner: new FirestorePlannerRepository(uid),
+      cart: new FirestoreCartRepository(uid),
+      programs: new FirestoreProgramsRepository(uid),
+      userProfile: new FirestoreUserProfileRepository(uid),
+      nutritionPlan: new FirestoreNutritionPlanRepository(uid),
+    }),
+    [uid],
   );
+
+  return <RepositoryContext.Provider value={repositories}>{children}</RepositoryContext.Provider>;
 }

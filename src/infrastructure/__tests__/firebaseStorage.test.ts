@@ -47,7 +47,7 @@ describe('uploadDataUriToStorage', () => {
     const url = await uploadDataUriToStorage(
       'user-123',
       'recipeImages',
-      'data:image/png;base64,iVBORw0KGgo='
+      'data:image/png;base64,iVBORw0KGgo=',
     );
 
     expect(ref).toHaveBeenCalledWith({}, expect.stringMatching(/^users\/user-123\/recipeImages\//));
@@ -55,19 +55,16 @@ describe('uploadDataUriToStorage', () => {
       { fullPath: 'mock-ref' },
       'data:image/png;base64,iVBORw0KGgo=',
       'data_url',
-      { contentType: 'image/png' }
+      { contentType: 'image/png' },
     );
     expect(url).toBe('https://storage.example.com/uploaded.png');
   });
 
   it('falls back to image/jpeg when the data URI has no explicit content type', async () => {
     await uploadDataUriToStorage('user-123', 'recipeImages', 'data:;base64,iVBORw0KGgo=');
-    expect(uploadString).toHaveBeenCalledWith(
-      expect.anything(),
-      expect.anything(),
-      'data_url',
-      { contentType: 'image/jpeg' }
-    );
+    expect(uploadString).toHaveBeenCalledWith(expect.anything(), expect.anything(), 'data_url', {
+      contentType: 'image/jpeg',
+    });
   });
 });
 
@@ -82,7 +79,11 @@ describe('resolveImageField', () => {
   });
 
   it('uploads and replaces a data URI with a Storage URL', async () => {
-    const result = await resolveImageField('user-123', 'recipeImages', 'data:image/png;base64,abc=');
+    const result = await resolveImageField(
+      'user-123',
+      'recipeImages',
+      'data:image/png;base64,abc=',
+    );
     expect(result).toBe('https://storage.example.com/uploaded.png');
   });
 

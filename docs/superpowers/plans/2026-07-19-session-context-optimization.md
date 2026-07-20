@@ -13,6 +13,7 @@
 ### Task 1: Создать phase-0a.md
 
 **Files:**
+
 - Create: `docs/roadmap-archive/phase-0a.md`
 
 - [ ] **Step 1: Создать директорию и файл**
@@ -65,6 +66,7 @@ wc -l docs/roadmap-archive/phase-0a.md
 ### Task 2: Создать phase-0b.md
 
 **Files:**
+
 - Create: `docs/roadmap-archive/phase-0b.md`
 
 - [ ] **Step 1: Создать файл**
@@ -126,6 +128,7 @@ wc -l docs/roadmap-archive/phase-0b.md
 ### Task 3: Создать phase-1.md
 
 **Files:**
+
 - Create: `docs/roadmap-archive/phase-1.md`
 
 - [ ] **Step 1: Создать файл**
@@ -140,6 +143,7 @@ wc -l docs/roadmap-archive/phase-0b.md
 ## Чеклист
 
 ### 1. Доменный слой (Phase 1a) ✅ завершена (2026-04-26)
+
 - [x] `src/shared/domain/types.ts` — все типы из `App.tsx:163-275`
 - [x] `src/shared/domain/macros.ts` — sumMacros, remainingMacros, resolveActiveTargets
 - [x] `src/shared/domain/allergies.ts` — recipeAllergens, recipeHasAllergens
@@ -147,6 +151,7 @@ wc -l docs/roadmap-archive/phase-0b.md
 - [x] Vitest + тесты 100% покрытия (32 теста, 3 файла)
 
 ### 2. Сервисный слой (Phase 1b) ✅ завершена (2026-04-27)
+
 - [x] Заменить все 3 вхождения `BASIC_KEYWORDS` в `App.tsx` на `isStaple()`
 - [x] Repository-интерфейсы: RecipesRepository, PlannerRepository, ProgramsRepository, CartRepository, UserProfileRepository, NutritionPlanRepository
 - [x] Firestore-реализации в `src/infrastructure/firestore/`
@@ -154,6 +159,7 @@ wc -l docs/roadmap-archive/phase-0b.md
 - [x] Тесты на репозитории с fake реализациями (86 тестов, 0 ошибок TS)
 
 ### 3a. Providers и Shell ✅ завершена (2026-04-27)
+
 - [x] `src/app/providers/RepositoryProvider.tsx`
 - [x] `src/app/providers/DataProvider.tsx`
 - [x] `src/app/providers/UserProfileProvider.tsx`
@@ -165,6 +171,7 @@ wc -l docs/roadmap-archive/phase-0b.md
 - [x] DataProvider unmount тест усилён (listenerCount === 0 для всех 4 репозиториев)
 
 ### 3b. i18n ✅ завершена (2026-04-28)
+
 - [x] `npm install i18next react-i18next`
 - [x] `src/app/providers/I18nProvider.tsx`
 - [x] `src/locales/ru.json`, `de.json`, `en.json`
@@ -172,6 +179,7 @@ wc -l docs/roadmap-archive/phase-0b.md
 - [x] Все строки в Shell.tsx и TabBar.tsx через `t()` хук
 
 ### 4. По одной вкладке
+
 - [x] Settings → `src/features/settings/SettingsModal.tsx` (2026-04-28)
 - [x] Cart → `src/features/cart/CartView.tsx` (2026-04-28)
 - [x] Recipes → `src/features/recipes/RecipesView.tsx` (2026-04-28)
@@ -180,6 +188,7 @@ wc -l docs/roadmap-archive/phase-0b.md
 - [x] Tracker → `src/features/tracker/TrackerView.tsx` (2026-07-18, App.tsx: 1395 → 540 строк)
 
 ### 5. Финальная очистка ✅ завершена (2026-07-18, App.tsx 540 → 277 строк)
+
 - [x] `extractImageFromPDF`/`extractTextFromPDF` → `src/shared/utils/pdfUtils.ts` (3 копии → 1)
 - [x] Удалить 3 дублирующих `onSnapshot` (recipes/cart/userProfile)
 - [x] `addProductsToCart` перенесена в `ProgramDetailModal`
@@ -220,6 +229,7 @@ wc -l docs/roadmap-archive/phase-1.md
 ### Task 4: Создать phase-2.md
 
 **Files:**
+
 - Create: `docs/roadmap-archive/phase-2.md`
 
 - [ ] **Step 1: Создать файл**
@@ -277,6 +287,7 @@ wc -l docs/roadmap-archive/phase-2.md
 ### Task 5: Создать decisions-log.md
 
 **Files:**
+
 - Create: `docs/roadmap-archive/decisions-log.md`
 
 - [ ] **Step 1: Создать файл**
@@ -333,6 +344,7 @@ wc -l docs/roadmap-archive/decisions-log.md
 ### Task 6: Коммит архивных файлов
 
 **Files:**
+
 - Modified: `docs/roadmap-archive/` (5 новых файлов)
 
 - [ ] **Step 1: Закоммитить**
@@ -347,6 +359,7 @@ git commit -m "docs: add roadmap archive — phase-0a, 0b, 1, 2, decisions-log"
 ### Task 7: Обрезать ROADMAP.md
 
 **Files:**
+
 - Modify: `ROADMAP.md`
 
 - [ ] **Step 1: Заменить содержимое ROADMAP.md**
@@ -374,13 +387,13 @@ git commit -m "docs: add roadmap archive — phase-0a, 0b, 1, 2, decisions-log"
 
 ## Стратегические решения (2026-04-17)
 
-| Вопрос | Выбор | Почему |
-|--------|-------|--------|
-| Supabase vs Firebase long-term | **Supabase** (Phase 3) | Postgres + RLS подходит для multi-tenant; биллинг за чтения дешевле на масштабе |
-| Хостинг | **Cloudflare остаётся** | Free tier щедрее Vercel (unlimited bandwidth, 100k Worker req/day) |
-| Next.js | **Отложен** | App-like приложение, SSR не работает с real-time; вернёмся только при SEO-потребности |
-| Auth timing | **До миграции Supabase** (Phase 2, Firebase Auth) | Избегаем периода «открытая БД без Auth» |
-| Phase 1 extras | **Vitest + i18n сразу** | Тесты страхуют рефакторинг; i18n дешевле ввести при разбиении |
+| Вопрос                         | Выбор                                             | Почему                                                                                |
+| ------------------------------ | ------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| Supabase vs Firebase long-term | **Supabase** (Phase 3)                            | Postgres + RLS подходит для multi-tenant; биллинг за чтения дешевле на масштабе       |
+| Хостинг                        | **Cloudflare остаётся**                           | Free tier щедрее Vercel (unlimited bandwidth, 100k Worker req/day)                    |
+| Next.js                        | **Отложен**                                       | App-like приложение, SSR не работает с real-time; вернёмся только при SEO-потребности |
+| Auth timing                    | **До миграции Supabase** (Phase 2, Firebase Auth) | Избегаем периода «открытая БД без Auth»                                               |
+| Phase 1 extras                 | **Vitest + i18n сразу**                           | Тесты страхуют рефакторинг; i18n дешевле ввести при разбиении                         |
 
 ---
 
@@ -409,6 +422,7 @@ git commit -m "docs: add roadmap archive — phase-0a, 0b, 1, 2, decisions-log"
 - [ ] Удалить Firebase после успешного переключения (отдельный commit)
 
 **Критерий готовности:**
+
 - Feature flag переключает бэкенд без UI-изменений
 - Real-time: два вкладки под одним юзером — апдейт ≤ 2 сек
 - Все 4 regression flows работают на обоих бэкендах
@@ -436,6 +450,7 @@ git commit -m "docs: add roadmap archive — phase-0a, 0b, 1, 2, decisions-log"
 ## Протокол работы над этим roadmap'ом
 
 По ходу работы Claude:
+
 1. Отмечает `[x]` в чеклисте текущей фазы по мере завершения подзадач.
 2. При значимом решении добавляет запись в `docs/roadmap-archive/decisions-log.md` с датой.
 3. При завершении фазы — создаёт `docs/roadmap-archive/phase-N.md`, убирает фазу из этого файла.
@@ -455,6 +470,7 @@ wc -l ROADMAP.md
 ### Task 8: Создать STATUS.md
 
 **Files:**
+
 - Create: `STATUS.md`
 
 - [ ] **Step 1: Создать файл**
@@ -465,20 +481,25 @@ wc -l ROADMAP.md
 # Recipe Manager — Status
 
 ## Активная фаза
+
 Phase 3 — миграция на Supabase (не начата)
 
 ## Следующий шаг
+
 Создать Supabase-проект, настроить Auth (email + Google OAuth)
 
 ## Blocker
+
 нет
 
 ## Обновлено
+
 2026-07-19
 
 ---
 
 ## Итоги последней сессии
+
 - Phase 2 завершена: Auth email/password + Firestore Security Rules задеплоены, security-review пройден
 - Исправлена HIGH-уязвимость: userId-overwrite в firestore.rules (userId immutable при update, commit aecde4a)
 - Firebase-проект мигрирован с партнёрского аккаунта на личный (rezept-manager-62bd0, videnejev@gmail.com)
@@ -486,6 +507,7 @@ Phase 3 — миграция на Supabase (не начата)
 - Реструктурирована документация: STATUS.md, docs/roadmap-archive/, Technical_Project_Documentation.md
 
 ## Ключевые решения, влияющие на следующий шаг
+
 - Repository pattern уже реализован — для Supabase нужны только новые реализации интерфейсов из `src/services/`
 - Feature flag `VITE_BACKEND=firebase|supabase` переключает бэкенд в `src/infrastructure/createRepositories.ts`
 - Миграция данных: dry-run на staging → валидация → prod (порядок: users → profiles → recipes → programs → entries → cart)
@@ -494,6 +516,7 @@ Phase 3 — миграция на Supabase (не начата)
 ---
 
 ## Где искать контекст
+
 - `ROADMAP.md` — активные + будущие фазы (Phase 3, 4, 5)
 - `Application_description.md` — бизнес-логика (6 вкладок, AI-правила, UX)
 - `Technical_Project_Documentation.md` — архитектура, стек, файловая структура, env vars
@@ -514,6 +537,7 @@ wc -l STATUS.md
 ### Task 9: Коммит ROADMAP.md + STATUS.md
 
 **Files:**
+
 - Modified: `ROADMAP.md`, `STATUS.md` (новый)
 
 - [ ] **Step 1: Закоммитить**
@@ -528,6 +552,7 @@ git commit -m "docs: trim ROADMAP.md to active phases, add STATUS.md dashboard"
 ### Task 10: Создать Technical_Project_Documentation.md
 
 **Files:**
+
 - Create: `Technical_Project_Documentation.md`
 
 - [ ] **Step 1: Создать файл**
@@ -556,52 +581,55 @@ git commit -m "docs: trim ROADMAP.md to active phases, add STATUS.md dashboard"
 
 ## 2. Технический стек
 
-| Слой | Технология | Версия | Роль |
-|------|-----------|--------|------|
-| Frontend | React | 19.0 | UI |
-| Language | TypeScript | 5.8 strict | Типизация |
-| Build | Vite | 6.2 | Bundler + dev server |
-| Styles | Tailwind CSS | 4.1 | Утилитарные стили |
-| State | Context API + Repository pattern | — | Нет внешней state lib |
-| DB/Backend | Firebase (Firestore + Auth) | 12.9 | Текущий бэкенд (→ Supabase в Phase 3) |
-| AI | Google Gemini via Cloudflare Worker | @google/genai 1.29 | Импорт рецептов, КБЖУ, AI-советы |
-| Worker | Hono на Cloudflare Workers | — | Gemini proxy, rate limiting |
-| i18n | i18next + react-i18next | 26 / 17 | ru/de/en |
-| Icons | lucide-react | 0.546 | UI иконки |
-| Animation | motion (framer-motion) | — | Анимации |
-| Dates | date-fns | 4.1 | Работа с датами |
-| PDF | pdfjs-dist | — | Клиентский парсинг PDF (Canvas нужен) |
-| Testing | Vitest + @testing-library/react | 4.1 | 112 тестов |
-| Hosting | Cloudflare Pages + Workers | — | Фронтенд + AI proxy |
+| Слой       | Технология                          | Версия             | Роль                                  |
+| ---------- | ----------------------------------- | ------------------ | ------------------------------------- |
+| Frontend   | React                               | 19.0               | UI                                    |
+| Language   | TypeScript                          | 5.8 strict         | Типизация                             |
+| Build      | Vite                                | 6.2                | Bundler + dev server                  |
+| Styles     | Tailwind CSS                        | 4.1                | Утилитарные стили                     |
+| State      | Context API + Repository pattern    | —                  | Нет внешней state lib                 |
+| DB/Backend | Firebase (Firestore + Auth)         | 12.9               | Текущий бэкенд (→ Supabase в Phase 3) |
+| AI         | Google Gemini via Cloudflare Worker | @google/genai 1.29 | Импорт рецептов, КБЖУ, AI-советы      |
+| Worker     | Hono на Cloudflare Workers          | —                  | Gemini proxy, rate limiting           |
+| i18n       | i18next + react-i18next             | 26 / 17            | ru/de/en                              |
+| Icons      | lucide-react                        | 0.546              | UI иконки                             |
+| Animation  | motion (framer-motion)              | —                  | Анимации                              |
+| Dates      | date-fns                            | 4.1                | Работа с датами                       |
+| PDF        | pdfjs-dist                          | —                  | Клиентский парсинг PDF (Canvas нужен) |
+| Testing    | Vitest + @testing-library/react     | 4.1                | 112 тестов                            |
+| Hosting    | Cloudflare Pages + Workers          | —                  | Фронтенд + AI proxy                   |
 
 ---
 
 ## 3. Архитектура
 
 ### Слои приложения
-
 ```
-src/shared/domain/      ← доменная логика (типы, macros, allergies) — нет внешних зависимостей
-src/services/           ← интерфейсы репозиториев (TypeScript interfaces) + AI contracts
-src/infrastructure/     ← реализации репозиториев (Firestore, fake/testing)
-src/features/           ← 6 feature-модулей (auth, recipes, planner, tracker, cart, programs, settings)
-src/app/                ← providers, layout (Shell, TabBar, AppHeader)
-worker/                 ← Cloudflare Worker: Gemini proxy + rate limiting
+
+src/shared/domain/ ← доменная логика (типы, macros, allergies) — нет внешних зависимостей
+src/services/ ← интерфейсы репозиториев (TypeScript interfaces) + AI contracts
+src/infrastructure/ ← реализации репозиториев (Firestore, fake/testing)
+src/features/ ← 6 feature-модулей (auth, recipes, planner, tracker, cart, programs, settings)
+src/app/ ← providers, layout (Shell, TabBar, AppHeader)
+worker/ ← Cloudflare Worker: Gemini proxy + rate limiting
+
 ```
 
 ### Provider tree (main.tsx)
 
 ```
+
 StrictMode
-└── AuthProvider                    Firebase Auth: onAuthStateChanged
-    └── AuthenticatedApp            Guard: if (loading || !user) return null
-        └── I18nProvider            i18next setup (ru/de/en)
-            └── RepositoryProvider  Инъекция 6 Firestore-реализаций через Context
-                └── DataProvider    Reactive onSnapshot (recipes, planner, cart, programs)
-                    └── UserProfileProvider  userProfile + activeNutritionPlan
-                        └── Shell   Layout wrapper (min-h-screen, pb-20)
-                            └── App Cross-tab state + routing (useState)
-```
+└── AuthProvider Firebase Auth: onAuthStateChanged
+└── AuthenticatedApp Guard: if (loading || !user) return null
+└── I18nProvider i18next setup (ru/de/en)
+└── RepositoryProvider Инъекция 6 Firestore-реализаций через Context
+└── DataProvider Reactive onSnapshot (recipes, planner, cart, programs)
+└── UserProfileProvider userProfile + activeNutritionPlan
+└── Shell Layout wrapper (min-h-screen, pb-20)
+└── App Cross-tab state + routing (useState)
+
+````
 
 ### Repository pattern
 
@@ -794,13 +822,14 @@ npm run dev   # http://localhost:5173
 # 6. Проверить
 # Открыть http://localhost:5173
 # Зарегистрироваться/войти → убедиться что AI-фичи работают (calculate КБЖУ)
-```
+````
 
 ---
 
 ## 8. Деплой
 
 ### Фронтенд (Cloudflare Pages)
+
 ```bash
 git push origin main
 # Pages деплоится автоматически
@@ -808,6 +837,7 @@ git push origin main
 ```
 
 ### Worker (Cloudflare Workers)
+
 ```bash
 cd worker
 npx wrangler deploy
@@ -825,6 +855,7 @@ npm run coverage      # с coverage report
 ```
 
 **Что покрыто (112 тестов):**
+
 - `src/shared/domain/` — 100%: macros (sumMacros, remainingMacros, resolveActiveTargets), allergies (recipeAllergens, recipeHasAllergens), staples (isStaple)
 - `src/infrastructure/testing/` — contract tests для 6 Fake-репозиториев (FakeRecipes, FakePlanner, FakeCart, FakePrograms, FakeUserProfile, FakeNutritionPlan)
 - `src/infrastructure/firestore/converters.ts` — Timestamp ↔ ISO
@@ -835,6 +866,7 @@ npm run coverage      # с coverage report
 - `src/features/tracker/` — TrackerView smoke tests
 
 **Что НЕ покрыто:**
+
 - `worker/` — Cloudflare Worker (требует `@cloudflare/vitest-pool-workers`, TODO в Phase 0b)
 - E2E тесты (Playwright не настроен)
 - `RecipesView`, `ProgramsView`, `CartView` — только ручное тестирование
@@ -844,20 +876,21 @@ npm run coverage      # с coverage report
 
 ## 10. Технические ограничения
 
-| Ограничение | Причина | Как обойти |
-|------------|---------|-----------|
-| Firestore: не хранить base64-картинки | Лимит документа ~1 МБ; AI-generated images ~700 КБ+ | Cloudflare R2 / Firebase Storage → писать только URL в Firestore (Phase 1 TODO) |
-| `GEMINI_API_KEY` только в Cloudflare secret | Безопасность — ключ не должен попасть в клиентский бандл | Всегда через Worker proxy `/api/ai/*` |
-| Canvas API недоступен в Cloudflare Worker | Workers runtime не поддерживает Canvas | PDF-операции (`extractImageFromPDF`) только на клиенте через `pdfjs-dist` |
-| `App.tsx` < 300 строк (не < 200) | Достигнуто 277; < 200 требует отдельного RecipeSelectionContext | Запланировано как future TODO |
-| AppHeader: язык меняется только визуально | `changeLanguage()` i18n не вызывается | Подключить i18n или убрать переключатель из хедера (future TODO) |
-```
+| Ограничение                                 | Причина                                                         | Как обойти                                                                      |
+| ------------------------------------------- | --------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| Firestore: не хранить base64-картинки       | Лимит документа ~1 МБ; AI-generated images ~700 КБ+             | Cloudflare R2 / Firebase Storage → писать только URL в Firestore (Phase 1 TODO) |
+| `GEMINI_API_KEY` только в Cloudflare secret | Безопасность — ключ не должен попасть в клиентский бандл        | Всегда через Worker proxy `/api/ai/*`                                           |
+| Canvas API недоступен в Cloudflare Worker   | Workers runtime не поддерживает Canvas                          | PDF-операции (`extractImageFromPDF`) только на клиенте через `pdfjs-dist`       |
+| `App.tsx` < 300 строк (не < 200)            | Достигнуто 277; < 200 требует отдельного RecipeSelectionContext | Запланировано как future TODO                                                   |
+| AppHeader: язык меняется только визуально   | `changeLanguage()` i18n не вызывается                           | Подключить i18n или убрать переключатель из хедера (future TODO)                |
+
+````
 
 - [ ] **Step 2: Проверить файл**
 
 ```bash
 wc -l Technical_Project_Documentation.md
-```
+````
 
 Ожидается: ~230-260 строк.
 
@@ -866,6 +899,7 @@ wc -l Technical_Project_Documentation.md
 ### Task 11: Обновить CLAUDE.md
 
 **Files:**
+
 - Modify: `CLAUDE.md`
 
 - [ ] **Step 1: Обновить раздел «Где лежат детали»**
@@ -873,6 +907,7 @@ wc -l Technical_Project_Documentation.md
 Заменить в `CLAUDE.md` раздел «Где лежат детали»:
 
 Было:
+
 ```markdown
 ## Где лежат детали
 
@@ -881,6 +916,7 @@ wc -l Technical_Project_Documentation.md
 ```
 
 Стало:
+
 ```markdown
 ## Где лежат детали
 
@@ -896,6 +932,7 @@ wc -l Technical_Project_Documentation.md
 Заменить раздел «Session start protocol»:
 
 Было:
+
 ```markdown
 ## Session start protocol
 
@@ -905,6 +942,7 @@ wc -l Technical_Project_Documentation.md
 ```
 
 Стало:
+
 ```markdown
 ## Session start protocol
 
@@ -920,6 +958,7 @@ wc -l Technical_Project_Documentation.md
 Заменить блок шагов в «Session end protocol» (при триггере, до прощания):
 
 Было:
+
 ```markdown
 1. **Обнови `ROADMAP.md` → «Текущий статус»:**
    - Отметь `[x]` те подзадачи текущей фазы, которые завершили в этой сессии.
@@ -934,6 +973,7 @@ wc -l Technical_Project_Documentation.md
 ```
 
 Стало:
+
 ```markdown
 1. **Обнови `STATUS.md`:**
    - Активная фаза, следующий шаг, blocker, дата «Обновлено».
@@ -941,9 +981,10 @@ wc -l Technical_Project_Documentation.md
    - Раздел «Ключевые решения, влияющие на следующий шаг» (решения из этой сессии).
 
 1a. **Если в сессии фаза завершена** (все подзадачи [x]):
-   - Создай `docs/roadmap-archive/phase-N.md` с полным содержимым фазы (чеклист, DoD, ключевые решения).
-   - Убери завершённую фазу из `ROADMAP.md`.
-   - Добавь решения сессии в `docs/roadmap-archive/decisions-log.md`.
+
+- Создай `docs/roadmap-archive/phase-N.md` с полным содержимым фазы (чеклист, DoD, ключевые решения).
+- Убери завершённую фазу из `ROADMAP.md`.
+- Добавь решения сессии в `docs/roadmap-archive/decisions-log.md`.
 
 2. **Обнови `ROADMAP.md`** — отметь `[x]` подзадачи текущей фазы, завершённые в этой сессии.
 
@@ -977,6 +1018,7 @@ grep -n "STATUS.md\|ROADMAP.md\|Technical_Project_Documentation" CLAUDE.md
 ### Task 12: Финальный коммит
 
 **Files:**
+
 - Modified: `Technical_Project_Documentation.md` (новый), `CLAUDE.md`
 
 - [ ] **Step 1: Проверить всё готово**
@@ -1003,6 +1045,7 @@ wc -l STATUS.md ROADMAP.md Technical_Project_Documentation.md
 ```
 
 Ожидаемый вывод лога:
+
 ```
 <hash> docs: add Technical_Project_Documentation.md, update CLAUDE.md protocols
 <hash> docs: trim ROADMAP.md to active phases, add STATUS.md dashboard
@@ -1016,6 +1059,7 @@ wc -l STATUS.md ROADMAP.md Technical_Project_Documentation.md
 ## Self-Review
 
 **Spec coverage:**
+
 - [x] STATUS.md (~25-30 строк, все разделы) → Task 8
 - [x] ROADMAP.md обрезан до Phase 3+ → Task 7
 - [x] `docs/roadmap-archive/` с 4 файлами фаз + decisions-log → Tasks 1-5

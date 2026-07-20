@@ -1,4 +1,4 @@
-const PRIVATE_HOSTNAMES = new Set(["localhost", "0.0.0.0"]);
+const PRIVATE_HOSTNAMES = new Set(['localhost', '0.0.0.0']);
 
 function isPrivateIPv4(hostname: string): boolean {
   const match = hostname.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
@@ -13,9 +13,9 @@ function isPrivateIPv4(hostname: string): boolean {
 }
 
 function isPrivateIPv6(hostname: string): boolean {
-  const h = hostname.replace(/^\[|\]$/g, "").toLowerCase();
-  if (h === "::" || h === "::1" || h === "::0") return true;
-  if (h.startsWith("fc") || h.startsWith("fd")) return true; // fc00::/7 unique local
+  const h = hostname.replace(/^\[|\]$/g, '').toLowerCase();
+  if (h === '::' || h === '::1' || h === '::0') return true;
+  if (h.startsWith('fc') || h.startsWith('fd')) return true; // fc00::/7 unique local
   if (/^fe[89ab]/.test(h)) return true; // fe80::/10 link-local
 
   // IPv4-mapped/compatible addresses (::ffff:a.b.c.d or ::a.b.c.d) inherit the IPv4 address's privacy.
@@ -37,13 +37,13 @@ export function validateExternalUrl(rawUrl: string): URL | null {
   } catch {
     return null;
   }
-  if (parsed.protocol !== "http:" && parsed.protocol !== "https:") return null;
+  if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return null;
 
   const hostname = parsed.hostname.toLowerCase();
   if (PRIVATE_HOSTNAMES.has(hostname)) return null;
-  if (hostname.endsWith(".local")) return null;
+  if (hostname.endsWith('.local')) return null;
   if (isPrivateIPv4(hostname)) return null;
-  if (hostname.includes(":") && isPrivateIPv6(hostname)) return null;
+  if (hostname.includes(':') && isPrivateIPv6(hostname)) return null;
 
   return parsed;
 }
@@ -62,9 +62,9 @@ export async function safeFetch(
   if (!current) return null;
 
   for (let hop = 0; hop <= maxRedirects; hop++) {
-    const resp = await fetch(current.href, { ...init, redirect: "manual" });
+    const resp = await fetch(current.href, { ...init, redirect: 'manual' });
     if (resp.status >= 300 && resp.status < 400) {
-      const location = resp.headers.get("location");
+      const location = resp.headers.get('location');
       if (!location) return null;
       let next: URL | null;
       try {

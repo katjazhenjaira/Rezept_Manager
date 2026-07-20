@@ -12,18 +12,19 @@
 
 ## File Map
 
-| File | Action | Responsibility |
-|---|---|---|
+| File                                           | Action | Responsibility                                                                               |
+| ---------------------------------------------- | ------ | -------------------------------------------------------------------------------------------- |
 | `src/features/programs/ProgramDetailModal.tsx` | Create | Full-screen program detail overlay: subfolders, recipe DnD, edit entity, resource management |
-| `src/features/programs/ProgramsView.tsx` | Create | Program card grid, create/edit form modal, delete confirm, mounts ProgramDetailModal |
-| `src/App.tsx` | Modify | Remove Programs-specific code, switch to `useData()`, add ProgramsView to renderContent |
-| `ROADMAP.md` | Modify | Mark step complete, update next step |
+| `src/features/programs/ProgramsView.tsx`       | Create | Program card grid, create/edit form modal, delete confirm, mounts ProgramDetailModal         |
+| `src/App.tsx`                                  | Modify | Remove Programs-specific code, switch to `useData()`, add ProgramsView to renderContent      |
+| `ROADMAP.md`                                   | Modify | Mark step complete, update next step                                                         |
 
 ---
 
 ## Task 1: Create ProgramDetailModal.tsx skeleton
 
 **Files:**
+
 - Create: `src/features/programs/ProgramDetailModal.tsx`
 
 - [ ] **Step 1: Create the file with imports, helpers, prop types, and state — returns null for now**
@@ -31,9 +32,20 @@
 ```tsx
 import React, { useState } from 'react';
 import {
-  ChevronLeft, Plus, Edit2, Edit3, Trash2, FolderPlus,
-  BookOpen, Camera, FileText, Link as LinkIcon, Activity,
-  ChevronDown, Upload, ShoppingCart,
+  ChevronLeft,
+  Plus,
+  Edit2,
+  Edit3,
+  Trash2,
+  FolderPlus,
+  BookOpen,
+  Camera,
+  FileText,
+  Link as LinkIcon,
+  Activity,
+  ChevronDown,
+  Upload,
+  ShoppingCart,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { clsx, type ClassValue } from 'clsx';
@@ -79,21 +91,35 @@ export type ProgramDetailModalProps = {
   recipeTarget: { programId: string; subfolderId: string | 'main' } | null;
   onRecipeTargetCleared: () => void;
   photoInputRef: React.RefObject<HTMLInputElement>;
-  isAddingManual: boolean; onIsAddingManualChange: (v: boolean) => void;
-  isAddingLink: boolean;   onIsAddingLinkChange: (v: boolean) => void;
-  isAddingPDF: boolean;    onIsAddingPDFChange: (v: boolean) => void;
-  isScanning: boolean;     onIsScanningChange: (v: boolean) => void;
+  isAddingManual: boolean;
+  onIsAddingManualChange: (v: boolean) => void;
+  isAddingLink: boolean;
+  onIsAddingLinkChange: (v: boolean) => void;
+  isAddingPDF: boolean;
+  onIsAddingPDFChange: (v: boolean) => void;
+  isScanning: boolean;
+  onIsScanningChange: (v: boolean) => void;
   onAddProductsToCart: (products: string[]) => void;
 };
 
 export function ProgramDetailModal(props: ProgramDetailModalProps) {
   const {
-    program, recipes, availableCategories, programRecipeFilter,
-    onProgramRecipeFilterChange, onClose, onDeleteProgram,
-    onStartRecipeSelection, onRecipeTargetSet, photoInputRef,
-    isAddingManual, onIsAddingManualChange,
-    isAddingLink, onIsAddingLinkChange,
-    isAddingPDF, onIsAddingPDFChange,
+    program,
+    recipes,
+    availableCategories,
+    programRecipeFilter,
+    onProgramRecipeFilterChange,
+    onClose,
+    onDeleteProgram,
+    onStartRecipeSelection,
+    onRecipeTargetSet,
+    photoInputRef,
+    isAddingManual,
+    onIsAddingManualChange,
+    isAddingLink,
+    onIsAddingLinkChange,
+    isAddingPDF,
+    onIsAddingPDFChange,
     onAddProductsToCart,
   } = props;
 
@@ -105,8 +131,12 @@ export function ProgramDetailModal(props: ProgramDetailModalProps) {
     programId?: string;
   } | null>(null);
   const [editFormData, setEditFormData] = useState({
-    name: '', description: '',
-    targetCalories: 0, targetProteins: 0, targetFats: 0, targetCarbs: 0,
+    name: '',
+    description: '',
+    targetCalories: 0,
+    targetProteins: 0,
+    targetFats: 0,
+    targetCarbs: 0,
     resources: [] as Resource[],
     allowedProducts: [] as string[],
     forbiddenProducts: [] as string[],
@@ -126,7 +156,9 @@ export function ProgramDetailModal(props: ProgramDetailModalProps) {
     type: 'link' | 'pdf';
   } | null>(null);
   const [resourceFormData, setResourceFormData] = useState({
-    url: '', title: '', description: '',
+    url: '',
+    title: '',
+    description: '',
   });
   const subfolderPdfInputRef = React.useRef<HTMLInputElement>(null);
 
@@ -148,123 +180,122 @@ Expected: 0 errors (component returns null, not yet mounted)
 ## Task 2: Add handlers and full JSX to ProgramDetailModal
 
 **Files:**
+
 - Modify: `src/features/programs/ProgramDetailModal.tsx`
 
 - [ ] **Step 1: Add handlers inside the component body, before `return null`**
 
 ```tsx
-  const handleDropRecipe = async (
-    recipeId: string,
-    targetSubfolderId: string,
-    sourceSubfolderId: string,
-  ) => {
-    if (targetSubfolderId === sourceSubfolderId) return;
-    let newRecipeIds = [...program.recipeIds];
-    let newSubfolders = program.subfolders ? [...program.subfolders] : [];
+const handleDropRecipe = async (
+  recipeId: string,
+  targetSubfolderId: string,
+  sourceSubfolderId: string,
+) => {
+  if (targetSubfolderId === sourceSubfolderId) return;
+  let newRecipeIds = [...program.recipeIds];
+  let newSubfolders = program.subfolders ? [...program.subfolders] : [];
 
-    if (sourceSubfolderId === 'main') {
-      newRecipeIds = newRecipeIds.filter(id => id !== recipeId);
+  if (sourceSubfolderId === 'main') {
+    newRecipeIds = newRecipeIds.filter((id) => id !== recipeId);
+  } else {
+    newSubfolders = newSubfolders.map((sf) =>
+      sf.id === sourceSubfolderId
+        ? { ...sf, recipeIds: sf.recipeIds.filter((id) => id !== recipeId) }
+        : sf,
+    );
+  }
+  if (targetSubfolderId === 'main') {
+    if (!newRecipeIds.includes(recipeId)) newRecipeIds.push(recipeId);
+  } else {
+    newSubfolders = newSubfolders.map((sf) =>
+      sf.id === targetSubfolderId ? { ...sf, recipeIds: [...sf.recipeIds, recipeId] } : sf,
+    );
+  }
+  try {
+    await updateDoc(doc(db, 'programs', program.id), {
+      recipeIds: newRecipeIds,
+      subfolders: newSubfolders,
+    });
+  } catch (error) {
+    console.error('Error moving recipe:', error);
+  }
+};
+
+const handleSubfolderPdfUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const file = e.target.files?.[0];
+  if (!file) return;
+  const newResource: Resource = {
+    id: Math.random().toString(36).substr(2, 9),
+    type: 'pdf',
+    url: file.name,
+    title: file.name,
+    description: '',
+  };
+  if (editingEntity) {
+    setEditFormData((prev) => ({ ...prev, resources: [...prev.resources, newResource] }));
+    alert(`Файл ${file.name} добавлен`);
+    return;
+  }
+  if (activeResourceForm) {
+    if (activeResourceForm.targetId === 'main') {
+      updateDoc(doc(db, 'programs', program.id), {
+        resources: [...(program.resources || []), newResource],
+      });
     } else {
-      newSubfolders = newSubfolders.map(sf =>
-        sf.id === sourceSubfolderId
-          ? { ...sf, recipeIds: sf.recipeIds.filter(id => id !== recipeId) }
-          : sf
+      const newSubfolders = program.subfolders?.map((sf) =>
+        sf.id === activeResourceForm.targetId
+          ? { ...sf, resources: [...(sf.resources || []), newResource] }
+          : sf,
       );
+      updateDoc(doc(db, 'programs', program.id), { subfolders: newSubfolders });
     }
-    if (targetSubfolderId === 'main') {
-      if (!newRecipeIds.includes(recipeId)) newRecipeIds.push(recipeId);
+    setActiveResourceForm(null);
+    alert(`Файл ${file.name} загружен`);
+  }
+};
+
+const handleSaveEdit = async () => {
+  if (!editingEntity) return;
+  try {
+    if (editingEntity.type === 'program') {
+      await updateDoc(doc(db, 'programs', editingEntity.id), {
+        name: editFormData.name,
+        description: editFormData.description,
+        targetCalories: editFormData.targetCalories,
+        targetProteins: editFormData.targetProteins,
+        targetFats: editFormData.targetFats,
+        targetCarbs: editFormData.targetCarbs,
+        resources: editFormData.resources,
+        allowedProducts: editFormData.allowedProducts,
+        forbiddenProducts: editFormData.forbiddenProducts,
+      });
     } else {
-      newSubfolders = newSubfolders.map(sf =>
-        sf.id === targetSubfolderId
-          ? { ...sf, recipeIds: [...sf.recipeIds, recipeId] }
-          : sf
+      const newSubfolders = program.subfolders?.map((sf) =>
+        sf.id === editingEntity.id
+          ? {
+              ...sf,
+              name: editFormData.name,
+              description: editFormData.description,
+              targetCalories: editFormData.targetCalories,
+              targetProteins: editFormData.targetProteins,
+              targetFats: editFormData.targetFats,
+              targetCarbs: editFormData.targetCarbs,
+              resources: editFormData.resources,
+              allowedProducts: editFormData.allowedProducts,
+              forbiddenProducts: editFormData.forbiddenProducts,
+            }
+          : sf,
       );
-    }
-    try {
-      await updateDoc(doc(db, 'programs', program.id), {
-        recipeIds: newRecipeIds,
+      await updateDoc(doc(db, 'programs', editingEntity.programId!), {
         subfolders: newSubfolders,
       });
-    } catch (error) {
-      console.error('Error moving recipe:', error);
     }
-  };
-
-  const handleSubfolderPdfUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const newResource: Resource = {
-      id: Math.random().toString(36).substr(2, 9),
-      type: 'pdf',
-      url: file.name,
-      title: file.name,
-      description: '',
-    };
-    if (editingEntity) {
-      setEditFormData(prev => ({ ...prev, resources: [...prev.resources, newResource] }));
-      alert(`Файл ${file.name} добавлен`);
-      return;
-    }
-    if (activeResourceForm) {
-      if (activeResourceForm.targetId === 'main') {
-        updateDoc(doc(db, 'programs', program.id), {
-          resources: [...(program.resources || []), newResource],
-        });
-      } else {
-        const newSubfolders = program.subfolders?.map(sf =>
-          sf.id === activeResourceForm.targetId
-            ? { ...sf, resources: [...(sf.resources || []), newResource] }
-            : sf
-        );
-        updateDoc(doc(db, 'programs', program.id), { subfolders: newSubfolders });
-      }
-      setActiveResourceForm(null);
-      alert(`Файл ${file.name} загружен`);
-    }
-  };
-
-  const handleSaveEdit = async () => {
-    if (!editingEntity) return;
-    try {
-      if (editingEntity.type === 'program') {
-        await updateDoc(doc(db, 'programs', editingEntity.id), {
-          name: editFormData.name,
-          description: editFormData.description,
-          targetCalories: editFormData.targetCalories,
-          targetProteins: editFormData.targetProteins,
-          targetFats: editFormData.targetFats,
-          targetCarbs: editFormData.targetCarbs,
-          resources: editFormData.resources,
-          allowedProducts: editFormData.allowedProducts,
-          forbiddenProducts: editFormData.forbiddenProducts,
-        });
-      } else {
-        const newSubfolders = program.subfolders?.map(sf =>
-          sf.id === editingEntity.id
-            ? {
-                ...sf,
-                name: editFormData.name,
-                description: editFormData.description,
-                targetCalories: editFormData.targetCalories,
-                targetProteins: editFormData.targetProteins,
-                targetFats: editFormData.targetFats,
-                targetCarbs: editFormData.targetCarbs,
-                resources: editFormData.resources,
-                allowedProducts: editFormData.allowedProducts,
-                forbiddenProducts: editFormData.forbiddenProducts,
-              }
-            : sf
-        );
-        await updateDoc(doc(db, 'programs', editingEntity.programId!), {
-          subfolders: newSubfolders,
-        });
-      }
-      setEditingEntity(null);
-    } catch (error) {
-      console.error('Error saving edit:', error);
-      alert('Ошибка при сохранении');
-    }
-  };
+    setEditingEntity(null);
+  } catch (error) {
+    console.error('Error saving edit:', error);
+    alert('Ошибка при сохранении');
+  }
+};
 ```
 
 - [ ] **Step 2: Replace `return null` with the full JSX**
@@ -274,29 +305,30 @@ Replace `return null;` with the JSX extracted from App.tsx. The JSX comes from t
 **Region A — Modal wrapper + header** (App.tsx lines 2728–2987):
 Copy the `<div className="fixed inset-0 z-[90]...">` block. Apply these substitutions:
 
-| App.tsx | ProgramDetailModal |
-|---|---|
-| `activeCollectionId` | `program.id` |
-| `programs.find(p => p.id === activeCollectionId)` | `program` |
-| `programs.find(p => p.id === activeCollectionId)?.name` | `program.name` |
-| `programs.find(p => p.id === activeCollectionId)?.description` | `program.description` |
-| `setActiveCollectionId(null)` | `onClose()` |
-| `setProgramToDelete(program)` | `onDeleteProgram(program)` |
-| `handleStartRecipeSelection(activeCollectionId!, 'main')` | `onStartRecipeSelection(program.id, 'main')` |
+| App.tsx                                                                    | ProgramDetailModal                                                  |
+| -------------------------------------------------------------------------- | ------------------------------------------------------------------- |
+| `activeCollectionId`                                                       | `program.id`                                                        |
+| `programs.find(p => p.id === activeCollectionId)`                          | `program`                                                           |
+| `programs.find(p => p.id === activeCollectionId)?.name`                    | `program.name`                                                      |
+| `programs.find(p => p.id === activeCollectionId)?.description`             | `program.description`                                               |
+| `setActiveCollectionId(null)`                                              | `onClose()`                                                         |
+| `setProgramToDelete(program)`                                              | `onDeleteProgram(program)`                                          |
+| `handleStartRecipeSelection(activeCollectionId!, 'main')`                  | `onStartRecipeSelection(program.id, 'main')`                        |
 | `setRecipeTarget({ programId: activeCollectionId!, subfolderId: 'main' })` | `onRecipeTargetSet({ programId: program.id, subfolderId: 'main' })` |
-| `setIsAddingPDF(true)` | `onIsAddingPDFChange(true)` |
-| `setIsAddingLink(true)` | `onIsAddingLinkChange(true)` |
-| `setIsAddingManual(true)` | `onIsAddingManualChange(true)` |
-| `photoInputRef.current?.click()` | `photoInputRef.current?.click()` (unchanged) |
-| `programRecipeFilter` | `programRecipeFilter` (from prop) |
-| `setProgramRecipeFilter` | `onProgramRecipeFilterChange` |
-| `addProductsToCart(...)` | `onAddProductsToCart(...)` |
-| `setEditingEntity(...)` + `setEditFormData(...)` | `setEditingEntity(...)` + `setEditFormData(...)` (internal state) |
-| `showProducts` / `setShowProducts` | internal state |
-| `programAddRecipeDropdown` / `setProgramAddRecipeDropdown` | internal state |
+| `setIsAddingPDF(true)`                                                     | `onIsAddingPDFChange(true)`                                         |
+| `setIsAddingLink(true)`                                                    | `onIsAddingLinkChange(true)`                                        |
+| `setIsAddingManual(true)`                                                  | `onIsAddingManualChange(true)`                                      |
+| `photoInputRef.current?.click()`                                           | `photoInputRef.current?.click()` (unchanged)                        |
+| `programRecipeFilter`                                                      | `programRecipeFilter` (from prop)                                   |
+| `setProgramRecipeFilter`                                                   | `onProgramRecipeFilterChange`                                       |
+| `addProductsToCart(...)`                                                   | `onAddProductsToCart(...)`                                          |
+| `setEditingEntity(...)` + `setEditFormData(...)`                           | `setEditingEntity(...)` + `setEditFormData(...)` (internal state)   |
+| `showProducts` / `setShowProducts`                                         | internal state                                                      |
+| `programAddRecipeDropdown` / `setProgramAddRecipeDropdown`                 | internal state                                                      |
 
 **Region B — Modal body content** (App.tsx lines 2988–4086):
 Copy the `<div className="p-6 overflow-y-auto...">` block. Apply same substitutions. Additionally:
+
 - For subfolder `setRecipeTarget(...)` calls: `onRecipeTargetSet({ programId: program.id, subfolderId: subfolder.id })`
 - For subfolder `handleStartRecipeSelection(program.id, subfolder.id)`: `onStartRecipeSelection(program.id, subfolder.id)`
 - `handleDropRecipe(recipeId, subfolder.id, sourceSubfolderId, program.id)` → `handleDropRecipe(recipeId, subfolder.id, sourceSubfolderId)` (programId no longer a param — use `program.id` directly inside the handler)
@@ -307,6 +339,7 @@ Copy the `<div className="p-6 overflow-y-auto...">` block. Apply same substituti
 Move these modals inside the return. Apply same substitutions. The subfolder delete confirm was at App level (lines 4252–4302) — it now uses internal `subfolderToDelete` state and calls `setSubfolderToDelete(null)` / `setEditingSubfolderId(null)`.
 
 Also add the hidden `subfolderPdfInputRef` input at the end:
+
 ```tsx
 <input
   type="file"
@@ -337,6 +370,7 @@ git commit -m "feat(programs): add ProgramDetailModal component"
 ## Task 3: Create ProgramsView.tsx
 
 **Files:**
+
 - Create: `src/features/programs/ProgramsView.tsx`
 
 - [ ] **Step 1: Create file with imports, helpers, types, state, and handlers**
@@ -344,8 +378,15 @@ git commit -m "feat(programs): add ProgramDetailModal component"
 ```tsx
 import React, { useState } from 'react';
 import {
-  BookOpen, Plus, Edit3, FileText, Trash2, Share2,
-  FolderPlus, Users, Link as LinkIcon,
+  BookOpen,
+  Plus,
+  Edit3,
+  FileText,
+  Trash2,
+  Share2,
+  FolderPlus,
+  Users,
+  Link as LinkIcon,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { clsx, type ClassValue } from 'clsx';
@@ -451,16 +492,25 @@ export type ProgramsViewProps = {
   onRecipeTargetCleared: () => void;
   onRecipeTargetSet: (target: { programId: string; subfolderId: string | 'main' }) => void;
   photoInputRef: React.RefObject<HTMLInputElement>;
-  isAddingManual: boolean; onIsAddingManualChange: (v: boolean) => void;
-  isAddingLink: boolean;   onIsAddingLinkChange: (v: boolean) => void;
-  isAddingPDF: boolean;    onIsAddingPDFChange: (v: boolean) => void;
-  isScanning: boolean;     onIsScanningChange: (v: boolean) => void;
+  isAddingManual: boolean;
+  onIsAddingManualChange: (v: boolean) => void;
+  isAddingLink: boolean;
+  onIsAddingLinkChange: (v: boolean) => void;
+  isAddingPDF: boolean;
+  onIsAddingPDFChange: (v: boolean) => void;
+  isScanning: boolean;
+  onIsScanningChange: (v: boolean) => void;
   onAddProductsToCart: (products: string[]) => void;
 };
 
 const emptyProgramForm = {
-  name: '', description: '', creator: '', link: '',
-  recipeIds: [] as string[], image: '', pdfUrl: '',
+  name: '',
+  description: '',
+  creator: '',
+  link: '',
+  recipeIds: [] as string[],
+  image: '',
+  pdfUrl: '',
   subfolders: [] as Subfolder[],
   allowedProducts: [] as string[],
   forbiddenProducts: [] as string[],
@@ -468,11 +518,24 @@ const emptyProgramForm = {
 
 export function ProgramsView(props: ProgramsViewProps) {
   const {
-    recipes, availableCategories, openProgramId, onOpenProgramIdChange,
-    onStartRecipeSelection, recipeTarget, onRecipeTargetCleared, onRecipeTargetSet,
-    photoInputRef, isAddingManual, onIsAddingManualChange,
-    isAddingLink, onIsAddingLinkChange, isAddingPDF, onIsAddingPDFChange,
-    isScanning, onIsScanningChange, onAddProductsToCart,
+    recipes,
+    availableCategories,
+    openProgramId,
+    onOpenProgramIdChange,
+    onStartRecipeSelection,
+    recipeTarget,
+    onRecipeTargetCleared,
+    onRecipeTargetSet,
+    photoInputRef,
+    isAddingManual,
+    onIsAddingManualChange,
+    isAddingLink,
+    onIsAddingLinkChange,
+    isAddingPDF,
+    onIsAddingPDFChange,
+    isScanning,
+    onIsScanningChange,
+    onAddProductsToCart,
   } = props;
 
   const { programs } = useData();
@@ -495,7 +558,7 @@ export function ProgramsView(props: ProgramsViewProps) {
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setProgramFormData(prev => ({ ...prev, image: reader.result as string }));
+        setProgramFormData((prev) => ({ ...prev, image: reader.result as string }));
       };
       reader.readAsDataURL(file);
     }
@@ -506,12 +569,10 @@ export function ProgramsView(props: ProgramsViewProps) {
     if (file && editingSubfolderId) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setProgramFormData(prev => ({
+        setProgramFormData((prev) => ({
           ...prev,
-          subfolders: prev.subfolders.map(sf =>
-            sf.id === editingSubfolderId
-              ? { ...sf, image: reader.result as string }
-              : sf
+          subfolders: prev.subfolders.map((sf) =>
+            sf.id === editingSubfolderId ? { ...sf, image: reader.result as string } : sf,
           ),
         }));
       };
@@ -540,26 +601,38 @@ export function ProgramsView(props: ProgramsViewProps) {
             if (extracted) dishImage = extracted;
           }
           if (!dishImage) {
-            const generated = await aiClient.generateImage({ title: r.title, ingredients: r.ingredients });
+            const generated = await aiClient.generateImage({
+              title: r.title,
+              ingredients: r.ingredients,
+            });
             if (generated?.imageDataUri) dishImage = generated.imageDataUri;
           }
           const imageToStore = dishImage && dishImage.length <= 800_000 ? dishImage : null;
           const docRef = await addDoc(collection(db, 'recipes'), {
-            title: r.title, author: r.author ?? '', image: imageToStore,
-            time: r.time, servings: r.servings, categories: r.categories,
-            ingredients: r.ingredients, steps: r.steps, macros: r.macros,
-            isFavorite: false, createdAt: new Date().toISOString(),
+            title: r.title,
+            author: r.author ?? '',
+            image: imageToStore,
+            time: r.time,
+            servings: r.servings,
+            categories: r.categories,
+            ingredients: r.ingredients,
+            steps: r.steps,
+            macros: r.macros,
+            isFavorite: false,
+            createdAt: new Date().toISOString(),
           });
           recipeIds.push(docRef.id);
         }
         const inferredName = file.name.replace(/\.pdf$/i, '');
-        setProgramFormData(prev => ({
+        setProgramFormData((prev) => ({
           ...prev,
           name: prev.name || inferredName,
           recipeIds,
           pdfUrl: file.name,
         }));
-        alert(`Извлечено рецептов: ${result.recipes.length}. Проверьте название и сохраните программу.`);
+        alert(
+          `Извлечено рецептов: ${result.recipes.length}. Проверьте название и сохраните программу.`,
+        );
       } catch (error) {
         console.error('Error analyzing PDF for program:', error);
         alert('Не удалось распознать PDF. Попробуйте другой файл.');
@@ -602,7 +675,7 @@ export function ProgramsView(props: ProgramsViewProps) {
     alert('Ссылка скопирована в буфер обмена!');
   };
 
-  const openProgram = openProgramId ? (programs.find(p => p.id === openProgramId) ?? null) : null;
+  const openProgram = openProgramId ? (programs.find((p) => p.id === openProgramId) ?? null) : null;
 
   return (
     <>
@@ -614,9 +687,27 @@ export function ProgramsView(props: ProgramsViewProps) {
       */}
 
       {/* Hidden file inputs */}
-      <input type="file" ref={programPhotoInputRef} className="hidden" accept="image/*" onChange={handleProgramPhotoUpload} />
-      <input type="file" ref={programPdfInputRef} className="hidden" accept="application/pdf" onChange={handleProgramPdfUpload} />
-      <input type="file" ref={subfolderPhotoInputRef} className="hidden" accept="image/*" onChange={handleSubfolderPhotoUpload} />
+      <input
+        type="file"
+        ref={programPhotoInputRef}
+        className="hidden"
+        accept="image/*"
+        onChange={handleProgramPhotoUpload}
+      />
+      <input
+        type="file"
+        ref={programPdfInputRef}
+        className="hidden"
+        accept="application/pdf"
+        onChange={handleProgramPdfUpload}
+      />
+      <input
+        type="file"
+        ref={subfolderPhotoInputRef}
+        className="hidden"
+        accept="image/*"
+        onChange={handleSubfolderPhotoUpload}
+      />
 
       {/* Program delete confirmation — copy App.tsx lines 4201–4249 */}
       {/* Use internal programToDelete; on confirm: deleteDoc + onOpenProgramIdChange(null) + setProgramToDelete(null) */}
@@ -624,7 +715,9 @@ export function ProgramsView(props: ProgramsViewProps) {
         {programToDelete && (
           <div className="fixed inset-0 z-[130] flex items-center justify-center p-4">
             <motion.div
-              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
               onClick={() => setProgramToDelete(null)}
               className="absolute inset-0 bg-zinc-900/60 backdrop-blur-sm"
             />
@@ -685,10 +778,14 @@ export function ProgramsView(props: ProgramsViewProps) {
             recipeTarget={recipeTarget}
             onRecipeTargetCleared={onRecipeTargetCleared}
             photoInputRef={photoInputRef}
-            isAddingManual={isAddingManual} onIsAddingManualChange={onIsAddingManualChange}
-            isAddingLink={isAddingLink} onIsAddingLinkChange={onIsAddingLinkChange}
-            isAddingPDF={isAddingPDF} onIsAddingPDFChange={onIsAddingPDFChange}
-            isScanning={isScanning} onIsScanningChange={onIsScanningChange}
+            isAddingManual={isAddingManual}
+            onIsAddingManualChange={onIsAddingManualChange}
+            isAddingLink={isAddingLink}
+            onIsAddingLinkChange={onIsAddingLinkChange}
+            isAddingPDF={isAddingPDF}
+            onIsAddingPDFChange={onIsAddingPDFChange}
+            isScanning={isScanning}
+            onIsScanningChange={onIsScanningChange}
             onAddProductsToCart={onAddProductsToCart}
           />
         )}
@@ -705,24 +802,25 @@ Replace the `{/* Programs list JSX: copy App.tsx lines 1658–2318 ... */}` comm
 Open App.tsx and copy lines **1658–2318** (the full body of `renderPrograms()`, from the opening `<div className="max-w-7xl...">` through the closing `</div>` of the AnimatePresence for the create modal).
 
 Apply these substitutions:
-| App.tsx | ProgramsView |
-|---|---|
-| `setActiveCollectionId(program.id)` | `onOpenProgramIdChange(program.id)` |
-| `isCreatingProgram` / `setIsCreatingProgram` | internal state |
-| `editingProgramId` / `setEditingProgramId` | internal state |
-| `programFormData` / `setProgramFormData` | internal state |
-| `programRecipeFilter` / `setProgramRecipeFilter` | internal state |
-| `subfolderRecipeFilters` / `setSubfolderRecipeFilters` | internal state |
-| `editingSubfolderId` / `setEditingSubfolderId` | internal state |
-| `isCreateProgramDropdownOpen` / `setIsCreateProgramDropdownOpen` | internal state |
-| `setProgramToDelete` | internal state setter |
-| `programPhotoInputRef` | internal ref |
-| `programPdfInputRef` | internal ref |
-| `subfolderPhotoInputRef` | internal ref |
-| `handleCreateProgram` | internal handler |
-| `handleShareProgram` | internal handler |
-| `availableCategories` | prop |
-| `recipes` | prop |
+
+| App.tsx                                                          | ProgramsView                        |
+| ---------------------------------------------------------------- | ----------------------------------- |
+| `setActiveCollectionId(program.id)`                              | `onOpenProgramIdChange(program.id)` |
+| `isCreatingProgram` / `setIsCreatingProgram`                     | internal state                      |
+| `editingProgramId` / `setEditingProgramId`                       | internal state                      |
+| `programFormData` / `setProgramFormData`                         | internal state                      |
+| `programRecipeFilter` / `setProgramRecipeFilter`                 | internal state                      |
+| `subfolderRecipeFilters` / `setSubfolderRecipeFilters`           | internal state                      |
+| `editingSubfolderId` / `setEditingSubfolderId`                   | internal state                      |
+| `isCreateProgramDropdownOpen` / `setIsCreateProgramDropdownOpen` | internal state                      |
+| `setProgramToDelete`                                             | internal state setter               |
+| `programPhotoInputRef`                                           | internal ref                        |
+| `programPdfInputRef`                                             | internal ref                        |
+| `subfolderPhotoInputRef`                                         | internal ref                        |
+| `handleCreateProgram`                                            | internal handler                    |
+| `handleShareProgram`                                             | internal handler                    |
+| `availableCategories`                                            | prop                                |
+| `recipes`                                                        | prop                                |
 
 - [ ] **Step 3: Verify build**
 
@@ -744,6 +842,7 @@ git commit -m "feat(programs): add ProgramsView component"
 ## Task 4: Update App.tsx
 
 **Files:**
+
 - Modify: `src/App.tsx`
 
 - [ ] **Step 1: Add new imports**
@@ -758,10 +857,13 @@ import { ProgramsView } from '@/features/programs/ProgramsView';
 - [ ] **Step 2: Rename activeCollectionId → openProgramId**
 
 Find (line ~368):
+
 ```tsx
 const [activeCollectionId, setActiveCollectionId] = useState<string | null>(null);
 ```
+
 Replace with:
+
 ```tsx
 const [openProgramId, setOpenProgramId] = useState<string | null>(null);
 ```
@@ -771,9 +873,10 @@ const [openProgramId, setOpenProgramId] = useState<string | null>(null);
 Remove `const [programs, setPrograms] = useState<Program[]>([]);` (line ~194).
 
 Remove the entire `useEffect` for programs (lines ~525–535):
+
 ```tsx
 useEffect(() => {
-  const q = query(collection(db, "programs"));
+  const q = query(collection(db, 'programs'));
   const unsubscribe = onSnapshot(q, (querySnapshot) => {
     const programsData: Program[] = [];
     querySnapshot.forEach((doc) => {
@@ -786,6 +889,7 @@ useEffect(() => {
 ```
 
 Add inside the component body near the top (after the `useNutritionPlan` hook):
+
 ```tsx
 const { programs } = useData();
 ```
@@ -812,28 +916,28 @@ Find `handleAddSelectedRecipes` (~line 387) and replace `setActiveCollectionId(p
 const handleAddSelectedRecipes = async () => {
   if (!selectionTarget) return;
   const { programId, subfolderId } = selectionTarget;
-  const program = programs.find(p => p.id === programId);
+  const program = programs.find((p) => p.id === programId);
   if (!program) return;
   try {
     if (subfolderId === 'main') {
       const newRecipeIds = Array.from(new Set([...program.recipeIds, ...selectedRecipeIds]));
-      await updateDoc(doc(db, "programs", programId), { recipeIds: newRecipeIds });
+      await updateDoc(doc(db, 'programs', programId), { recipeIds: newRecipeIds });
     } else {
-      const newSubfolders = program.subfolders?.map(sf => {
+      const newSubfolders = program.subfolders?.map((sf) => {
         if (sf.id === subfolderId) {
           return { ...sf, recipeIds: Array.from(new Set([...sf.recipeIds, ...selectedRecipeIds])) };
         }
         return sf;
       });
-      await updateDoc(doc(db, "programs", programId), { subfolders: newSubfolders });
+      await updateDoc(doc(db, 'programs', programId), { subfolders: newSubfolders });
     }
     setIsRecipeSelectionMode(false);
     setSelectionTarget(null);
     setSelectedRecipeIds([]);
     setOpenProgramId(programId);
   } catch (error) {
-    console.error("Error adding recipes:", error);
-    alert("Не удалось добавить рецепты");
+    console.error('Error adding recipes:', error);
+    alert('Не удалось добавить рецепты');
   }
 };
 ```
@@ -845,6 +949,7 @@ Find `handleSharedProgram` (~line 478). Replace `setActiveCollectionId(programId
 - [ ] **Step 7: Remove extracted Programs state declarations**
 
 Remove these `useState` declarations from App.tsx (all now live in ProgramsView or ProgramDetailModal):
+
 - `programFormData` / `setProgramFormData`
 - `editingProgramId` / `setEditingProgramId`
 - `isCreatingProgram` / `setIsCreatingProgram`
@@ -868,6 +973,7 @@ Remove refs: `programPhotoInputRef`, `programPdfInputRef`, `subfolderPhotoInputR
 - [ ] **Step 8: Remove extracted handlers**
 
 Remove these functions from App.tsx:
+
 - `handleProgramPhotoUpload` (lines ~602–611)
 - `handleProgramPdfUpload` (lines ~613–677)
 - `handleSubfolderPdfUpload` (lines ~679–714)
@@ -924,6 +1030,7 @@ cd /Users/evidenee/Flowgence/Rezept_Manager && npm run build 2>&1 | tail -40
 ```
 
 Common errors to expect and fix:
+
 - Unused imports in App.tsx (remove `FolderPlus`, `FolderHeart`, `Edit2` if no longer used)
 - Leftover references to removed state (search for `setActiveCollectionId`, `programFormData`, etc.)
 - Missing `onSnapshot` import can be removed if programs was the last subscriber using it in App.tsx
@@ -956,20 +1063,25 @@ git commit -m "refactor(app): extract ProgramsView from App.tsx into src/feature
 ## Task 5: Update ROADMAP.md
 
 **Files:**
+
 - Modify: `ROADMAP.md`
 
 - [ ] **Step 1: Mark Programs complete and update next step**
 
 In `ROADMAP.md`, Phase 1 checklist, find:
+
 ```
 - [ ] Programs (иерархия subfolders)
 ```
+
 Change to:
+
 ```
 - [x] Programs (иерархия subfolders)
 ```
 
 Update "Следующий шаг":
+
 ```
 Phase 1 Step 4 — вынос вкладки Planner из App.tsx в src/features/planner/
 ```
@@ -977,6 +1089,7 @@ Phase 1 Step 4 — вынос вкладки Planner из App.tsx в src/feature
 Update "Обновлено" to today's date.
 
 Add to "Журнал решений":
+
 ```
 - **2026-04-28** — Phase 1 Step 4 (Programs) завершена. ProgramsView + ProgramDetailModal извлечены в `src/features/programs/`. Дублирующий onSnapshot для programs удалён из App.tsx — programs читается через `useData()` из DataContext. `openProgramId` поднят в App.tsx как controlled prop (паттерн как у selectedRecipe в RecipesView). `onRecipeTargetSet` добавлен в ProgramsViewProps для сигнала из ProgramDetailModal в App.tsx при добавлении рецепта через photo/PDF/link/manual. App.tsx: 4538 → ~2000 строк (−~55%).
 ```

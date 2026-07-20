@@ -1,7 +1,15 @@
 import React, { useState } from 'react';
 import {
-  BookOpen, Plus, Edit3, FileText, Trash2, Share2,
-  FolderPlus, Users, Link as LinkIcon, Camera,
+  BookOpen,
+  Plus,
+  Edit3,
+  FileText,
+  Trash2,
+  Share2,
+  FolderPlus,
+  Users,
+  Link as LinkIcon,
+  Camera,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useRepositories } from '@/app/providers/RepositoryContext';
@@ -47,16 +55,25 @@ export type ProgramsViewProps = {
   onRecipeTargetCleared: () => void;
   onRecipeTargetSet: (target: { programId: string; subfolderId: string | 'main' }) => void;
   photoInputRef: React.RefObject<HTMLInputElement | null>;
-  isAddingManual: boolean; onIsAddingManualChange: (v: boolean) => void;
-  isAddingLink: boolean;   onIsAddingLinkChange: (v: boolean) => void;
-  isAddingPDF: boolean;    onIsAddingPDFChange: (v: boolean) => void;
-  isScanning: boolean;     onIsScanningChange: (v: boolean) => void;
+  isAddingManual: boolean;
+  onIsAddingManualChange: (v: boolean) => void;
+  isAddingLink: boolean;
+  onIsAddingLinkChange: (v: boolean) => void;
+  isAddingPDF: boolean;
+  onIsAddingPDFChange: (v: boolean) => void;
+  isScanning: boolean;
+  onIsScanningChange: (v: boolean) => void;
   onSelectRecipe: (recipe: Recipe) => void;
 };
 
 const emptyProgramForm = {
-  name: '', description: '', creator: '', link: '',
-  recipeIds: [] as string[], image: '', pdfUrl: '',
+  name: '',
+  description: '',
+  creator: '',
+  link: '',
+  recipeIds: [] as string[],
+  image: '',
+  pdfUrl: '',
   subfolders: [] as Subfolder[],
   allowedProducts: [] as string[],
   forbiddenProducts: [] as string[],
@@ -64,11 +81,25 @@ const emptyProgramForm = {
 
 export function ProgramsView(props: ProgramsViewProps) {
   const {
-    recipes, availableCategories, userProfile, openProgramId, onOpenProgramIdChange,
-    onStartRecipeSelection, recipeTarget, onRecipeTargetCleared, onRecipeTargetSet,
-    photoInputRef, isAddingManual, onIsAddingManualChange,
-    isAddingLink, onIsAddingLinkChange, isAddingPDF, onIsAddingPDFChange,
-    isScanning, onIsScanningChange, onSelectRecipe,
+    recipes,
+    availableCategories,
+    userProfile,
+    openProgramId,
+    onOpenProgramIdChange,
+    onStartRecipeSelection,
+    recipeTarget,
+    onRecipeTargetCleared,
+    onRecipeTargetSet,
+    photoInputRef,
+    isAddingManual,
+    onIsAddingManualChange,
+    isAddingLink,
+    onIsAddingLinkChange,
+    isAddingPDF,
+    onIsAddingPDFChange,
+    isScanning,
+    onIsScanningChange,
+    onSelectRecipe,
   } = props;
 
   const { programs } = useData();
@@ -92,7 +123,7 @@ export function ProgramsView(props: ProgramsViewProps) {
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setProgramFormData(prev => ({ ...prev, image: reader.result as string }));
+        setProgramFormData((prev) => ({ ...prev, image: reader.result as string }));
       };
       reader.readAsDataURL(file);
     }
@@ -103,12 +134,10 @@ export function ProgramsView(props: ProgramsViewProps) {
     if (file && editingSubfolderId) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setProgramFormData(prev => ({
+        setProgramFormData((prev) => ({
           ...prev,
-          subfolders: prev.subfolders.map(sf =>
-            sf.id === editingSubfolderId
-              ? { ...sf, image: reader.result as string }
-              : sf
+          subfolders: prev.subfolders.map((sf) =>
+            sf.id === editingSubfolderId ? { ...sf, image: reader.result as string } : sf,
           ),
         }));
       };
@@ -137,25 +166,37 @@ export function ProgramsView(props: ProgramsViewProps) {
             if (extracted) dishImage = extracted;
           }
           if (!dishImage) {
-            const generated = await aiClient.generateImage({ title: r.title, ingredients: r.ingredients });
+            const generated = await aiClient.generateImage({
+              title: r.title,
+              ingredients: r.ingredients,
+            });
             if (generated?.imageDataUri) dishImage = generated.imageDataUri;
           }
           const id = await recipesRepo.add({
-            title: r.title, author: r.author ?? '', image: dishImage ?? undefined,
-            time: r.time, servings: r.servings, categories: r.categories,
-            ingredients: r.ingredients, steps: r.steps, macros: r.macros,
-            isFavorite: false, createdAt: new Date().toISOString(),
+            title: r.title,
+            author: r.author ?? '',
+            image: dishImage ?? undefined,
+            time: r.time,
+            servings: r.servings,
+            categories: r.categories,
+            ingredients: r.ingredients,
+            steps: r.steps,
+            macros: r.macros,
+            isFavorite: false,
+            createdAt: new Date().toISOString(),
           });
           recipeIds.push(id);
         }
         const inferredName = file.name.replace(/\.pdf$/i, '');
-        setProgramFormData(prev => ({
+        setProgramFormData((prev) => ({
           ...prev,
           name: prev.name || inferredName,
           recipeIds,
           pdfUrl: file.name,
         }));
-        alert(`Извлечено рецептов: ${result.recipes.length}. Проверьте название и сохраните программу.`);
+        alert(
+          `Извлечено рецептов: ${result.recipes.length}. Проверьте название и сохраните программу.`,
+        );
       } catch (error) {
         console.error('Error analyzing PDF for program:', error);
         alert('Не удалось распознать PDF. Попробуйте другой файл.');
@@ -192,7 +233,7 @@ export function ProgramsView(props: ProgramsViewProps) {
     alert('Ссылка скопирована в буфер обмена!');
   };
 
-  const openProgram = openProgramId ? (programs.find(p => p.id === openProgramId) ?? null) : null;
+  const openProgram = openProgramId ? (programs.find((p) => p.id === openProgramId) ?? null) : null;
 
   return (
     <>
@@ -209,8 +250,10 @@ export function ProgramsView(props: ProgramsViewProps) {
               className="text-xs font-bold text-emerald-600 bg-emerald-50 border-none rounded-lg px-4 py-2.5 outline-none"
             >
               <option value="Все">Все категории</option>
-              {availableCategories.map(cat => (
-                <option key={cat} value={cat}>{cat}</option>
+              {availableCategories.map((cat) => (
+                <option key={cat} value={cat}>
+                  {cat}
+                </option>
               ))}
             </select>
             <div className="relative">
@@ -299,12 +342,21 @@ export function ProgramsView(props: ProgramsViewProps) {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {programs
-              .filter(p =>
-                programRecipeFilter === 'Все' ||
-                recipes.some(r => p.recipeIds.includes(r.id) && r.categories.includes(programRecipeFilter)) ||
-                (p.subfolders && p.subfolders.some(sf => recipes.some(r => sf.recipeIds.includes(r.id) && r.categories.includes(programRecipeFilter))))
+              .filter(
+                (p) =>
+                  programRecipeFilter === 'Все' ||
+                  recipes.some(
+                    (r) => p.recipeIds.includes(r.id) && r.categories.includes(programRecipeFilter),
+                  ) ||
+                  (p.subfolders &&
+                    p.subfolders.some((sf) =>
+                      recipes.some(
+                        (r) =>
+                          sf.recipeIds.includes(r.id) && r.categories.includes(programRecipeFilter),
+                      ),
+                    )),
               )
-              .map(program => (
+              .map((program) => (
                 <div
                   key={program.id}
                   onClick={() => onOpenProgramIdChange(program.id)}
@@ -380,7 +432,11 @@ export function ProgramsView(props: ProgramsViewProps) {
                         <div className="flex items-center gap-2 text-xs font-bold text-zinc-400 uppercase">
                           <LinkIcon className="w-3.5 h-3.5" />
                           <a
-                            href={program.link.startsWith('http') ? program.link : `https://${program.link}`}
+                            href={
+                              program.link.startsWith('http')
+                                ? program.link
+                                : `https://${program.link}`
+                            }
                             target="_blank"
                             rel="noopener noreferrer"
                             className="text-emerald-600 hover:underline truncate"
@@ -393,7 +449,9 @@ export function ProgramsView(props: ProgramsViewProps) {
                     </div>
 
                     <div className="mt-auto pt-4 border-t border-zinc-50 flex items-center justify-between">
-                      <span className="text-xs font-bold text-zinc-400 uppercase">{program.recipeIds.length} рецептов</span>
+                      <span className="text-xs font-bold text-zinc-400 uppercase">
+                        {program.recipeIds.length} рецептов
+                      </span>
                       <div className="flex gap-2">
                         <button
                           onClick={async (e) => {
@@ -432,8 +490,13 @@ export function ProgramsView(props: ProgramsViewProps) {
                 className="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl overflow-hidden p-8 max-h-[90vh] overflow-y-auto custom-scrollbar"
               >
                 <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-xl font-bold">{editingProgramId ? 'Редактировать папку' : 'Создать папку с рецептами'}</h3>
-                  <button onClick={() => setIsCreatingProgram(false)} className="text-zinc-400 hover:text-zinc-600">
+                  <h3 className="text-xl font-bold">
+                    {editingProgramId ? 'Редактировать папку' : 'Создать папку с рецептами'}
+                  </h3>
+                  <button
+                    onClick={() => setIsCreatingProgram(false)}
+                    className="text-zinc-400 hover:text-zinc-600"
+                  >
                     <Plus className="w-6 h-6 rotate-45" />
                   </button>
                 </div>
@@ -442,14 +505,20 @@ export function ProgramsView(props: ProgramsViewProps) {
                   <div className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                       <div className="flex flex-col gap-2">
-                        <label className="text-xs font-bold text-zinc-400 uppercase">Фото обложки</label>
+                        <label className="text-xs font-bold text-zinc-400 uppercase">
+                          Фото обложки
+                        </label>
                         <div
                           onClick={() => programPhotoInputRef.current?.click()}
                           className="w-full aspect-video bg-zinc-50 border-2 border-dashed border-zinc-200 rounded-2xl flex flex-col items-center justify-center cursor-pointer hover:border-emerald-300 hover:bg-emerald-50 transition-all overflow-hidden relative group"
                         >
                           {programFormData.image ? (
                             <>
-                              <img src={programFormData.image} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                              <img
+                                src={programFormData.image}
+                                className="w-full h-full object-cover"
+                                referrerPolicy="no-referrer"
+                              />
                               <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
                                 <Camera className="w-8 h-8 text-white" />
                               </div>
@@ -457,14 +526,18 @@ export function ProgramsView(props: ProgramsViewProps) {
                           ) : (
                             <>
                               <Camera className="w-8 h-8 text-zinc-300 mb-2" />
-                              <span className="text-[10px] font-bold text-zinc-400 uppercase">Добавить фото</span>
+                              <span className="text-[10px] font-bold text-zinc-400 uppercase">
+                                Добавить фото
+                              </span>
                             </>
                           )}
                         </div>
                       </div>
 
                       <div className="flex flex-col gap-2">
-                        <label className="text-xs font-bold text-zinc-400 uppercase">PDF Документ</label>
+                        <label className="text-xs font-bold text-zinc-400 uppercase">
+                          PDF Документ
+                        </label>
                         <div
                           onClick={() => programPdfInputRef.current?.click()}
                           className="w-full aspect-video bg-zinc-50 border-2 border-dashed border-zinc-200 rounded-2xl flex flex-col items-center justify-center cursor-pointer hover:border-emerald-300 hover:bg-emerald-50 transition-all overflow-hidden relative group"
@@ -472,12 +545,16 @@ export function ProgramsView(props: ProgramsViewProps) {
                           {programFormData.pdfUrl ? (
                             <div className="flex flex-col items-center gap-2 p-4 text-center">
                               <FileText className="w-8 h-8 text-emerald-600" />
-                              <span className="text-[10px] font-bold text-emerald-600 truncate w-full">{programFormData.pdfUrl}</span>
+                              <span className="text-[10px] font-bold text-emerald-600 truncate w-full">
+                                {programFormData.pdfUrl}
+                              </span>
                             </div>
                           ) : (
                             <>
                               <FileText className="w-8 h-8 text-zinc-300 mb-2" />
-                              <span className="text-[10px] font-bold text-zinc-400 uppercase">Добавить PDF</span>
+                              <span className="text-[10px] font-bold text-zinc-400 uppercase">
+                                Добавить PDF
+                              </span>
                             </>
                           )}
                         </div>
@@ -485,12 +562,16 @@ export function ProgramsView(props: ProgramsViewProps) {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-bold text-zinc-700 mb-1">Название папки *</label>
+                      <label className="block text-sm font-bold text-zinc-700 mb-1">
+                        Название папки *
+                      </label>
                       <input
                         required
                         type="text"
                         value={programFormData.name}
-                        onChange={(e) => setProgramFormData({ ...programFormData, name: e.target.value })}
+                        onChange={(e) =>
+                          setProgramFormData({ ...programFormData, name: e.target.value })
+                        }
                         className="w-full px-4 py-3 bg-zinc-50 border border-zinc-200 rounded-2xl focus:ring-2 focus:ring-emerald-500 outline-none font-medium text-sm"
                         placeholder="Например: Полезные завтраки"
                       />
@@ -499,28 +580,38 @@ export function ProgramsView(props: ProgramsViewProps) {
                       <label className="block text-sm font-bold text-zinc-700 mb-1">Описание</label>
                       <textarea
                         value={programFormData.description}
-                        onChange={(e) => setProgramFormData({ ...programFormData, description: e.target.value })}
+                        onChange={(e) =>
+                          setProgramFormData({ ...programFormData, description: e.target.value })
+                        }
                         className="w-full px-4 py-3 bg-zinc-50 border border-zinc-200 rounded-2xl focus:ring-2 focus:ring-emerald-500 outline-none font-medium min-h-[80px] text-sm"
                         placeholder="О чем эта подборка?"
                       />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-bold text-zinc-700 mb-1 text-xs">Имя создателя</label>
+                        <label className="block text-sm font-bold text-zinc-700 mb-1 text-xs">
+                          Имя создателя
+                        </label>
                         <input
                           type="text"
                           value={programFormData.creator}
-                          onChange={(e) => setProgramFormData({ ...programFormData, creator: e.target.value })}
+                          onChange={(e) =>
+                            setProgramFormData({ ...programFormData, creator: e.target.value })
+                          }
                           className="w-full px-4 py-3 bg-zinc-50 border border-zinc-200 rounded-2xl focus:ring-2 focus:ring-emerald-500 outline-none font-medium text-sm"
                           placeholder="Ваше имя"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-bold text-zinc-700 mb-1 text-xs">Ссылка</label>
+                        <label className="block text-sm font-bold text-zinc-700 mb-1 text-xs">
+                          Ссылка
+                        </label>
                         <input
                           type="text"
                           value={programFormData.link}
-                          onChange={(e) => setProgramFormData({ ...programFormData, link: e.target.value })}
+                          onChange={(e) =>
+                            setProgramFormData({ ...programFormData, link: e.target.value })
+                          }
                           className="w-full px-4 py-3 bg-zinc-50 border border-zinc-200 rounded-2xl focus:ring-2 focus:ring-emerald-500 outline-none font-medium text-sm"
                           placeholder="https://..."
                         />
@@ -529,21 +620,41 @@ export function ProgramsView(props: ProgramsViewProps) {
 
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-1">
-                        <label className="block text-xs font-bold text-zinc-700 mb-1">Разрешенные продукты</label>
+                        <label className="block text-xs font-bold text-zinc-700 mb-1">
+                          Разрешенные продукты
+                        </label>
                         <input
                           type="text"
                           value={programFormData.allowedProducts?.join(', ') || ''}
-                          onChange={(e) => setProgramFormData({ ...programFormData, allowedProducts: e.target.value.split(',').map(s => s.trim()).filter(s => s !== '') })}
+                          onChange={(e) =>
+                            setProgramFormData({
+                              ...programFormData,
+                              allowedProducts: e.target.value
+                                .split(',')
+                                .map((s) => s.trim())
+                                .filter((s) => s !== ''),
+                            })
+                          }
                           className="w-full px-4 py-3 bg-zinc-50 border border-zinc-200 rounded-2xl focus:ring-2 focus:ring-emerald-500 outline-none font-medium text-sm"
                           placeholder="Курица, Рис..."
                         />
                       </div>
                       <div className="space-y-1">
-                        <label className="block text-xs font-bold text-zinc-700 mb-1">Запрещенные продукты</label>
+                        <label className="block text-xs font-bold text-zinc-700 mb-1">
+                          Запрещенные продукты
+                        </label>
                         <input
                           type="text"
                           value={programFormData.forbiddenProducts?.join(', ') || ''}
-                          onChange={(e) => setProgramFormData({ ...programFormData, forbiddenProducts: e.target.value.split(',').map(s => s.trim()).filter(s => s !== '') })}
+                          onChange={(e) =>
+                            setProgramFormData({
+                              ...programFormData,
+                              forbiddenProducts: e.target.value
+                                .split(',')
+                                .map((s) => s.trim())
+                                .filter((s) => s !== ''),
+                            })
+                          }
                           className="w-full px-4 py-3 bg-zinc-50 border border-zinc-200 rounded-2xl focus:ring-2 focus:ring-emerald-500 outline-none font-medium text-sm"
                           placeholder="Сахар, Мука..."
                         />
@@ -553,7 +664,9 @@ export function ProgramsView(props: ProgramsViewProps) {
                     {/* Subfolders Section */}
                     <div className="space-y-4 pt-4 border-t border-zinc-100">
                       <div className="flex items-center justify-between">
-                        <label className="block text-sm font-bold text-zinc-700 uppercase tracking-wider">Подпапки ({programFormData.subfolders.length})</label>
+                        <label className="block text-sm font-bold text-zinc-700 uppercase tracking-wider">
+                          Подпапки ({programFormData.subfolders.length})
+                        </label>
                         <button
                           type="button"
                           onClick={() => {
@@ -577,13 +690,18 @@ export function ProgramsView(props: ProgramsViewProps) {
 
                       <div className="space-y-6">
                         {programFormData.subfolders.map((subfolder) => (
-                          <div key={subfolder.id} className="p-4 bg-zinc-50 rounded-2xl border border-zinc-100 space-y-4 relative group">
+                          <div
+                            key={subfolder.id}
+                            className="p-4 bg-zinc-50 rounded-2xl border border-zinc-100 space-y-4 relative group"
+                          >
                             <button
                               type="button"
                               onClick={() => {
                                 setProgramFormData({
                                   ...programFormData,
-                                  subfolders: programFormData.subfolders.filter(sf => sf.id !== subfolder.id),
+                                  subfolders: programFormData.subfolders.filter(
+                                    (sf) => sf.id !== subfolder.id,
+                                  ),
                                 });
                               }}
                               className="absolute top-2 right-2 p-1.5 text-zinc-300 hover:text-red-500 transition-colors"
@@ -600,7 +718,11 @@ export function ProgramsView(props: ProgramsViewProps) {
                                 className="aspect-square bg-white border-2 border-dashed border-zinc-200 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:border-emerald-300 hover:bg-emerald-50 transition-all overflow-hidden relative"
                               >
                                 {subfolder.image ? (
-                                  <img src={subfolder.image} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                                  <img
+                                    src={subfolder.image}
+                                    className="w-full h-full object-cover"
+                                    referrerPolicy="no-referrer"
+                                  />
                                 ) : (
                                   <Camera className="w-6 h-6 text-zinc-300" />
                                 )}
@@ -612,8 +734,10 @@ export function ProgramsView(props: ProgramsViewProps) {
                                   onChange={(e) => {
                                     setProgramFormData({
                                       ...programFormData,
-                                      subfolders: programFormData.subfolders.map(sf =>
-                                        sf.id === subfolder.id ? { ...sf, name: e.target.value } : sf
+                                      subfolders: programFormData.subfolders.map((sf) =>
+                                        sf.id === subfolder.id
+                                          ? { ...sf, name: e.target.value }
+                                          : sf,
                                       ),
                                     });
                                   }}
@@ -625,8 +749,10 @@ export function ProgramsView(props: ProgramsViewProps) {
                                   onChange={(e) => {
                                     setProgramFormData({
                                       ...programFormData,
-                                      subfolders: programFormData.subfolders.map(sf =>
-                                        sf.id === subfolder.id ? { ...sf, description: e.target.value } : sf
+                                      subfolders: programFormData.subfolders.map((sf) =>
+                                        sf.id === subfolder.id
+                                          ? { ...sf, description: e.target.value }
+                                          : sf,
                                       ),
                                     });
                                   }}
@@ -635,16 +761,23 @@ export function ProgramsView(props: ProgramsViewProps) {
                                 />
                                 <div className="grid grid-cols-2 gap-2">
                                   <div className="space-y-1">
-                                    <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Разрешенные</label>
+                                    <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
+                                      Разрешенные
+                                    </label>
                                     <input
                                       type="text"
                                       value={subfolder.allowedProducts?.join(', ') || ''}
                                       onChange={(e) => {
-                                        const val = e.target.value.split(',').map(s => s.trim()).filter(s => s !== '');
+                                        const val = e.target.value
+                                          .split(',')
+                                          .map((s) => s.trim())
+                                          .filter((s) => s !== '');
                                         setProgramFormData({
                                           ...programFormData,
-                                          subfolders: programFormData.subfolders.map(sf =>
-                                            sf.id === subfolder.id ? { ...sf, allowedProducts: val } : sf
+                                          subfolders: programFormData.subfolders.map((sf) =>
+                                            sf.id === subfolder.id
+                                              ? { ...sf, allowedProducts: val }
+                                              : sf,
                                           ),
                                         });
                                       }}
@@ -653,16 +786,23 @@ export function ProgramsView(props: ProgramsViewProps) {
                                     />
                                   </div>
                                   <div className="space-y-1">
-                                    <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Запрещенные</label>
+                                    <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
+                                      Запрещенные
+                                    </label>
                                     <input
                                       type="text"
                                       value={subfolder.forbiddenProducts?.join(', ') || ''}
                                       onChange={(e) => {
-                                        const val = e.target.value.split(',').map(s => s.trim()).filter(s => s !== '');
+                                        const val = e.target.value
+                                          .split(',')
+                                          .map((s) => s.trim())
+                                          .filter((s) => s !== '');
                                         setProgramFormData({
                                           ...programFormData,
-                                          subfolders: programFormData.subfolders.map(sf =>
-                                            sf.id === subfolder.id ? { ...sf, forbiddenProducts: val } : sf
+                                          subfolders: programFormData.subfolders.map((sf) =>
+                                            sf.id === subfolder.id
+                                              ? { ...sf, forbiddenProducts: val }
+                                              : sf,
                                           ),
                                         });
                                       }}
@@ -673,15 +813,19 @@ export function ProgramsView(props: ProgramsViewProps) {
                                 </div>
                                 <div className="grid grid-cols-4 gap-2">
                                   <div className="space-y-1">
-                                    <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Ккал</label>
+                                    <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
+                                      Ккал
+                                    </label>
                                     <input
                                       type="number"
                                       value={subfolder.targetCalories || ''}
                                       onChange={(e) => {
                                         setProgramFormData({
                                           ...programFormData,
-                                          subfolders: programFormData.subfolders.map(sf =>
-                                            sf.id === subfolder.id ? { ...sf, targetCalories: Number(e.target.value) } : sf
+                                          subfolders: programFormData.subfolders.map((sf) =>
+                                            sf.id === subfolder.id
+                                              ? { ...sf, targetCalories: Number(e.target.value) }
+                                              : sf,
                                           ),
                                         });
                                       }}
@@ -689,15 +833,19 @@ export function ProgramsView(props: ProgramsViewProps) {
                                     />
                                   </div>
                                   <div className="space-y-1">
-                                    <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Белки</label>
+                                    <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
+                                      Белки
+                                    </label>
                                     <input
                                       type="number"
                                       value={subfolder.targetProteins || ''}
                                       onChange={(e) => {
                                         setProgramFormData({
                                           ...programFormData,
-                                          subfolders: programFormData.subfolders.map(sf =>
-                                            sf.id === subfolder.id ? { ...sf, targetProteins: Number(e.target.value) } : sf
+                                          subfolders: programFormData.subfolders.map((sf) =>
+                                            sf.id === subfolder.id
+                                              ? { ...sf, targetProteins: Number(e.target.value) }
+                                              : sf,
                                           ),
                                         });
                                       }}
@@ -705,15 +853,19 @@ export function ProgramsView(props: ProgramsViewProps) {
                                     />
                                   </div>
                                   <div className="space-y-1">
-                                    <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Жиры</label>
+                                    <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
+                                      Жиры
+                                    </label>
                                     <input
                                       type="number"
                                       value={subfolder.targetFats || ''}
                                       onChange={(e) => {
                                         setProgramFormData({
                                           ...programFormData,
-                                          subfolders: programFormData.subfolders.map(sf =>
-                                            sf.id === subfolder.id ? { ...sf, targetFats: Number(e.target.value) } : sf
+                                          subfolders: programFormData.subfolders.map((sf) =>
+                                            sf.id === subfolder.id
+                                              ? { ...sf, targetFats: Number(e.target.value) }
+                                              : sf,
                                           ),
                                         });
                                       }}
@@ -721,15 +873,19 @@ export function ProgramsView(props: ProgramsViewProps) {
                                     />
                                   </div>
                                   <div className="space-y-1">
-                                    <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Угл</label>
+                                    <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
+                                      Угл
+                                    </label>
                                     <input
                                       type="number"
                                       value={subfolder.targetCarbs || ''}
                                       onChange={(e) => {
                                         setProgramFormData({
                                           ...programFormData,
-                                          subfolders: programFormData.subfolders.map(sf =>
-                                            sf.id === subfolder.id ? { ...sf, targetCarbs: Number(e.target.value) } : sf
+                                          subfolders: programFormData.subfolders.map((sf) =>
+                                            sf.id === subfolder.id
+                                              ? { ...sf, targetCarbs: Number(e.target.value) }
+                                              : sf,
                                           ),
                                         });
                                       }}
@@ -742,41 +898,62 @@ export function ProgramsView(props: ProgramsViewProps) {
 
                             <div className="space-y-2">
                               <div className="flex items-center justify-between">
-                                <span className="text-[10px] font-bold text-zinc-400 uppercase">Рецепты ({subfolder.recipeIds.length})</span>
+                                <span className="text-[10px] font-bold text-zinc-400 uppercase">
+                                  Рецепты ({subfolder.recipeIds.length})
+                                </span>
                                 <select
                                   value={subfolderRecipeFilters[subfolder.id] || 'Все'}
-                                  onChange={(e) => setSubfolderRecipeFilters({
-                                    ...subfolderRecipeFilters,
-                                    [subfolder.id]: e.target.value,
-                                  })}
+                                  onChange={(e) =>
+                                    setSubfolderRecipeFilters({
+                                      ...subfolderRecipeFilters,
+                                      [subfolder.id]: e.target.value,
+                                    })
+                                  }
                                   className="text-[10px] font-bold text-emerald-600 bg-white border border-zinc-100 rounded-md px-1.5 py-0.5 outline-none"
                                 >
                                   <option value="Все">Все</option>
-                                  {availableCategories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                                  {availableCategories.map((cat) => (
+                                    <option key={cat} value={cat}>
+                                      {cat}
+                                    </option>
+                                  ))}
                                 </select>
                               </div>
                               <div className="max-h-32 overflow-y-auto space-y-1 pr-1 custom-scrollbar">
                                 {recipes
-                                  .filter(r => (subfolderRecipeFilters[subfolder.id] || 'Все') === 'Все' || r.categories.includes(subfolderRecipeFilters[subfolder.id] ?? ''))
-                                  .map(recipe => (
-                                    <label key={recipe.id} className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-zinc-50 transition-colors">
+                                  .filter(
+                                    (r) =>
+                                      (subfolderRecipeFilters[subfolder.id] || 'Все') === 'Все' ||
+                                      r.categories.includes(
+                                        subfolderRecipeFilters[subfolder.id] ?? '',
+                                      ),
+                                  )
+                                  .map((recipe) => (
+                                    <label
+                                      key={recipe.id}
+                                      className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-zinc-50 transition-colors"
+                                    >
                                       <input
                                         type="checkbox"
                                         checked={subfolder.recipeIds.includes(recipe.id)}
                                         onChange={(e) => {
                                           const newRecipeIds = e.target.checked
                                             ? [...subfolder.recipeIds, recipe.id]
-                                            : subfolder.recipeIds.filter(id => id !== recipe.id);
+                                            : subfolder.recipeIds.filter((id) => id !== recipe.id);
                                           setProgramFormData({
                                             ...programFormData,
-                                            subfolders: programFormData.subfolders.map(sf =>
-                                              sf.id === subfolder.id ? { ...sf, recipeIds: newRecipeIds } : sf
+                                            subfolders: programFormData.subfolders.map((sf) =>
+                                              sf.id === subfolder.id
+                                                ? { ...sf, recipeIds: newRecipeIds }
+                                                : sf,
                                             ),
                                           });
                                         }}
                                         className="w-4 h-4 rounded border-zinc-300 text-emerald-600 focus:ring-emerald-500"
                                       />
-                                      <span className="text-xs font-medium text-zinc-600 truncate">{recipe.title}</span>
+                                      <span className="text-xs font-medium text-zinc-600 truncate">
+                                        {recipe.title}
+                                      </span>
                                     </label>
                                   ))}
                               </div>
@@ -788,36 +965,57 @@ export function ProgramsView(props: ProgramsViewProps) {
 
                     <div>
                       <div className="flex items-center justify-between mb-3">
-                        <label className="block text-sm font-bold text-zinc-700">Выберите рецепты ({programFormData.recipeIds.length})</label>
+                        <label className="block text-sm font-bold text-zinc-700">
+                          Выберите рецепты ({programFormData.recipeIds.length})
+                        </label>
                         <select
                           value={programRecipeFilter}
                           onChange={(e) => setProgramRecipeFilter(e.target.value)}
                           className="text-xs font-bold text-emerald-600 bg-emerald-50 border-none rounded-lg px-2 py-1 outline-none"
                         >
                           <option value="Все">Все категории</option>
-                          {availableCategories.map(cat => (
-                            <option key={cat} value={cat}>{cat}</option>
+                          {availableCategories.map((cat) => (
+                            <option key={cat} value={cat}>
+                              {cat}
+                            </option>
                           ))}
                         </select>
                       </div>
                       <div className="max-h-48 overflow-y-auto space-y-2 pr-2 custom-scrollbar">
                         {recipes
-                          .filter(r => programRecipeFilter === 'Все' || r.categories.includes(programRecipeFilter))
-                          .map(recipe => (
-                            <label key={recipe.id} className="flex items-center gap-3 p-3 bg-zinc-50 rounded-xl cursor-pointer hover:bg-zinc-100 transition-colors">
+                          .filter(
+                            (r) =>
+                              programRecipeFilter === 'Все' ||
+                              r.categories.includes(programRecipeFilter),
+                          )
+                          .map((recipe) => (
+                            <label
+                              key={recipe.id}
+                              className="flex items-center gap-3 p-3 bg-zinc-50 rounded-xl cursor-pointer hover:bg-zinc-100 transition-colors"
+                            >
                               <input
                                 type="checkbox"
                                 checked={programFormData.recipeIds.includes(recipe.id)}
                                 onChange={(e) => {
                                   if (e.target.checked) {
-                                    setProgramFormData({ ...programFormData, recipeIds: [...programFormData.recipeIds, recipe.id] });
+                                    setProgramFormData({
+                                      ...programFormData,
+                                      recipeIds: [...programFormData.recipeIds, recipe.id],
+                                    });
                                   } else {
-                                    setProgramFormData({ ...programFormData, recipeIds: programFormData.recipeIds.filter(id => id !== recipe.id) });
+                                    setProgramFormData({
+                                      ...programFormData,
+                                      recipeIds: programFormData.recipeIds.filter(
+                                        (id) => id !== recipe.id,
+                                      ),
+                                    });
                                   }
                                 }}
                                 className="w-5 h-5 rounded-lg border-zinc-300 text-emerald-600 focus:ring-emerald-500"
                               />
-                              <span className="text-sm font-bold text-zinc-700 truncate">{recipe.title}</span>
+                              <span className="text-sm font-bold text-zinc-700 truncate">
+                                {recipe.title}
+                              </span>
                             </label>
                           ))}
                       </div>
@@ -838,16 +1036,36 @@ export function ProgramsView(props: ProgramsViewProps) {
       </div>
 
       {/* Hidden file inputs */}
-      <input type="file" ref={programPhotoInputRef} className="hidden" accept="image/*" onChange={handleProgramPhotoUpload} />
-      <input type="file" ref={programPdfInputRef} className="hidden" accept="application/pdf" onChange={handleProgramPdfUpload} />
-      <input type="file" ref={subfolderPhotoInputRef} className="hidden" accept="image/*" onChange={handleSubfolderPhotoUpload} />
+      <input
+        type="file"
+        ref={programPhotoInputRef}
+        className="hidden"
+        accept="image/*"
+        onChange={handleProgramPhotoUpload}
+      />
+      <input
+        type="file"
+        ref={programPdfInputRef}
+        className="hidden"
+        accept="application/pdf"
+        onChange={handleProgramPdfUpload}
+      />
+      <input
+        type="file"
+        ref={subfolderPhotoInputRef}
+        className="hidden"
+        accept="image/*"
+        onChange={handleSubfolderPhotoUpload}
+      />
 
       {/* Program delete confirmation */}
       <AnimatePresence>
         {programToDelete && (
           <div className="fixed inset-0 z-[130] flex items-center justify-center p-4">
             <motion.div
-              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
               onClick={() => setProgramToDelete(null)}
               className="absolute inset-0 bg-zinc-900/60 backdrop-blur-sm"
             />
@@ -908,10 +1126,14 @@ export function ProgramsView(props: ProgramsViewProps) {
             recipeTarget={recipeTarget}
             onRecipeTargetCleared={onRecipeTargetCleared}
             photoInputRef={photoInputRef}
-            isAddingManual={isAddingManual} onIsAddingManualChange={onIsAddingManualChange}
-            isAddingLink={isAddingLink} onIsAddingLinkChange={onIsAddingLinkChange}
-            isAddingPDF={isAddingPDF} onIsAddingPDFChange={onIsAddingPDFChange}
-            isScanning={isScanning} onIsScanningChange={onIsScanningChange}
+            isAddingManual={isAddingManual}
+            onIsAddingManualChange={onIsAddingManualChange}
+            isAddingLink={isAddingLink}
+            onIsAddingLinkChange={onIsAddingLinkChange}
+            isAddingPDF={isAddingPDF}
+            onIsAddingPDFChange={onIsAddingPDFChange}
+            isScanning={isScanning}
+            onIsScanningChange={onIsScanningChange}
             onSelectRecipe={onSelectRecipe}
             userProfile={userProfile}
           />

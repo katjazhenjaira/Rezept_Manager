@@ -227,7 +227,9 @@ export function RecipesView({
   const [searchQuery, setSearchQuery] = useState('');
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isAddRecipeDropdownOpen, setIsAddRecipeDropdownOpen] = useState(false);
-  const [filterSortBy, setFilterSortBy] = useState<'newest' | 'oldest' | 'time' | 'calories'>('newest');
+  const [filterSortBy, setFilterSortBy] = useState<'newest' | 'oldest' | 'time' | 'calories'>(
+    'newest',
+  );
   const [filterCategories, setFilterCategories] = useState<string[]>([]);
   const [filterAuthors, setFilterAuthors] = useState<string[]>([]);
   const [filterPrograms, setFilterPrograms] = useState<string[]>([]);
@@ -314,8 +316,7 @@ export function RecipesView({
   const filteredRecipes = recipes
     .filter((recipe) => {
       const matchesSearch = recipe.title.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesView =
-        recipeView === 'all' || (recipeView === 'favorites' && recipe.isFavorite);
+      const matchesView = recipeView === 'all' || (recipeView === 'favorites' && recipe.isFavorite);
       const matchesCategory =
         filterCategories.length === 0 ||
         filterCategories.every((cat) => recipe.categories.includes(cat));
@@ -350,15 +351,10 @@ export function RecipesView({
     })
     .sort((a, b) => {
       if (filterSortBy === 'newest')
-        return (
-          new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
-        );
+        return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
       if (filterSortBy === 'oldest')
-        return (
-          new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime()
-        );
-      if (filterSortBy === 'time')
-        return (parseInt(a.time) || 0) - (parseInt(b.time) || 0);
+        return new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime();
+      if (filterSortBy === 'time') return (parseInt(a.time) || 0) - (parseInt(b.time) || 0);
       if (filterSortBy === 'calories') return a.macros.calories - b.macros.calories;
       return 0;
     });
@@ -688,9 +684,7 @@ export function RecipesView({
           <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <BookOpen className="w-10 h-10 text-emerald-600" />
           </div>
-          <h2 className="text-2xl font-bold text-zinc-900 mb-2">
-            Твой банк рецептов пока пуст
-          </h2>
+          <h2 className="text-2xl font-bold text-zinc-900 mb-2">Твой банк рецептов пока пуст</h2>
           <p className="text-zinc-500">Добавь первый рецепт удобным способом:</p>
         </div>
 
@@ -781,10 +775,7 @@ export function RecipesView({
               <AnimatePresence>
                 {isFilterOpen && (
                   <>
-                    <div
-                      className="fixed inset-0 z-30"
-                      onClick={() => setIsFilterOpen(false)}
-                    />
+                    <div className="fixed inset-0 z-30" onClick={() => setIsFilterOpen(false)} />
                     <motion.div
                       initial={{ opacity: 0, y: 10, scale: 0.95 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -1250,10 +1241,7 @@ export function RecipesView({
                       )}
                       <div className="aspect-[4/3] bg-zinc-100 relative overflow-hidden">
                         <img
-                          src={
-                            recipe.image ||
-                            `https://picsum.photos/seed/${recipe.id}/600/450`
-                          }
+                          src={recipe.image || `https://picsum.photos/seed/${recipe.id}/600/450`}
                           alt={recipe.title}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                           referrerPolicy="no-referrer"
@@ -1484,9 +1472,7 @@ export function RecipesView({
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-bold text-zinc-700 mb-1">
-                      Количество
-                    </label>
+                    <label className="block text-sm font-bold text-zinc-700 mb-1">Количество</label>
                     <input
                       type="text"
                       value={productFormData.amount}
@@ -1812,10 +1798,7 @@ export function RecipesView({
                       <button
                         type="button"
                         onClick={() =>
-                          analyzePhoto(
-                            [{ base64: formData.image!, mimeType: 'image/jpeg' }],
-                            false,
-                          )
+                          analyzePhoto([{ base64: formData.image!, mimeType: 'image/jpeg' }], false)
                         }
                         className="text-xs font-bold text-emerald-600 hover:text-emerald-700 flex items-center gap-1 bg-emerald-50 px-2 py-1 rounded-lg transition-colors"
                       >
@@ -2049,9 +2032,7 @@ export function RecipesView({
                     <textarea
                       rows={3}
                       value={formData.substitutions}
-                      onChange={(e) =>
-                        setFormData({ ...formData, substitutions: e.target.value })
-                      }
+                      onChange={(e) => setFormData({ ...formData, substitutions: e.target.value })}
                       className="w-full px-4 py-2 bg-zinc-50 border border-zinc-200 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 resize-none"
                     />
                   </div>
@@ -2317,12 +2298,12 @@ export function RecipesView({
                                   key={program.id}
                                   onClick={async () => {
                                     const newRecipeIds = isInProgram
-                                      ? program.recipeIds.filter(
-                                          (id) => id !== selectedRecipe.id,
-                                        )
+                                      ? program.recipeIds.filter((id) => id !== selectedRecipe.id)
                                       : [...program.recipeIds, selectedRecipe.id];
                                     try {
-                                      await programsRepo.update(program.id, { recipeIds: newRecipeIds });
+                                      await programsRepo.update(program.id, {
+                                        recipeIds: newRecipeIds,
+                                      });
                                     } catch (err) {
                                       console.error('Error updating program:', err);
                                     }
@@ -2355,9 +2336,7 @@ export function RecipesView({
                         className="overflow-hidden"
                       >
                         <div className="p-6 bg-emerald-50 rounded-3xl border border-emerald-100 space-y-4">
-                          <h4 className="font-bold text-emerald-900">
-                            Добавить в план питания
-                          </h4>
+                          <h4 className="font-bold text-emerald-900">Добавить в план питания</h4>
                           <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
                               <label className="text-xs font-bold text-emerald-700 uppercase">
@@ -2435,10 +2414,18 @@ export function RecipesView({
                         {(() => {
                           const servingsBase = Math.max(1, selectedRecipe.servings);
                           const scaledMacros = {
-                            calories: Math.round((selectedRecipe.macros.calories * portionCount) / servingsBase),
-                            proteins: Math.round((selectedRecipe.macros.proteins * portionCount) / servingsBase),
-                            fats: Math.round((selectedRecipe.macros.fats * portionCount) / servingsBase),
-                            carbs: Math.round((selectedRecipe.macros.carbs * portionCount) / servingsBase),
+                            calories: Math.round(
+                              (selectedRecipe.macros.calories * portionCount) / servingsBase,
+                            ),
+                            proteins: Math.round(
+                              (selectedRecipe.macros.proteins * portionCount) / servingsBase,
+                            ),
+                            fats: Math.round(
+                              (selectedRecipe.macros.fats * portionCount) / servingsBase,
+                            ),
+                            carbs: Math.round(
+                              (selectedRecipe.macros.carbs * portionCount) / servingsBase,
+                            ),
                           };
                           return (
                             <div className="grid grid-cols-2 gap-y-4 gap-x-6">

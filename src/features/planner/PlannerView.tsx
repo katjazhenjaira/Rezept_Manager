@@ -76,7 +76,9 @@ export function PlannerView({
   const [plannerViewMode, setPlannerViewMode] = useState<PlannerViewMode>('calendar');
   const [selectedPlannerDate, setSelectedPlannerDate] = useState(new Date());
   const [isRecipePickerOpen, setIsRecipePickerOpen] = useState(false);
-  const [pickingMealInfo, setPickingMealInfo] = useState<{ date: string; mealType: string } | null>(null);
+  const [pickingMealInfo, setPickingMealInfo] = useState<{ date: string; mealType: string } | null>(
+    null,
+  );
   const [isAddingProduct, setIsAddingProduct] = useState(false);
   const [activeAddDropdown, setActiveAddDropdown] = useState<string | null>(null);
   const [productFormData, setProductFormData] = useState({
@@ -103,24 +105,28 @@ export function PlannerView({
           calories: productFormData.calories,
           proteins: productFormData.proteins,
           fats: productFormData.fats,
-          carbs: productFormData.carbs
-        }
+          carbs: productFormData.carbs,
+        },
       });
       setIsAddingProduct(false);
       setProductFormData({ name: '', amount: '', calories: 0, proteins: 0, fats: 0, carbs: 0 });
-      alert("Продукт добавлен");
+      alert('Продукт добавлен');
     } catch (error) {
-      console.error("Error adding product to planner:", error);
-      alert("Ошибка при добавлении продукта");
+      console.error('Error adding product to planner:', error);
+      alert('Ошибка при добавлении продукта');
     }
   };
 
   const handleAddToPlanner = async (date: string, mealType: string, recipeId: string) => {
-    const recipe = recipes.find(r => r.id === recipeId);
+    const recipe = recipes.find((r) => r.id === recipeId);
     if (recipe) {
       const allergens = recipeAllergens(recipe, userProfile.allergies);
       if (allergens.length > 0) {
-        if (!confirm(`Осторожно! Этот рецепт содержит ингредиенты, на которые у вас аллергия: ${allergens.join(', ')}. Все равно добавить?`)) {
+        if (
+          !confirm(
+            `Осторожно! Этот рецепт содержит ингредиенты, на которые у вас аллергия: ${allergens.join(', ')}. Все равно добавить?`,
+          )
+        ) {
           return;
         }
       }
@@ -128,7 +134,7 @@ export function PlannerView({
     try {
       await plannerRepo.add({ date, mealType, type: 'recipe', recipeId });
     } catch (error) {
-      console.error("Error adding to planner:", error);
+      console.error('Error adding to planner:', error);
     }
   };
 
@@ -136,16 +142,17 @@ export function PlannerView({
     try {
       await plannerRepo.delete(entryId);
     } catch (error) {
-      console.error("Error removing from planner:", error);
+      console.error('Error removing from planner:', error);
     }
   };
 
   const getEntriesForDate = (date: Date) => {
     const dateStr = format(date, 'yyyy-MM-dd');
-    return plannerEntries.filter(e => e.date === dateStr);
+    return plannerEntries.filter((e) => e.date === dateStr);
   };
 
-  const getRecipeById = (id: string | undefined) => (id ? recipes.find(r => r.id === id) : undefined);
+  const getRecipeById = (id: string | undefined) =>
+    id ? recipes.find((r) => r.id === id) : undefined;
 
   const getMacrosForDate = (date: Date) => {
     const entries = getEntriesForDate(date);
@@ -153,10 +160,11 @@ export function PlannerView({
   };
 
   const selectedDateMacros = getMacrosForDate(selectedPlannerDate);
-  const isSelectedDateOverLimit = selectedDateMacros.calories > userProfile.targetCalories ||
-                                 selectedDateMacros.proteins > userProfile.targetProteins ||
-                                 selectedDateMacros.fats > userProfile.targetFats ||
-                                 selectedDateMacros.carbs > userProfile.targetCarbs;
+  const isSelectedDateOverLimit =
+    selectedDateMacros.calories > userProfile.targetCalories ||
+    selectedDateMacros.proteins > userProfile.targetProteins ||
+    selectedDateMacros.fats > userProfile.targetFats ||
+    selectedDateMacros.carbs > userProfile.targetCarbs;
 
   const renderDayView = () => {
     const entries = getEntriesForDate(selectedPlannerDate);
@@ -173,8 +181,12 @@ export function PlannerView({
               <ChevronLeft className="w-5 h-5 text-zinc-400" />
             </button>
             <div className="text-center min-w-[140px]">
-              <h3 className="font-bold text-lg">{format(selectedPlannerDate, 'd MMMM', { locale: ru })}</h3>
-              <p className="text-xs text-zinc-400 font-medium uppercase tracking-wider">{format(selectedPlannerDate, 'EEEE', { locale: ru })}</p>
+              <h3 className="font-bold text-lg">
+                {format(selectedPlannerDate, 'd MMMM', { locale: ru })}
+              </h3>
+              <p className="text-xs text-zinc-400 font-medium uppercase tracking-wider">
+                {format(selectedPlannerDate, 'EEEE', { locale: ru })}
+              </p>
             </div>
             <button
               onClick={() => setSelectedPlannerDate(addDays(selectedPlannerDate, 1))}
@@ -185,39 +197,79 @@ export function PlannerView({
           </div>
 
           <div className="flex gap-2">
-            <div className={cn(
-              "text-center p-2 rounded-xl min-w-[50px] border transition-colors",
-              totalMacros.calories > userProfile.targetCalories ? "bg-red-50 border-red-100" : "bg-zinc-50 border-zinc-100"
-            )}>
+            <div
+              className={cn(
+                'text-center p-2 rounded-xl min-w-[50px] border transition-colors',
+                totalMacros.calories > userProfile.targetCalories
+                  ? 'bg-red-50 border-red-100'
+                  : 'bg-zinc-50 border-zinc-100',
+              )}
+            >
               <p className="text-[8px] font-bold text-zinc-400 uppercase">Ккал</p>
-              <p className={cn("font-bold text-xs", totalMacros.calories > userProfile.targetCalories ? "text-red-600" : "text-emerald-600")}>
+              <p
+                className={cn(
+                  'font-bold text-xs',
+                  totalMacros.calories > userProfile.targetCalories
+                    ? 'text-red-600'
+                    : 'text-emerald-600',
+                )}
+              >
                 {totalMacros.calories}
               </p>
             </div>
-            <div className={cn(
-              "text-center p-2 rounded-xl min-w-[40px] border transition-colors",
-              totalMacros.proteins > userProfile.targetProteins ? "bg-red-50 border-red-100" : "bg-zinc-50 border-zinc-100"
-            )}>
+            <div
+              className={cn(
+                'text-center p-2 rounded-xl min-w-[40px] border transition-colors',
+                totalMacros.proteins > userProfile.targetProteins
+                  ? 'bg-red-50 border-red-100'
+                  : 'bg-zinc-50 border-zinc-100',
+              )}
+            >
               <p className="text-[8px] font-bold text-zinc-400 uppercase">Б</p>
-              <p className={cn("font-bold text-xs", totalMacros.proteins > userProfile.targetProteins ? "text-red-600" : "text-zinc-700")}>
+              <p
+                className={cn(
+                  'font-bold text-xs',
+                  totalMacros.proteins > userProfile.targetProteins
+                    ? 'text-red-600'
+                    : 'text-zinc-700',
+                )}
+              >
                 {totalMacros.proteins}г
               </p>
             </div>
-            <div className={cn(
-              "text-center p-2 rounded-xl min-w-[40px] border transition-colors",
-              totalMacros.fats > userProfile.targetFats ? "bg-red-50 border-red-100" : "bg-zinc-50 border-zinc-100"
-            )}>
+            <div
+              className={cn(
+                'text-center p-2 rounded-xl min-w-[40px] border transition-colors',
+                totalMacros.fats > userProfile.targetFats
+                  ? 'bg-red-50 border-red-100'
+                  : 'bg-zinc-50 border-zinc-100',
+              )}
+            >
               <p className="text-[8px] font-bold text-zinc-400 uppercase">Ж</p>
-              <p className={cn("font-bold text-xs", totalMacros.fats > userProfile.targetFats ? "text-red-600" : "text-zinc-700")}>
+              <p
+                className={cn(
+                  'font-bold text-xs',
+                  totalMacros.fats > userProfile.targetFats ? 'text-red-600' : 'text-zinc-700',
+                )}
+              >
                 {totalMacros.fats}г
               </p>
             </div>
-            <div className={cn(
-              "text-center p-2 rounded-xl min-w-[40px] border transition-colors",
-              totalMacros.carbs > userProfile.targetCarbs ? "bg-red-50 border-red-100" : "bg-zinc-50 border-zinc-100"
-            )}>
+            <div
+              className={cn(
+                'text-center p-2 rounded-xl min-w-[40px] border transition-colors',
+                totalMacros.carbs > userProfile.targetCarbs
+                  ? 'bg-red-50 border-red-100'
+                  : 'bg-zinc-50 border-zinc-100',
+              )}
+            >
               <p className="text-[8px] font-bold text-zinc-400 uppercase">У</p>
-              <p className={cn("font-bold text-xs", totalMacros.carbs > userProfile.targetCarbs ? "text-red-600" : "text-zinc-700")}>
+              <p
+                className={cn(
+                  'font-bold text-xs',
+                  totalMacros.carbs > userProfile.targetCarbs ? 'text-red-600' : 'text-zinc-700',
+                )}
+              >
                 {totalMacros.carbs}г
               </p>
             </div>
@@ -225,27 +277,35 @@ export function PlannerView({
         </div>
 
         <div className="grid grid-cols-1 gap-2">
-          {mealTypes.map(meal => {
-            const mealEntries = entries.filter(e => e.mealType === meal);
+          {mealTypes.map((meal) => {
+            const mealEntries = entries.filter((e) => e.mealType === meal);
             const mealMacros = sumMacros(mealEntries, recipes);
 
             return (
-              <div key={meal} className="bg-white rounded-2xl border border-zinc-100 overflow-hidden shadow-sm hover:shadow-md transition-all group">
+              <div
+                key={meal}
+                className="bg-white rounded-2xl border border-zinc-100 overflow-hidden shadow-sm hover:shadow-md transition-all group"
+              >
                 <div className="p-3 sm:p-4 flex items-center gap-4">
                   <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold text-[10px] flex-shrink-0">
                     {meal[0]}
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center justify-between mb-1">
-                      <h4 className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">{meal}</h4>
+                      <h4 className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
+                        {meal}
+                      </h4>
                     </div>
                     <div className="space-y-2">
-                      {mealEntries.map(entry => {
+                      {mealEntries.map((entry) => {
                         if (entry.type === 'recipe' && entry.recipeId) {
                           const recipe = getRecipeById(entry.recipeId);
                           if (!recipe) return null;
                           return (
-                            <div key={entry.id} className="flex items-center justify-between group/item">
+                            <div
+                              key={entry.id}
+                              className="flex items-center justify-between group/item"
+                            >
                               <button
                                 onClick={() => onSelectRecipe(recipe)}
                                 className="font-bold text-zinc-900 hover:text-emerald-600 transition-colors text-xs"
@@ -253,7 +313,9 @@ export function PlannerView({
                                 {recipe.title}
                               </button>
                               <div className="flex items-center gap-3">
-                                <span className="text-xs font-bold text-emerald-600">{recipe.macros.calories} ккал</span>
+                                <span className="text-xs font-bold text-emerald-600">
+                                  {recipe.macros.calories} ккал
+                                </span>
                                 <button
                                   onClick={() => handleRemoveFromPlanner(entry.id)}
                                   className="p-1 text-zinc-300 hover:text-red-500 transition-colors opacity-0 group-hover/item:opacity-100"
@@ -265,13 +327,24 @@ export function PlannerView({
                           );
                         } else if (entry.type === 'product') {
                           return (
-                            <div key={entry.id} className="flex items-center justify-between group/item">
+                            <div
+                              key={entry.id}
+                              className="flex items-center justify-between group/item"
+                            >
                               <div className="flex flex-col">
-                                <span className="font-bold text-zinc-900 text-xs">{entry.productName}</span>
-                                {entry.amount && <span className="text-[9px] text-zinc-400 font-medium uppercase">{entry.amount}</span>}
+                                <span className="font-bold text-zinc-900 text-xs">
+                                  {entry.productName}
+                                </span>
+                                {entry.amount && (
+                                  <span className="text-[9px] text-zinc-400 font-medium uppercase">
+                                    {entry.amount}
+                                  </span>
+                                )}
                               </div>
                               <div className="flex items-center gap-3">
-                                <span className="text-xs font-bold text-emerald-600">{entry.macros?.calories} ккал</span>
+                                <span className="text-xs font-bold text-emerald-600">
+                                  {entry.macros?.calories} ккал
+                                </span>
                                 <button
                                   onClick={() => handleRemoveFromPlanner(entry.id)}
                                   className="p-1 text-zinc-300 hover:text-red-500 transition-colors opacity-0 group-hover/item:opacity-100"
@@ -286,7 +359,9 @@ export function PlannerView({
                       })}
                       <div className="relative inline-block">
                         <button
-                          onClick={() => setActiveAddDropdown(activeAddDropdown === `${meal}` ? null : `${meal}`)}
+                          onClick={() =>
+                            setActiveAddDropdown(activeAddDropdown === `${meal}` ? null : `${meal}`)
+                          }
                           className="text-[10px] text-zinc-400 hover:text-emerald-600 transition-colors flex items-center gap-1.5 font-bold"
                         >
                           <Plus className="w-3.5 h-3.5" />
@@ -296,7 +371,10 @@ export function PlannerView({
                         <AnimatePresence>
                           {activeAddDropdown === `${meal}` && (
                             <>
-                              <div className="fixed inset-0 z-10" onClick={() => setActiveAddDropdown(null)} />
+                              <div
+                                className="fixed inset-0 z-10"
+                                onClick={() => setActiveAddDropdown(null)}
+                              />
                               <motion.div
                                 initial={{ opacity: 0, y: 10, scale: 0.95 }}
                                 animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -305,7 +383,10 @@ export function PlannerView({
                               >
                                 <button
                                   onClick={() => {
-                                    setPickingMealInfo({ date: format(selectedPlannerDate, 'yyyy-MM-dd'), mealType: meal });
+                                    setPickingMealInfo({
+                                      date: format(selectedPlannerDate, 'yyyy-MM-dd'),
+                                      mealType: meal,
+                                    });
                                     setIsRecipePickerOpen(true);
                                     setActiveAddDropdown(null);
                                   }}
@@ -315,7 +396,10 @@ export function PlannerView({
                                 </button>
                                 <button
                                   onClick={() => {
-                                    setPickingMealInfo({ date: format(selectedPlannerDate, 'yyyy-MM-dd'), mealType: meal });
+                                    setPickingMealInfo({
+                                      date: format(selectedPlannerDate, 'yyyy-MM-dd'),
+                                      mealType: meal,
+                                    });
                                     setIsAddingProduct(true);
                                     setActiveAddDropdown(null);
                                   }}
@@ -347,33 +431,60 @@ export function PlannerView({
             );
           })}
 
-          <div className={cn(
-            "mt-4 p-5 rounded-3xl text-white shadow-lg flex items-center justify-between transition-colors",
-            isSelectedDateOverLimit ? "bg-red-500 shadow-red-100" : "bg-emerald-600 shadow-emerald-100"
-          )}>
+          <div
+            className={cn(
+              'mt-4 p-5 rounded-3xl text-white shadow-lg flex items-center justify-between transition-colors',
+              isSelectedDateOverLimit
+                ? 'bg-red-500 shadow-red-100'
+                : 'bg-emerald-600 shadow-emerald-100',
+            )}
+          >
             <div>
-              <h4 className="text-[10px] font-bold uppercase tracking-widest opacity-80 mb-0.5">Итого за день</h4>
+              <h4 className="text-[10px] font-bold uppercase tracking-widest opacity-80 mb-0.5">
+                Итого за день
+              </h4>
               <p className="text-xl font-bold">{totalMacros.calories} ккал</p>
             </div>
             <div className="flex gap-4 text-xs font-bold">
               <div className="text-center">
                 <p className="opacity-70 uppercase text-[9px] mb-0.5">Белки</p>
-                <p className={cn(totalMacros.proteins > userProfile.targetProteins && "text-red-100 underline decoration-2 underline-offset-4")}>{totalMacros.proteins}г</p>
+                <p
+                  className={cn(
+                    totalMacros.proteins > userProfile.targetProteins &&
+                      'text-red-100 underline decoration-2 underline-offset-4',
+                  )}
+                >
+                  {totalMacros.proteins}г
+                </p>
               </div>
               <div className="text-center">
                 <p className="opacity-70 uppercase text-[9px] mb-0.5">Жиры</p>
-                <p className={cn(totalMacros.fats > userProfile.targetFats && "text-red-100 underline decoration-2 underline-offset-4")}>{totalMacros.fats}г</p>
+                <p
+                  className={cn(
+                    totalMacros.fats > userProfile.targetFats &&
+                      'text-red-100 underline decoration-2 underline-offset-4',
+                  )}
+                >
+                  {totalMacros.fats}г
+                </p>
               </div>
               <div className="text-center">
                 <p className="opacity-70 uppercase text-[9px] mb-0.5">Углеводы</p>
-                <p className={cn(totalMacros.carbs > userProfile.targetCarbs && "text-red-100 underline decoration-2 underline-offset-4")}>{totalMacros.carbs}г</p>
+                <p
+                  className={cn(
+                    totalMacros.carbs > userProfile.targetCarbs &&
+                      'text-red-100 underline decoration-2 underline-offset-4',
+                  )}
+                >
+                  {totalMacros.carbs}г
+                </p>
               </div>
             </div>
           </div>
 
           <button
             onClick={() => {
-              const newMeal = prompt("Введите название приема пищи:");
+              const newMeal = prompt('Введите название приема пищи:');
               if (newMeal && !mealTypes.includes(newMeal)) {
                 onMealTypesChange([...mealTypes, newMeal]);
               }
@@ -396,32 +507,47 @@ export function PlannerView({
     return (
       <div className="bg-white rounded-3xl border border-zinc-100 shadow-sm overflow-hidden">
         <div className="grid grid-cols-8 border-b border-zinc-100">
-          {days.map(day => (
-            <div key={day.toString()} className={cn(
-              "p-4 text-center border-r border-zinc-100 last:border-r-0",
-              isToday(day) ? "bg-emerald-50/30" : ""
-            )}>
-              <p className="text-[10px] font-bold text-zinc-400 uppercase mb-1">{format(day, 'EEE', { locale: ru })}</p>
-              <p className={cn("font-bold", isToday(day) ? "text-emerald-600" : "text-zinc-900")}>{format(day, 'd')}</p>
+          {days.map((day) => (
+            <div
+              key={day.toString()}
+              className={cn(
+                'p-4 text-center border-r border-zinc-100 last:border-r-0',
+                isToday(day) ? 'bg-emerald-50/30' : '',
+              )}
+            >
+              <p className="text-[10px] font-bold text-zinc-400 uppercase mb-1">
+                {format(day, 'EEE', { locale: ru })}
+              </p>
+              <p className={cn('font-bold', isToday(day) ? 'text-emerald-600' : 'text-zinc-900')}>
+                {format(day, 'd')}
+              </p>
             </div>
           ))}
           <div className="p-4 border-l border-zinc-100 bg-zinc-50/50" />
         </div>
-        {mealTypes.map(meal => (
+        {mealTypes.map((meal) => (
           <div key={meal} className="grid grid-cols-8 border-b border-zinc-100 last:border-b-0">
-            {days.map(day => {
+            {days.map((day) => {
               const dateStr = format(day, 'yyyy-MM-dd');
-              const dayMealEntries = plannerEntries.filter(e => e.date === dateStr && e.mealType === meal);
+              const dayMealEntries = plannerEntries.filter(
+                (e) => e.date === dateStr && e.mealType === meal,
+              );
               const cellMacros = sumMacros(dayMealEntries, recipes);
 
               return (
-                <div key={day.toString() + meal} className="p-1.5 border-r border-zinc-100 last:border-r-0 min-h-[100px] group relative flex flex-col gap-1.5">
-                  {dayMealEntries.map(entry => {
+                <div
+                  key={day.toString() + meal}
+                  className="p-1.5 border-r border-zinc-100 last:border-r-0 min-h-[100px] group relative flex flex-col gap-1.5"
+                >
+                  {dayMealEntries.map((entry) => {
                     if (entry.type === 'recipe' && entry.recipeId) {
                       const recipe = getRecipeById(entry.recipeId);
                       if (!recipe) return null;
                       return (
-                        <div key={entry.id} className="p-1.5 bg-emerald-50/50 rounded-lg border border-emerald-100/50 group/item">
+                        <div
+                          key={entry.id}
+                          className="p-1.5 bg-emerald-50/50 rounded-lg border border-emerald-100/50 group/item"
+                        >
                           <button
                             onClick={() => onSelectRecipe(recipe)}
                             className="text-[9px] font-bold text-zinc-900 leading-tight line-clamp-2 hover:text-emerald-600 text-left w-full"
@@ -429,7 +555,9 @@ export function PlannerView({
                             {recipe.title}
                           </button>
                           <div className="flex items-center justify-between mt-0.5">
-                            <span className="text-[8px] font-bold text-emerald-600">{recipe.macros.calories}</span>
+                            <span className="text-[8px] font-bold text-emerald-600">
+                              {recipe.macros.calories}
+                            </span>
                             <button
                               onClick={() => handleRemoveFromPlanner(entry.id)}
                               className="text-zinc-300 hover:text-red-500 opacity-0 group-hover/item:opacity-100 transition-opacity"
@@ -441,13 +569,24 @@ export function PlannerView({
                       );
                     } else if (entry.type === 'product') {
                       return (
-                        <div key={entry.id} className="p-1.5 bg-zinc-50 rounded-lg border border-zinc-100 group/item">
+                        <div
+                          key={entry.id}
+                          className="p-1.5 bg-zinc-50 rounded-lg border border-zinc-100 group/item"
+                        >
                           <div className="flex flex-col gap-0.5">
-                            <span className="text-[9px] font-bold text-zinc-900 leading-tight line-clamp-2">{entry.productName}</span>
-                            {entry.amount && <span className="text-[7px] text-zinc-400 font-bold uppercase">{entry.amount}</span>}
+                            <span className="text-[9px] font-bold text-zinc-900 leading-tight line-clamp-2">
+                              {entry.productName}
+                            </span>
+                            {entry.amount && (
+                              <span className="text-[7px] text-zinc-400 font-bold uppercase">
+                                {entry.amount}
+                              </span>
+                            )}
                           </div>
                           <div className="flex items-center justify-between mt-0.5">
-                            <span className="text-[8px] font-bold text-emerald-600">{entry.macros?.calories}</span>
+                            <span className="text-[8px] font-bold text-emerald-600">
+                              {entry.macros?.calories}
+                            </span>
                             <button
                               onClick={() => handleRemoveFromPlanner(entry.id)}
                               className="text-zinc-300 hover:text-red-500 opacity-0 group-hover/item:opacity-100 transition-opacity"
@@ -469,14 +608,20 @@ export function PlannerView({
                       </div>
                       <div className="flex justify-between">
                         <span>Б/Ж/У</span>
-                        <span>{cellMacros.proteins}/{cellMacros.fats}/{cellMacros.carbs}</span>
+                        <span>
+                          {cellMacros.proteins}/{cellMacros.fats}/{cellMacros.carbs}
+                        </span>
                       </div>
                     </div>
                   )}
 
                   <div className="relative mt-auto">
                     <button
-                      onClick={() => setActiveAddDropdown(activeAddDropdown === `${dateStr}-${meal}` ? null : `${dateStr}-${meal}`)}
+                      onClick={() =>
+                        setActiveAddDropdown(
+                          activeAddDropdown === `${dateStr}-${meal}` ? null : `${dateStr}-${meal}`,
+                        )
+                      }
                       className="w-full h-8 rounded-lg border border-dashed border-zinc-100 hover:border-emerald-200 hover:bg-emerald-50/30 transition-all flex items-center justify-center text-zinc-200 hover:text-emerald-400"
                     >
                       <Plus className="w-4 h-4" />
@@ -485,7 +630,10 @@ export function PlannerView({
                     <AnimatePresence>
                       {activeAddDropdown === `${dateStr}-${meal}` && (
                         <>
-                          <div className="fixed inset-0 z-10" onClick={() => setActiveAddDropdown(null)} />
+                          <div
+                            className="fixed inset-0 z-10"
+                            onClick={() => setActiveAddDropdown(null)}
+                          />
                           <motion.div
                             initial={{ opacity: 0, y: 10, scale: 0.95 }}
                             animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -527,28 +675,57 @@ export function PlannerView({
         ))}
 
         <div className="grid grid-cols-8 bg-zinc-50/50 border-t border-zinc-100">
-          {days.map(day => {
+          {days.map((day) => {
             const dateStr = format(day, 'yyyy-MM-dd');
-            const dayEntries = plannerEntries.filter(e => e.date === dateStr);
+            const dayEntries = plannerEntries.filter((e) => e.date === dateStr);
             const dayTotalMacros = sumMacros(dayEntries, recipes);
 
             return (
-              <div key={day.toString() + 'total'} className="p-2 text-center border-r border-zinc-100 last:border-r-0">
+              <div
+                key={day.toString() + 'total'}
+                className="p-2 text-center border-r border-zinc-100 last:border-r-0"
+              >
                 <p className="text-[8px] font-bold text-zinc-400 uppercase mb-0.5">Итого</p>
-                <div className={cn(
-                  "p-1.5 rounded-lg border transition-colors",
-                  dayTotalMacros.calories > userProfile.targetCalories ? "bg-red-50 border-red-100" : "bg-zinc-50/50 border-zinc-100"
-                )}>
-                  <p className={cn(
-                    "text-[10px] font-bold mb-0.5",
-                    dayTotalMacros.calories > userProfile.targetCalories ? "text-red-600" : "text-emerald-600"
-                  )}>
+                <div
+                  className={cn(
+                    'p-1.5 rounded-lg border transition-colors',
+                    dayTotalMacros.calories > userProfile.targetCalories
+                      ? 'bg-red-50 border-red-100'
+                      : 'bg-zinc-50/50 border-zinc-100',
+                  )}
+                >
+                  <p
+                    className={cn(
+                      'text-[10px] font-bold mb-0.5',
+                      dayTotalMacros.calories > userProfile.targetCalories
+                        ? 'text-red-600'
+                        : 'text-emerald-600',
+                    )}
+                  >
                     {dayTotalMacros.calories} ккал
                   </p>
                   <p className="text-[7px] font-bold text-zinc-500">
-                    <span className={cn(dayTotalMacros.proteins > userProfile.targetProteins && "text-red-600")}>{dayTotalMacros.proteins}</span> /
-                    <span className={cn(dayTotalMacros.fats > userProfile.targetFats && "text-red-600")}>{dayTotalMacros.fats}</span> /
-                    <span className={cn(dayTotalMacros.carbs > userProfile.targetCarbs && "text-red-600")}>{dayTotalMacros.carbs}</span>
+                    <span
+                      className={cn(
+                        dayTotalMacros.proteins > userProfile.targetProteins && 'text-red-600',
+                      )}
+                    >
+                      {dayTotalMacros.proteins}
+                    </span>{' '}
+                    /
+                    <span
+                      className={cn(dayTotalMacros.fats > userProfile.targetFats && 'text-red-600')}
+                    >
+                      {dayTotalMacros.fats}
+                    </span>{' '}
+                    /
+                    <span
+                      className={cn(
+                        dayTotalMacros.carbs > userProfile.targetCarbs && 'text-red-600',
+                      )}
+                    >
+                      {dayTotalMacros.carbs}
+                    </span>
                   </p>
                 </div>
               </div>
@@ -572,14 +749,16 @@ export function PlannerView({
     return (
       <div className="bg-white rounded-3xl border border-zinc-100 shadow-sm overflow-hidden">
         <div className="grid grid-cols-7 border-b border-zinc-100 bg-zinc-50/50">
-          {['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'].map(d => (
-            <div key={d} className="p-3 text-center text-[10px] font-bold text-zinc-400 uppercase">{d}</div>
+          {['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'].map((d) => (
+            <div key={d} className="p-3 text-center text-[10px] font-bold text-zinc-400 uppercase">
+              {d}
+            </div>
           ))}
         </div>
         <div className="grid grid-cols-7">
-          {days.map(day => {
+          {days.map((day) => {
             const dateStr = format(day, 'yyyy-MM-dd');
-            const entries = plannerEntries.filter(e => e.date === dateStr);
+            const entries = plannerEntries.filter((e) => e.date === dateStr);
             const totalCals = sumMacros(entries, recipes).calories;
             const isCurrentMonth = day.getMonth() === selectedPlannerDate.getMonth();
 
@@ -591,15 +770,19 @@ export function PlannerView({
                   setPlannerViewScale('day');
                 }}
                 className={cn(
-                  "p-2 border-r border-b border-zinc-100 aspect-square cursor-pointer hover:bg-zinc-50 transition-colors group",
-                  !isCurrentMonth && "opacity-30"
+                  'p-2 border-r border-b border-zinc-100 aspect-square cursor-pointer hover:bg-zinc-50 transition-colors group',
+                  !isCurrentMonth && 'opacity-30',
                 )}
               >
                 <div className="flex justify-between items-start mb-1">
-                  <span className={cn(
-                    "text-xs font-bold",
-                    isToday(day) ? "w-6 h-6 bg-emerald-600 text-white rounded-full flex items-center justify-center" : "text-zinc-400"
-                  )}>
+                  <span
+                    className={cn(
+                      'text-xs font-bold',
+                      isToday(day)
+                        ? 'w-6 h-6 bg-emerald-600 text-white rounded-full flex items-center justify-center'
+                        : 'text-zinc-400',
+                    )}
+                  >
                     {format(day, 'd')}
                   </span>
                   {totalCals > 0 && (
@@ -607,13 +790,16 @@ export function PlannerView({
                   )}
                 </div>
                 <div className="flex gap-0.5 mt-auto">
-                  {mealTypes.map(meal => {
-                    const hasMeal = entries.some(e => e.mealType === meal);
+                  {mealTypes.map((meal) => {
+                    const hasMeal = entries.some((e) => e.mealType === meal);
                     return (
-                      <div key={meal} className={cn(
-                        "flex-1 h-1 rounded-full",
-                        hasMeal ? "bg-emerald-400" : "bg-zinc-100"
-                      )} />
+                      <div
+                        key={meal}
+                        className={cn(
+                          'flex-1 h-1 rounded-full',
+                          hasMeal ? 'bg-emerald-400' : 'bg-zinc-100',
+                        )}
+                      />
                     );
                   })}
                 </div>
@@ -632,7 +818,7 @@ export function PlannerView({
 
     return (
       <div className="space-y-8">
-        {days.map(day => {
+        {days.map((day) => {
           const entries = getEntriesForDate(day);
           if (entries.length === 0) return null;
 
@@ -644,18 +830,23 @@ export function PlannerView({
                 </div>
                 <div>
                   <h3 className="font-bold text-zinc-900">{format(day, 'EEEE', { locale: ru })}</h3>
-                  <p className="text-xs text-zinc-400 font-medium uppercase tracking-wider">{format(day, 'd MMMM', { locale: ru })}</p>
+                  <p className="text-xs text-zinc-400 font-medium uppercase tracking-wider">
+                    {format(day, 'd MMMM', { locale: ru })}
+                  </p>
                 </div>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                {mealTypes.map(meal => {
-                  const mealEntries = entries.filter(e => e.mealType === meal);
+                {mealTypes.map((meal) => {
+                  const mealEntries = entries.filter((e) => e.mealType === meal);
                   if (mealEntries.length === 0) return null;
 
                   return (
-                    <div key={meal} className="bg-white rounded-2xl border border-zinc-100 p-4 shadow-sm hover:shadow-md transition-all space-y-3">
+                    <div
+                      key={meal}
+                      className="bg-white rounded-2xl border border-zinc-100 p-4 shadow-sm hover:shadow-md transition-all space-y-3"
+                    >
                       <p className="text-[10px] font-bold text-zinc-400 uppercase mb-2">{meal}</p>
-                      {mealEntries.map(entry => {
+                      {mealEntries.map((entry) => {
                         const recipe = getRecipeById(entry.recipeId);
                         if (!recipe) return null;
                         return (
@@ -685,7 +876,7 @@ export function PlannerView({
             </div>
           );
         })}
-        {days.every(day => getEntriesForDate(day).length === 0) && (
+        {days.every((day) => getEntriesForDate(day).length === 0) && (
           <div className="py-20 text-center space-y-4 bg-white rounded-3xl border border-dashed border-zinc-200">
             <Calendar className="w-12 h-12 text-zinc-200 mx-auto" />
             <p className="text-zinc-400">На эту неделю ничего не запланировано</p>
@@ -705,14 +896,17 @@ export function PlannerView({
             className="bg-red-500 text-white p-4 rounded-3xl flex items-center gap-4 shadow-lg shadow-red-100"
           >
             <AlertCircle className="w-6 h-6 flex-shrink-0" />
-            <p className="font-bold uppercase tracking-widest text-sm">Вы превышаете норму, допустимую программой</p>
+            <p className="font-bold uppercase tracking-widest text-sm">
+              Вы превышаете норму, допустимую программой
+            </p>
           </motion.div>
         )}
 
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div>
             <h2 className="text-3xl font-bold font-display mb-2">
-              Дорогая (ой) {userProfile.name || '(Имя)'} составь твой твой идеальный план рациона тут
+              Дорогая (ой) {userProfile.name || '(Имя)'} составь твой твой идеальный план рациона
+              тут
             </h2>
           </div>
 
@@ -721,8 +915,10 @@ export function PlannerView({
               <button
                 onClick={() => setPlannerViewMode('calendar')}
                 className={cn(
-                  "p-2 rounded-lg transition-all",
-                  plannerViewMode === 'calendar' ? "bg-white shadow-sm text-emerald-600" : "text-zinc-400 hover:text-zinc-600"
+                  'p-2 rounded-lg transition-all',
+                  plannerViewMode === 'calendar'
+                    ? 'bg-white shadow-sm text-emerald-600'
+                    : 'text-zinc-400 hover:text-zinc-600',
                 )}
               >
                 <Calendar className="w-5 h-5" />
@@ -730,8 +926,10 @@ export function PlannerView({
               <button
                 onClick={() => setPlannerViewMode('list')}
                 className={cn(
-                  "p-2 rounded-lg transition-all",
-                  plannerViewMode === 'list' ? "bg-white shadow-sm text-emerald-600" : "text-zinc-400 hover:text-zinc-600"
+                  'p-2 rounded-lg transition-all',
+                  plannerViewMode === 'list'
+                    ? 'bg-white shadow-sm text-emerald-600'
+                    : 'text-zinc-400 hover:text-zinc-600',
                 )}
               >
                 <List className="w-5 h-5" />
@@ -739,13 +937,15 @@ export function PlannerView({
             </div>
 
             <div className="flex items-center gap-3 bg-zinc-100 p-1.5 rounded-2xl self-start">
-              {(['day', 'week', 'month'] as PlannerViewScale[]).map(scale => (
+              {(['day', 'week', 'month'] as PlannerViewScale[]).map((scale) => (
                 <button
                   key={scale}
                   onClick={() => setPlannerViewScale(scale)}
                   className={cn(
-                    "px-6 py-2 rounded-xl text-sm font-bold transition-all",
-                    plannerViewScale === scale ? "bg-white shadow-sm text-emerald-600" : "text-zinc-500 hover:text-zinc-700"
+                    'px-6 py-2 rounded-xl text-sm font-bold transition-all',
+                    plannerViewScale === scale
+                      ? 'bg-white shadow-sm text-emerald-600'
+                      : 'text-zinc-500 hover:text-zinc-700',
                   )}
                 >
                   {scale === 'day' ? 'День' : scale === 'week' ? 'Неделя' : 'Месяц'}
@@ -759,20 +959,49 @@ export function PlannerView({
           <div className="flex items-center gap-4">
             {plannerViewScale === 'month' ? (
               <div className="flex items-center gap-4">
-                <button onClick={() => setSelectedPlannerDate(subMonths(selectedPlannerDate, 1))} className="p-2 hover:bg-zinc-100 rounded-xl transition-colors"><ChevronLeft className="w-5 h-5" /></button>
-                <h3 className="font-bold text-xl min-w-[140px] text-center capitalize">{format(selectedPlannerDate, 'LLLL yyyy', { locale: ru })}</h3>
-                <button onClick={() => setSelectedPlannerDate(addMonths(selectedPlannerDate, 1))} className="p-2 hover:bg-zinc-100 rounded-xl transition-colors"><ChevronRight className="w-5 h-5" /></button>
+                <button
+                  onClick={() => setSelectedPlannerDate(subMonths(selectedPlannerDate, 1))}
+                  className="p-2 hover:bg-zinc-100 rounded-xl transition-colors"
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                </button>
+                <h3 className="font-bold text-xl min-w-[140px] text-center capitalize">
+                  {format(selectedPlannerDate, 'LLLL yyyy', { locale: ru })}
+                </h3>
+                <button
+                  onClick={() => setSelectedPlannerDate(addMonths(selectedPlannerDate, 1))}
+                  className="p-2 hover:bg-zinc-100 rounded-xl transition-colors"
+                >
+                  <ChevronRight className="w-5 h-5" />
+                </button>
               </div>
             ) : (
               <div className="flex items-center gap-4">
-                <button onClick={() => setSelectedPlannerDate(subDays(selectedPlannerDate, plannerViewScale === 'week' ? 7 : 1))} className="p-2 hover:bg-zinc-100 rounded-xl transition-colors"><ChevronLeft className="w-5 h-5" /></button>
+                <button
+                  onClick={() =>
+                    setSelectedPlannerDate(
+                      subDays(selectedPlannerDate, plannerViewScale === 'week' ? 7 : 1),
+                    )
+                  }
+                  className="p-2 hover:bg-zinc-100 rounded-xl transition-colors"
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                </button>
                 <h3 className="font-bold text-xl min-w-[200px] text-center">
                   {plannerViewScale === 'week'
                     ? `${format(startOfWeek(selectedPlannerDate, { weekStartsOn: 1 }), 'd MMM')} — ${format(endOfWeek(selectedPlannerDate, { weekStartsOn: 1 }), 'd MMM')}`
-                    : format(selectedPlannerDate, 'd MMMM', { locale: ru })
-                  }
+                    : format(selectedPlannerDate, 'd MMMM', { locale: ru })}
                 </h3>
-                <button onClick={() => setSelectedPlannerDate(addDays(selectedPlannerDate, plannerViewScale === 'week' ? 7 : 1))} className="p-2 hover:bg-zinc-100 rounded-xl transition-colors"><ChevronRight className="w-5 h-5" /></button>
+                <button
+                  onClick={() =>
+                    setSelectedPlannerDate(
+                      addDays(selectedPlannerDate, plannerViewScale === 'week' ? 7 : 1),
+                    )
+                  }
+                  className="p-2 hover:bg-zinc-100 rounded-xl transition-colors"
+                >
+                  <ChevronRight className="w-5 h-5" />
+                </button>
               </div>
             )}
           </div>
@@ -780,28 +1009,33 @@ export function PlannerView({
           <div className="flex items-center gap-3">
             <button
               onClick={async () => {
-                const entries = plannerViewScale === 'day'
-                  ? getEntriesForDate(selectedPlannerDate)
-                  : plannerEntries.filter(e => {
-                      const d = parseISO(e.date);
-                      const start = startOfWeek(selectedPlannerDate, { weekStartsOn: 1 });
-                      const end = endOfWeek(selectedPlannerDate, { weekStartsOn: 1 });
-                      return d >= start && d <= end;
-                    });
+                const entries =
+                  plannerViewScale === 'day'
+                    ? getEntriesForDate(selectedPlannerDate)
+                    : plannerEntries.filter((e) => {
+                        const d = parseISO(e.date);
+                        const start = startOfWeek(selectedPlannerDate, { weekStartsOn: 1 });
+                        const end = endOfWeek(selectedPlannerDate, { weekStartsOn: 1 });
+                        return d >= start && d <= end;
+                      });
 
-                const ingredientMap: Record<string, { amount: string, dishes: Set<string>, isBasic: boolean }> = {};
+                const ingredientMap: Record<
+                  string,
+                  { amount: string; dishes: Set<string>; isBasic: boolean }
+                > = {};
 
-                entries.forEach(e => {
+                entries.forEach((e) => {
                   const recipe = getRecipeById(e.recipeId);
                   if (recipe) {
-                    recipe.ingredients.forEach(ing => {
+                    recipe.ingredients.forEach((ing) => {
                       const isBasic = isStaple(ing);
                       const lowerIng = ing.toLowerCase();
 
                       // Try to find if we already have this ingredient (very basic fuzzy match)
                       let key = ing;
-                      const existingKey = Object.keys(ingredientMap).find(k =>
-                        k.toLowerCase().includes(lowerIng) || lowerIng.includes(k.toLowerCase())
+                      const existingKey = Object.keys(ingredientMap).find(
+                        (k) =>
+                          k.toLowerCase().includes(lowerIng) || lowerIng.includes(k.toLowerCase()),
                       );
                       if (existingKey) key = existingKey;
 
@@ -814,7 +1048,9 @@ export function PlannerView({
                       entry.dishes.add(recipe.title);
 
                       // Simple amount extraction and summing attempt
-                      const amountMatch = ing.match(/^([\d.,/]+(?:\s*[г|кг|мл|л|шт|ст\.л|ч\.л|зубчик|щепотка|пучок|банка|упаковка])?)/i);
+                      const amountMatch = ing.match(
+                        /^([\d.,/]+(?:\s*[г|кг|мл|л|шт|ст\.л|ч\.л|зубчик|щепотка|пучок|банка|упаковка])?)/i,
+                      );
                       if (amountMatch) {
                         const newAmount = (amountMatch[1] ?? '').trim();
                         if (!entry.amount) {
@@ -826,7 +1062,7 @@ export function PlannerView({
                           const newUnit = newAmount.replace(/[\d.,/\s]/g, '');
 
                           if (!isNaN(currentVal) && !isNaN(newVal) && currentUnit === newUnit) {
-                            entry.amount = (currentVal + newVal) + currentUnit;
+                            entry.amount = currentVal + newVal + currentUnit;
                           } else {
                             entry.amount += `, ${newAmount}`;
                           }
@@ -839,7 +1075,11 @@ export function PlannerView({
                             key = nameOnly;
                             const existing = ingredientMap[key];
                             if (!existing) {
-                              ingredientMap[key] = { amount: newAmount, dishes: new Set([recipe.title]), isBasic };
+                              ingredientMap[key] = {
+                                amount: newAmount,
+                                dishes: new Set([recipe.title]),
+                                isBasic,
+                              };
                             } else {
                               existing.dishes.add(recipe.title);
                             }
@@ -857,7 +1097,7 @@ export function PlannerView({
                     sourceDishes: Array.from(info.dishes),
                     checked: false,
                     isBasic: info.isBasic,
-                    createdAt: new Date().toISOString()
+                    createdAt: new Date().toISOString(),
                   });
                 }
 
@@ -902,7 +1142,10 @@ export function PlannerView({
             >
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-xl font-bold">Добавить продукт в план</h3>
-                <button onClick={() => setIsAddingProduct(false)} className="text-zinc-400 hover:text-zinc-600">
+                <button
+                  onClick={() => setIsAddingProduct(false)}
+                  className="text-zinc-400 hover:text-zinc-600"
+                >
                   <Plus className="w-6 h-6 rotate-45" />
                 </button>
               </div>
@@ -910,12 +1153,16 @@ export function PlannerView({
               <form onSubmit={handleAddProductToPlanner} className="space-y-6">
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-bold text-zinc-700 mb-1">Название продукта *</label>
+                    <label className="block text-sm font-bold text-zinc-700 mb-1">
+                      Название продукта *
+                    </label>
                     <input
                       required
                       type="text"
                       value={productFormData.name}
-                      onChange={(e) => setProductFormData({...productFormData, name: e.target.value})}
+                      onChange={(e) =>
+                        setProductFormData({ ...productFormData, name: e.target.value })
+                      }
                       className="w-full px-4 py-3 bg-zinc-50 border border-zinc-200 rounded-2xl focus:ring-2 focus:ring-emerald-500 outline-none"
                       placeholder="Например: Яблоко"
                     />
@@ -925,7 +1172,9 @@ export function PlannerView({
                     <input
                       type="text"
                       value={productFormData.amount}
-                      onChange={(e) => setProductFormData({...productFormData, amount: e.target.value})}
+                      onChange={(e) =>
+                        setProductFormData({ ...productFormData, amount: e.target.value })
+                      }
                       className="w-full px-4 py-3 bg-zinc-50 border border-zinc-200 rounded-2xl focus:ring-2 focus:ring-emerald-500 outline-none"
                       placeholder="Например: 1 шт или 200г"
                     />
@@ -933,38 +1182,66 @@ export function PlannerView({
 
                   <div className="p-4 bg-emerald-50 rounded-2xl border border-emerald-100 grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-[10px] font-bold text-emerald-700 uppercase mb-1">Ккал</label>
+                      <label className="block text-[10px] font-bold text-emerald-700 uppercase mb-1">
+                        Ккал
+                      </label>
                       <input
                         type="number"
                         value={productFormData.calories}
-                        onChange={(e) => setProductFormData({...productFormData, calories: parseInt(e.target.value) || 0})}
+                        onChange={(e) =>
+                          setProductFormData({
+                            ...productFormData,
+                            calories: parseInt(e.target.value) || 0,
+                          })
+                        }
                         className="w-full px-3 py-2 bg-white border border-emerald-100 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 font-bold"
                       />
                     </div>
                     <div>
-                      <label className="block text-[10px] font-bold text-emerald-700 uppercase mb-1">Белки (г)</label>
+                      <label className="block text-[10px] font-bold text-emerald-700 uppercase mb-1">
+                        Белки (г)
+                      </label>
                       <input
                         type="number"
                         value={productFormData.proteins}
-                        onChange={(e) => setProductFormData({...productFormData, proteins: parseInt(e.target.value) || 0})}
+                        onChange={(e) =>
+                          setProductFormData({
+                            ...productFormData,
+                            proteins: parseInt(e.target.value) || 0,
+                          })
+                        }
                         className="w-full px-3 py-2 bg-white border border-emerald-100 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 font-bold"
                       />
                     </div>
                     <div>
-                      <label className="block text-[10px] font-bold text-emerald-700 uppercase mb-1">Жиры (г)</label>
+                      <label className="block text-[10px] font-bold text-emerald-700 uppercase mb-1">
+                        Жиры (г)
+                      </label>
                       <input
                         type="number"
                         value={productFormData.fats}
-                        onChange={(e) => setProductFormData({...productFormData, fats: parseInt(e.target.value) || 0})}
+                        onChange={(e) =>
+                          setProductFormData({
+                            ...productFormData,
+                            fats: parseInt(e.target.value) || 0,
+                          })
+                        }
                         className="w-full px-3 py-2 bg-white border border-emerald-100 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 font-bold"
                       />
                     </div>
                     <div>
-                      <label className="block text-[10px] font-bold text-emerald-700 uppercase mb-1">Углеводы (г)</label>
+                      <label className="block text-[10px] font-bold text-emerald-700 uppercase mb-1">
+                        Углеводы (г)
+                      </label>
                       <input
                         type="number"
                         value={productFormData.carbs}
-                        onChange={(e) => setProductFormData({...productFormData, carbs: parseInt(e.target.value) || 0})}
+                        onChange={(e) =>
+                          setProductFormData({
+                            ...productFormData,
+                            carbs: parseInt(e.target.value) || 0,
+                          })
+                        }
                         className="w-full px-3 py-2 bg-white border border-emerald-100 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 font-bold"
                       />
                     </div>
@@ -1002,16 +1279,25 @@ export function PlannerView({
             >
               <div className="p-6 border-b border-zinc-100 flex items-center justify-between">
                 <h3 className="text-xl font-bold">Выбрать рецепт</h3>
-                <button onClick={() => setIsRecipePickerOpen(false)} className="text-zinc-400 hover:text-zinc-600">
+                <button
+                  onClick={() => setIsRecipePickerOpen(false)}
+                  className="text-zinc-400 hover:text-zinc-600"
+                >
                   <Plus className="w-6 h-6 rotate-45" />
                 </button>
               </div>
               <div className="p-6 overflow-y-auto">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {recipes.map(recipe => (
+                  {recipes.map((recipe) => (
                     <button
                       key={recipe.id}
-                      onClick={() => handleAddToPlanner(pickingMealInfo!.date, pickingMealInfo!.mealType, recipe.id)}
+                      onClick={() =>
+                        handleAddToPlanner(
+                          pickingMealInfo!.date,
+                          pickingMealInfo!.mealType,
+                          recipe.id,
+                        )
+                      }
                       className="flex items-center gap-4 p-4 bg-zinc-50 rounded-2xl border border-zinc-100 hover:border-emerald-500 hover:bg-emerald-50 transition-all text-left group"
                     >
                       <div className="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0">
@@ -1023,7 +1309,9 @@ export function PlannerView({
                         />
                       </div>
                       <div>
-                        <p className="font-bold text-zinc-900 group-hover:text-emerald-700 transition-colors line-clamp-1">{recipe.title}</p>
+                        <p className="font-bold text-zinc-900 group-hover:text-emerald-700 transition-colors line-clamp-1">
+                          {recipe.title}
+                        </p>
                         <p className="text-xs text-zinc-400">{recipe.macros.calories} ккал</p>
                       </div>
                     </button>

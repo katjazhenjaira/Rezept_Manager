@@ -5,10 +5,12 @@ export abstract class FakeCollectionRepository<T extends { id: string }> {
 
   protected emit(): void {
     const snapshot = [...this.items];
-    this.listeners.forEach(cb => cb(snapshot));
+    this.listeners.forEach((cb) => cb(snapshot));
   }
 
-  get listenerCount(): number { return this.listeners.size; }
+  get listenerCount(): number {
+    return this.listeners.size;
+  }
 
   subscribeAll(callback: (items: T[]) => void): () => void {
     this.listeners.add(callback);
@@ -25,7 +27,7 @@ export abstract class FakeCollectionRepository<T extends { id: string }> {
 
   async delete(id: string): Promise<void> {
     const before = this.items.length;
-    this.items = this.items.filter(i => i.id !== id);
+    this.items = this.items.filter((i) => i.id !== id);
     if (this.items.length !== before) this.emit();
   }
 

@@ -17,17 +17,25 @@ export function UserProfileProvider({ children }: { children: ReactNode }) {
     nutritionPlanRepo.get().then(setActiveNutritionPlan);
   }, [nutritionPlanRepo]);
 
-  const saveUserProfile = useCallback(async (profile: UserProfile) => {
-    await userProfileRepo.save(profile);
-  }, [userProfileRepo]);
+  const saveUserProfile = useCallback(
+    async (profile: UserProfile) => {
+      await userProfileRepo.save(profile);
+    },
+    [userProfileRepo],
+  );
 
-  const setActivePlan = useCallback(async (plan: ActiveNutritionPlan | null) => {
-    await nutritionPlanRepo.set(plan);
-    setActiveNutritionPlan(plan);
-  }, [nutritionPlanRepo]);
+  const setActivePlan = useCallback(
+    async (plan: ActiveNutritionPlan | null) => {
+      await nutritionPlanRepo.set(plan);
+      setActiveNutritionPlan(plan);
+    },
+    [nutritionPlanRepo],
+  );
 
   return (
-    <UserProfileContext.Provider value={{ userProfile, saveUserProfile, activeNutritionPlan, setActivePlan }}>
+    <UserProfileContext.Provider
+      value={{ userProfile, saveUserProfile, activeNutritionPlan, setActivePlan }}
+    >
       {children}
     </UserProfileContext.Provider>
   );

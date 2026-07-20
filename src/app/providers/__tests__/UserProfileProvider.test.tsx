@@ -94,8 +94,14 @@ describe('useNutritionPlan', () => {
 
   it('loads a pre-existing plan from repository on mount', async () => {
     const plan = {
-      name: 'Diet', calories: 1500, proteins: 90, fats: 50, carbs: 160,
-      isCustom: false, allowedProducts: [], forbiddenProducts: [],
+      name: 'Diet',
+      calories: 1500,
+      proteins: 90,
+      fats: 50,
+      carbs: 160,
+      isCustom: false,
+      allowedProducts: [],
+      forbiddenProducts: [],
     };
     await repos.nutritionPlan.set(plan);
     const { result } = renderHook(() => useNutritionPlan(), { wrapper: makeWrapper(repos) });
@@ -107,8 +113,14 @@ describe('useNutritionPlan', () => {
     const { result } = renderHook(() => useNutritionPlan(), { wrapper: makeWrapper(repos) });
     await act(async () => {});
     const plan = {
-      name: 'Keto', calories: 1600, proteins: 120, fats: 100, carbs: 30,
-      isCustom: true, allowedProducts: [], forbiddenProducts: [],
+      name: 'Keto',
+      calories: 1600,
+      proteins: 120,
+      fats: 100,
+      carbs: 30,
+      isCustom: true,
+      allowedProducts: [],
+      forbiddenProducts: [],
     };
     await act(async () => {
       await result.current.setActivePlan(plan);
@@ -119,8 +131,14 @@ describe('useNutritionPlan', () => {
 
   it('setActivePlan(null) clears the plan', async () => {
     const plan = {
-      name: 'Diet', calories: 1500, proteins: 90, fats: 50, carbs: 160,
-      isCustom: false, allowedProducts: [], forbiddenProducts: [],
+      name: 'Diet',
+      calories: 1500,
+      proteins: 90,
+      fats: 50,
+      carbs: 160,
+      isCustom: false,
+      allowedProducts: [],
+      forbiddenProducts: [],
     };
     await repos.nutritionPlan.set(plan);
     const { result } = renderHook(() => useNutritionPlan(), { wrapper: makeWrapper(repos) });
