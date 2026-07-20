@@ -194,6 +194,7 @@
 
 **[DEAD-2]** `src/services/ai/contracts.ts:85`
 > `AiErrorResponse` экспортирован, но нигде не импортируется. `aiClient.ts:18-29` игнорирует структурированное тело ошибки от воркера, кидает generic `Error` с сырым текстом. Исправление: парсить как `AiErrorResponse` в `post()` либо удалить неиспользуемый тип.
+> ✅ Исправлено (commit 7f9b9ae) — `post()` парсит JSON-тело как `AiErrorResponse` и использует `data.error` в сообщении; все маршруты воркера уже возвращали `{ error: string }` консистентно, так что это не breaking change.
 
 **[DEAD-3]** `src/infrastructure/testing/Fake{Cart,Planner,Programs,Recipes,UserProfile,NutritionPlan}Repository.ts`
 > Почти идентичный boilerplate (`Set<callback>` + `emit()` + `counter` + `reset()`) продублирован в 6 файлах (~15 строк дублирования в каждом). Не срочно, но кандидат на общий generic-базовый класс.
