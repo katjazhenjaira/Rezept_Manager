@@ -5,13 +5,13 @@ import {
 import { db } from '@/infrastructure/firebaseApp';
 import type { CartItem } from '@/shared/domain/types';
 import type { CartRepository } from '@/services/CartRepository';
-import { timestampToISO, type TimestampLike } from './converters';
+import { timestampToISO, requiredString, type TimestampLike } from './converters';
 
 function fromFirestore(id: string, data: Record<string, unknown>): CartItem {
   return {
     id,
-    name: data['name'] as string,
-    amount: data['amount'] as string,
+    name: requiredString(data['name'], 'name'),
+    amount: requiredString(data['amount'], 'amount'),
     sourceDishes: (data['sourceDishes'] as string[]) ?? [],
     checked: data['checked'] as boolean,
     isBasic: data['isBasic'] as boolean | undefined,

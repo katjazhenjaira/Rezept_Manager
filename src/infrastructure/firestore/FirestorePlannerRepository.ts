@@ -5,13 +5,14 @@ import {
 import { db } from '@/infrastructure/firebaseApp';
 import type { PlannerEntry } from '@/shared/domain/types';
 import type { PlannerRepository } from '@/services/PlannerRepository';
+import { requiredString } from './converters';
 
 function fromFirestore(id: string, data: Record<string, unknown>): PlannerEntry {
   return {
     id,
-    date: data['date'] as string,
-    mealType: data['mealType'] as string,
-    type: data['type'] as 'recipe' | 'product',
+    date: requiredString(data['date'], 'date'),
+    mealType: requiredString(data['mealType'], 'mealType'),
+    type: requiredString(data['type'], 'type') as PlannerEntry['type'],
     recipeId: data['recipeId'] as string | undefined,
     productName: data['productName'] as string | undefined,
     amount: data['amount'] as string | undefined,

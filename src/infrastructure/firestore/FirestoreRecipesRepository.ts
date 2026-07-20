@@ -6,21 +6,21 @@ import { db } from '@/infrastructure/firebaseApp';
 import { resolveImageField } from '@/infrastructure/firebaseStorage';
 import type { Recipe } from '@/shared/domain/types';
 import type { RecipesRepository } from '@/services/RecipesRepository';
-import { timestampToISO, type TimestampLike } from './converters';
+import { timestampToISO, requiredString, requiredNumber, requiredMacros, type TimestampLike } from './converters';
 
 function fromFirestore(id: string, data: Record<string, unknown>): Recipe {
   return {
     id,
-    title: data['title'] as string,
+    title: requiredString(data['title'], 'title'),
     image: data['image'] as string | undefined,
     sourceUrl: data['sourceUrl'] as string | undefined,
     author: data['author'] as string | undefined,
-    time: data['time'] as string,
-    servings: data['servings'] as number,
+    time: requiredString(data['time'], 'time'),
+    servings: requiredNumber(data['servings'], 'servings'),
     categories: (data['categories'] as string[]) ?? [],
     ingredients: (data['ingredients'] as string[]) ?? [],
     steps: (data['steps'] as string[]) ?? [],
-    macros: data['macros'] as Recipe['macros'],
+    macros: requiredMacros(data['macros'], 'macros'),
     substitutions: data['substitutions'] as string | undefined,
     isFavorite: data['isFavorite'] as boolean | undefined,
     createdAt: timestampToISO(data['createdAt'] as TimestampLike | string | null | undefined),

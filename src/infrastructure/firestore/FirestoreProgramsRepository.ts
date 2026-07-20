@@ -6,7 +6,7 @@ import { db } from '@/infrastructure/firebaseApp';
 import { resolveImageField } from '@/infrastructure/firebaseStorage';
 import type { Program } from '@/shared/domain/types';
 import type { ProgramsRepository } from '@/services/ProgramsRepository';
-import { timestampToISO, type TimestampLike } from './converters';
+import { timestampToISO, requiredString, type TimestampLike } from './converters';
 
 async function resolveSubfolderImages(
   uid: string,
@@ -24,10 +24,10 @@ async function resolveSubfolderImages(
 function fromFirestore(id: string, data: Record<string, unknown>): Program {
   return {
     id,
-    name: data['name'] as string,
-    description: data['description'] as string,
-    creator: data['creator'] as string,
-    link: data['link'] as string,
+    name: requiredString(data['name'], 'name'),
+    description: requiredString(data['description'], 'description'),
+    creator: requiredString(data['creator'], 'creator'),
+    link: requiredString(data['link'], 'link'),
     recipeIds: (data['recipeIds'] as string[]) ?? [],
     createdAt: timestampToISO(data['createdAt'] as TimestampLike | string | null | undefined),
     image: data['image'] as string | undefined,
