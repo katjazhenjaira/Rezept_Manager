@@ -232,6 +232,7 @@
 
 **[TS-2]** `FirestoreUserProfileRepository.ts:11`
 > `snap.data() as UserProfile` — приведение всего документа целиком, без пофилдовой мапинг-функции (хуже TS-1, вообще нет устойчивости к частичной форме). Привести к паттерну `fromFirestore()`, как у соседей.
+> ✅ Исправлено (commit 015ca32): добавлена локальная (не экспортируемая) функция `fromFirestore(data: Record<string, unknown>): UserProfile` в `FirestoreUserProfileRepository.ts`, переиспользующая `requiredString`/`requiredNumber` из `converters.ts` (TS-1) для всех обязательных скалярных полей. `gender: 'male' | 'female'` валидируется как непустая строка (`requiredString`) с последующим кастом к union — тот же приём, что у `PlannerEntry.type` в TS-1, невалидное третье значение guard не отловит (осознанное ограничение, унаследованное от TS-1). `allergies: string[]` — `(data['allergies'] as string[]) ?? []`, без поэлементной валидации, консистентно с уже нетронутыми массивными полями других репозиториев в TS-1. `subscribe()` теперь вызывает `fromFirestore(snap.data())` вместо прямого каста. Тесты: 119/119 зелёные (18 файлов), `tsc --noEmit` чистый.
 
 **[TS-3]** `src/infrastructure/testing/FakeAuthProvider.tsx:12`
 > `({ uid, email: 'test@test.com' } as unknown as FirebaseUser)` — двойной каст через `unknown`, полностью глушит структурную проверку. Приемлемо для тестового фейка, но без комментария о причине; если код начнёт читать `displayName`/`getIdToken`, скомпилируется, но упадёт в рантайме.
