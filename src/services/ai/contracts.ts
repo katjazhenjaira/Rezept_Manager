@@ -80,6 +80,9 @@ export type FillRemainingOption = {
   description: string;
   macros: Macros;
 };
-export type FillRemainingResponse = { options: FillRemainingOption[]; reason: string };
+export type FillRemainingResponse = {
+  options: [FillRemainingOption, FillRemainingOption, FillRemainingOption];
+  reason: string;
+};
 
 export type AiErrorResponse = { error: string };

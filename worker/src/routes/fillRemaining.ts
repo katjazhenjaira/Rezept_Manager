@@ -88,7 +88,7 @@ ${forbiddenText}
   }
 
   const payload: FillRemainingResponse = {
-    options: data.options,
+    options: data.options as [FillRemainingOption, FillRemainingOption, FillRemainingOption],
     reason: data.reason ?? "",
   };
   return c.json(payload);
