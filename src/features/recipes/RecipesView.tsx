@@ -9,7 +9,6 @@ import {
   Link as LinkIcon,
   Edit3,
   Search,
-  ChevronRight,
   Share2,
   FolderPlus,
   Trash2,
@@ -31,6 +30,7 @@ import { format } from 'date-fns';
 import { recipeAllergens, recipeHasAllergens } from '@/shared/domain/allergies';
 import type { Recipe, UserProfile, Program, RecipeView, Subfolder } from '@/shared/domain/types';
 import { extractImageFromPDF } from '@/shared/utils/pdfUtils';
+import { RecipesEmptyState } from './RecipesEmptyState';
 
 // ─── Utility ─────────────────────────────────────────────────────────────────
 
@@ -131,31 +131,6 @@ function SidebarItem({
           {count}
         </span>
       )}
-    </button>
-  );
-}
-
-function ActionButton({
-  icon,
-  label,
-  onClick,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className="flex items-center justify-between p-4 bg-white border border-zinc-200 rounded-2xl hover:border-emerald-500 hover:shadow-md transition-all group"
-    >
-      <div className="flex items-center gap-3">
-        <div className="p-2 bg-zinc-50 rounded-lg group-hover:bg-emerald-50 group-hover:text-emerald-600 transition-colors">
-          {icon}
-        </div>
-        <span className="font-medium text-zinc-700 group-hover:text-zinc-900">{label}</span>
-      </div>
-      <ChevronRight className="w-4 h-4 text-zinc-300 group-hover:text-emerald-500 transition-colors" />
     </button>
   );
 }
@@ -655,48 +630,6 @@ export function RecipesView({
     filterMaxTime < 120 ||
     filterMaxCalories < 1000;
 
-  // Empty state — no recipes at all
-  const renderEmptyState = () => (
-    <div className="flex flex-col items-center justify-center min-h-[60vh] px-4 text-center">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="max-w-md w-full"
-      >
-        <div className="mb-8">
-          <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <BookOpen className="w-10 h-10 text-emerald-600" />
-          </div>
-          <h2 className="text-2xl font-bold text-zinc-900 mb-2">Твой банк рецептов пока пуст</h2>
-          <p className="text-zinc-500">Добавь первый рецепт удобным способом:</p>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <ActionButton
-            icon={<Camera className="w-5 h-5" />}
-            label="Фото рецепта"
-            onClick={() => photoInputRef.current?.click()}
-          />
-          <ActionButton
-            icon={<FileText className="w-5 h-5" />}
-            label="PDF документ"
-            onClick={() => setIsAddingPDF(true)}
-          />
-          <ActionButton
-            icon={<LinkIcon className="w-5 h-5" />}
-            label="Вставить ссылку"
-            onClick={() => setIsAddingLink(true)}
-          />
-          <ActionButton
-            icon={<Edit3 className="w-5 h-5" />}
-            label="Добавить вручную"
-            onClick={() => setIsAddingManual(true)}
-          />
-        </div>
-      </motion.div>
-    </div>
-  );
-
   return (
     <>
       {/* ── Toolbar (sticky below global header) ── */}
@@ -991,7 +924,12 @@ export function RecipesView({
       {/* ── Main content area ── */}
       <div className="max-w-7xl mx-auto px-4 py-8 pb-32">
         {recipes.length === 0 ? (
-          renderEmptyState()
+          <RecipesEmptyState
+            photoInputRef={photoInputRef}
+            onAddPDF={() => setIsAddingPDF(true)}
+            onAddLink={() => setIsAddingLink(true)}
+            onAddManual={() => setIsAddingManual(true)}
+          />
         ) : (
           <div className="flex flex-col lg:flex-row gap-8">
             {/* Sidebar for Desktop */}
