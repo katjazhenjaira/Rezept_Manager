@@ -2,6 +2,23 @@ import { doc, onSnapshot, setDoc } from 'firebase/firestore';
 import { db } from '@/infrastructure/firebaseApp';
 import type { UserProfile } from '@/shared/domain/types';
 import type { UserProfileRepository } from '@/services/UserProfileRepository';
+import { requiredNumber, requiredString } from './converters';
+
+function fromFirestore(data: Record<string, unknown>): UserProfile {
+  return {
+    name: requiredString(data['name'], 'name'),
+    age: requiredNumber(data['age'], 'age'),
+    gender: requiredString(data['gender'], 'gender') as UserProfile['gender'],
+    currentWeight: requiredNumber(data['currentWeight'], 'currentWeight'),
+    targetWeight: requiredNumber(data['targetWeight'], 'targetWeight'),
+    targetCalories: requiredNumber(data['targetCalories'], 'targetCalories'),
+    targetProteins: requiredNumber(data['targetProteins'], 'targetProteins'),
+    targetFats: requiredNumber(data['targetFats'], 'targetFats'),
+    targetCarbs: requiredNumber(data['targetCarbs'], 'targetCarbs'),
+    waterGoal: requiredNumber(data['waterGoal'], 'waterGoal'),
+    allergies: (data['allergies'] as string[]) ?? [],
+  };
+}
 
 export class FirestoreUserProfileRepository implements UserProfileRepository {
   constructor(private readonly uid: string) {}
@@ -10,7 +27,7 @@ export class FirestoreUserProfileRepository implements UserProfileRepository {
     return onSnapshot(
       doc(db, 'userProfiles', this.uid),
       snap => {
-        callback(snap.exists() ? (snap.data() as UserProfile) : null);
+        callback(snap.exists() ? fromFirestore(snap.data()) : null);
       },
       error => {
         console.error('FirestoreUserProfileRepository.subscribe failed:', error);
