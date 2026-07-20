@@ -4,18 +4,12 @@ import {
   FolderPlus, Users, Link as LinkIcon, Camera,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { clsx, type ClassValue } from 'clsx';
-import { twMerge } from 'tailwind-merge';
 import { useRepositories } from '@/app/providers/RepositoryContext';
 import { aiClient } from '@/services/ai/aiClient';
 import { extractImageFromPDF, extractTextFromPDF } from '@/shared/utils/pdfUtils';
 import { useData } from '@/app/providers/DataContext';
 import { ProgramDetailModal } from '@/features/programs/ProgramDetailModal';
 import type { Program, Recipe, UserProfile, Subfolder } from '@/shared/domain/types';
-
-function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
-}
 
 function AddRecipeOption({
   icon,
@@ -199,9 +193,6 @@ export function ProgramsView(props: ProgramsViewProps) {
   };
 
   const openProgram = openProgramId ? (programs.find(p => p.id === openProgramId) ?? null) : null;
-
-  // suppress unused-variable lint for cn (utility kept for consistency with other feature files)
-  void cn;
 
   return (
     <>
