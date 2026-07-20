@@ -173,7 +173,6 @@ export default function App() {
             recipeTarget={recipeTarget}
             onRecipeTargetCleared={() => setRecipeTarget(null)}
             isRecipeSelectionMode={isRecipeSelectionMode}
-            selectionTarget={selectionTarget}
             selectedRecipeIds={selectedRecipeIds}
             onSelectedRecipeIdsChange={setSelectedRecipeIds}
             selectedRecipe={selectedRecipe}

@@ -19,10 +19,7 @@ import {
   Download,
   Loader2,
   Check,
-  Settings,
   AlertTriangle,
-  ChevronDown,
-  Upload,
   ChefHat,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
@@ -178,7 +175,6 @@ export type RecipesViewProps = {
   onRecipeTargetCleared: () => void;
   // Cross-tab: recipe selection mode (initiated by Programs tab)
   isRecipeSelectionMode: boolean;
-  selectionTarget: { programId: string; subfolderId: string | 'main' } | null;
   selectedRecipeIds: string[];
   onSelectedRecipeIdsChange: (ids: string[]) => void;
   // Cross-tab controlled state (Programs/Planner can trigger modals/detail)
@@ -206,7 +202,6 @@ export function RecipesView({
   recipeTarget,
   onRecipeTargetCleared,
   isRecipeSelectionMode,
-  selectionTarget,
   selectedRecipeIds,
   onSelectedRecipeIdsChange,
   selectedRecipe,
@@ -364,18 +359,6 @@ export function RecipesView({
   const toggleFilterCategory = (cat: string) => {
     setFilterCategories((prev) =>
       prev.includes(cat) ? prev.filter((c) => c !== cat) : [...prev, cat],
-    );
-  };
-
-  const toggleFilterAuthor = (author: string) => {
-    setFilterAuthors((prev) =>
-      prev.includes(author) ? prev.filter((a) => a !== author) : [...prev, author],
-    );
-  };
-
-  const toggleFilterProgram = (progName: string) => {
-    setFilterPrograms((prev) =>
-      prev.includes(progName) ? prev.filter((p) => p !== progName) : [...prev, progName],
     );
   };
 
