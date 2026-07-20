@@ -198,6 +198,7 @@
 
 **[DEAD-3]** `src/infrastructure/testing/Fake{Cart,Planner,Programs,Recipes,UserProfile,NutritionPlan}Repository.ts`
 > Почти идентичный boilerplate (`Set<callback>` + `emit()` + `counter` + `reset()`) продублирован в 6 файлах (~15 строк дублирования в каждом). Не срочно, но кандидат на общий generic-базовый класс.
+> ✅ Исправлено (commit 6b80a91) — `FakeCollectionRepository<T>` вынесен для 4 файлов (`Cart`/`Planner`/`Programs`/`Recipes`), которые реально совпадали по паттерну. `UserProfile` (синглтон без счётчика) и `NutritionPlan` (без подписчиков вообще) не подходят под этот паттерн — их подгонка под общий класс была бы натянутой абстракцией, оставлены как есть.
 
 **[DEAD-4]** `src/features/programs/ProgramsView.tsx:7-8,16-18,205`
 > Хелпер `cn()` (clsx+tailwind-merge) объявлен и импортирован, но нигде не используется в JSX — вместо удаления добавлена заглушка `void cn;` для подавления lint-предупреждения.
