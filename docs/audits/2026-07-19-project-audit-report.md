@@ -246,6 +246,8 @@
 **[TS-5]** `ProgramDetailModal.tsx:535,756,815,854`; `RecipesView.tsx:1213`
 > `(e: any)` для drag-and-drop обработчиков вместо `React.DragEvent<HTMLDivElement>` — теряется типобезопасность `e.dataTransfer`/`e.currentTarget`.
 
+> ✅ Исправлено (commit a3dc683) — все 5 мест. `onDrop` на plain `<div>` (`ProgramDetailModal.tsx:535,813`) типизированы напрямую как `React.DragEvent<HTMLDivElement>`. `onDragStart` на `motion.div` (`ProgramDetailModal.tsx:756,852`; `RecipesView.tsx:1221`) — отдельный случай: framer-motion типизирует `onDragStart` под свой pan-жест (`event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo`), но при `draggable=true` форвардит его как нативный DOM-листенер (подтверждено чтением исходников `motion-dom`/`framer-motion` — есть спецкейс `t.draggable && r.startsWith("onDrag")`, форсирующий проброс на DOM в обход общего фильтра motion-пропов). Компилятор об этом не знает, поэтому параметр обработчика оставлен под выведенным (framer-motion) типом, а внутри тела — явный `as unknown as React.DragEvent<HTMLDivElement>` с комментарием, объясняющим расхождение; `e.dataTransfer`/`e.currentTarget` внутри обработчика получили полную типобезопасность. Тесты: 119/119 зелёные (18 файлов), `tsc --noEmit` чистый.
+
 **[TS-6]** `src/vite-env.d.ts`
 > `ImportMetaEnv` не объявляет `VITE_AI_WORKER_URL`, хотя переменная используется в `aiClient.ts:16`. Работает благодаря index signature из базового `vite/client`, но теряется автодополнение и защита от опечатки в имени переменной. Добавить объявление для консистентности с остальными `VITE_*`.
 
