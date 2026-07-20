@@ -255,6 +255,8 @@
 
 **[TS-7]** `scripts/migrate-assign-user.ts` не входит ни в `include` корневого `tsconfig.json` (`"src/**/*"` только), ни в `worker/tsconfig.json`. Скрипт не проходит статическую проверку типов через `npm run lint`/`tsc --noEmit`, полагаясь только на транспиляцию `tsx`. Добавить отдельный `tsconfig` или включить в `include`, если типобезопасность здесь важна.
 
+> ✅ Исправлено (commit f3f3490) — добавлен отдельный `scripts/tsconfig.json` по образцу `worker/tsconfig.json` (`"types": ["node"]`, `noEmit`, `strict`, `include: ["**/*"]`), новый скрипт `package.json`: `lint:scripts` (`tsc --noEmit -p scripts/tsconfig.json`), не объединён с существующим `lint`. Простое добавление `scripts/**/*` в `include` корневого `tsconfig.json` не подошло бы: там `"types": ["vitest/globals"]`, что отключает глобальные типы Node (`process` и т.д.) даже при наличии `@types/node` в devDependencies, а добавлять `"node"` в root-конфиг протекло бы Node-глобалы в браузерный код `src/`. Тесты: 119/119 зелёные (18 файлов), `lint:scripts` и `tsc --noEmit` (корневой) чистые.
+
 ---
 
 ## 🏛️ Соответствие соглашениям
