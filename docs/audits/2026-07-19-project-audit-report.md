@@ -5,24 +5,25 @@
 
 ## Сводка
 
-| Категория | Найдено |
-|-----------|---------|
-| 🔴 Критические нарушения | 8 |
-| 🟠 Противоречия с документацией | 15 |
-| 📋 Недокументированная логика | 1 |
-| 🔵 Логические ошибки | 9 |
-| 🟡 Мёртвый / избыточный код | 9 |
-| ⚡ TypeScript strict | 7 |
-| 🏛️ Соответствие соглашениям | 3 |
-| 🔄 Импорты / зависимости | 0 |
-| 🐢 Производительность | 8 |
-| **Итого** | **60** |
+| Категория                       | Найдено |
+| ------------------------------- | ------- |
+| 🔴 Критические нарушения        | 8       |
+| 🟠 Противоречия с документацией | 15      |
+| 📋 Недокументированная логика   | 1       |
+| 🔵 Логические ошибки            | 9       |
+| 🟡 Мёртвый / избыточный код     | 9       |
+| ⚡ TypeScript strict            | 7       |
+| 🏛️ Соответствие соглашениям     | 3       |
+| 🔄 Импорты / зависимости        | 0       |
+| 🐢 Производительность           | 8       |
+| **Итого**                       | **60**  |
 
 ---
 
 ## 🔴 Критические нарушения
 
 **[CRIT-1]** `src/infrastructure/firestore/FirestoreRecipesRepository.ts:43-50`, `FirestoreProgramsRepository.ts:46-53`
+
 > **Проблема:** Репозитории принимают поля `image`/`dishImage`/`pdfUrl` без каких-либо проверок содержимого. `RecipesView.tsx:420-424,509-513,1614-1618` и `ProgramsView.tsx:146-147` пишут туда `imageDataUri` из `aiClient.generateImage()` (base64, ~700KB+) напрямую перед вызовом `add()`/`update()`.
 > **Почему важно:** Нарушение Known constraint «не хранить base64-картинки в Firestore» (лимит документа ~1MB). Репозиторий — последний рубеж перед записью, и он ничего не блокирует.
 > **Исправление:** Добавить guard в репозитории (throw при `data:` URI выше безопасной длины) и завести загрузку через Firebase Storage/R2, храня в Firestore только URL.
@@ -31,12 +32,14 @@
 > **Ручная проверка (пользователь):** загрузка картинки в приложении протестирована вживую — файл успешно сохраняется в Firebase Storage. `storage.rules` задеплоены и работают корректно.
 
 **[CRIT-2]** `src/features/planner/PlannerView.tsx:119-121`; `RecipesView.tsx:612-614,1193-1196,1218-1221,1274-1277,1313-1316`; `ProgramDetailModal.tsx:761-763,859-861`
+
 > **Проблема:** Проверка аллергенов продублирована вручную (`allergies.filter(...ingredients.some(...includes...))`) в 7+ местах вместо вызова `recipeAllergens`/`recipeHasAllergens` из `src/shared/domain/allergies.ts`.
 > **Почему важно:** Прямое нарушение принципа единого источника истины для safety-critical constraint №1. Любое будущее изменение логики сопоставления (нормализация, границы слов) придётся синхронно вносить в 7+ местах — иначе проверка на разных вкладках начнёт расходиться незаметно.
 > **Исправление:** Заменить все инлайн-выражения на вызовы `recipeAllergens`/`recipeHasAllergens`.
 > **✅ Исправлено:** Все 8 найденных мест (`PlannerView.tsx:119`, `RecipesView.tsx` ×5 — `handleAddToPlanner` + 3 инлайн-проверки на бейджи карточки рецепта + селект-режим, `ProgramDetailModal.tsx` ×2) заменены на вызовы `recipeAllergens`/`recipeHasAllergens` из `src/shared/domain/allergies.ts`. Импорты добавлены во все 3 файла. Тесты: полный прогон 121/121 зелёный, `tsc --noEmit` и `vite build` чистые.
 
 **[CRIT-3]** `src/features/planner/PlannerView.tsx` (строки 150-169, 246-262, 447-463, 581-597); `src/features/tracker/TrackerView.tsx` (59-72, 74-80, 82-87)
+
 > **Проблема:** Суммирование КБЖУ реализовано вручную 7 раз вместо `sumMacros`/`remainingMacros`/`resolveActiveTargets` из `src/shared/domain/macros.ts`. Ни один из файлов не импортирует `shared/domain/macros.ts` (проверено grep). `TrackerView.tsx` даже копирует строку `'По умолчанию (из настроек)'` из `resolveActiveTargets` — явный copy-paste.
 > **Почему важно:** Прямое нарушение constraint №2 (KBZHU consistency между Planner/Tracker/Programs) — есть риск, что фикс в одном месте не долетит до остальных.
 > **Исправление:** Заменить все дублирующиеся редьюсеры на вызовы shared-функций.
@@ -44,30 +47,35 @@
 > Не тронуто намеренно: `PlannerView.tsx` line ~583 (`totalCals` в месячном виде, LOGIC-4 — отдельная находка, undercounting для `type: 'product'`) и сравнение `isSelectedDateOverLimit` с `userProfile.target*` напрямую (не входит в CRIT-3 — Planner вообще не использует `activeNutritionPlan` для подсветки превышения лимита, это отдельный баг constraint №3, не описанный в исходном отчёте; стоит завести отдельной находкой).
 
 **[CRIT-4]** `worker/src/index.ts:14`
+
 > **Проблема:** `app.use("*", cors())` — Hono по умолчанию резолвит это в `origin: "*"` (подтверждено в `node_modules/hono/dist/middleware/cors/index.js`).
 > **Почему важно:** Любой сторонний сайт может дёргать `/api/ai/*` из браузера пользователя — платный Gemini-прокси становится открытым для встраивания на чужих сайтах. Rate limit по IP не ограничивает суммарные расходы.
 > **Исправление:** `cors({ origin: [<прод-домен фронтенда>, "http://localhost:5173"] })`.
 > ✅ Исправлено (commit 7f88a84): `worker/src/index.ts` — `cors({ origin: ["https://rezept-manager.flowgence.de", "http://localhost:5173"] })`.
 
 **[CRIT-5]** `worker/src/routes/importFromUrl.ts:88, 114`
+
 > **Проблема:** Worker делает server-side `fetch()` на URL, полностью заданный клиентом (сам `url`, а также `og:image`/`imageUrl` со страницы), без allowlist протокола/хоста.
 > **Почему важно:** Worker превращается в открытый fetch-прокси (SSRF) — можно заставить его слать запросы на произвольные хосты с IP/репутацией Cloudflare.
 > **Исправление:** Валидировать `http(s)`-протокол, добавить allowlist или блокировать private/link-local диапазоны.
 > ✅ Исправлено (commit b3a2dd6, доп. фикс 7f18feb): `worker/src/helpers/validateExternalUrl.ts` — блокирует не-http(s) протоколы и literal loopback/private/link-local хосты (включая IPv4-mapped IPv6); применена к `url` и обоим fetch кандидатов изображения в `importFromUrl.ts` через `safeFetch()`, который ревалидирует каждый редирект-хоп (`redirect: "manual"`, до 5 хопов) — обход через 3xx на private-хост закрыт. Не защищает от DNS rebinding (Workers не дают синхронный DNS lookup) — оставлено как известное ограничение.
 
 **[CRIT-6]** `worker/src/routes/fillRemaining.ts:14, 28-29`
+
 > **Проблема:** Валидируется только `remaining.calories`. `allergies.length` и `userRecipes.map(...)` используются без проверки на `undefined` — упадёт с `TypeError`, если поля отсутствуют в теле запроса.
 > **Почему важно:** Constraint №5 требует, чтобы allergies и recipeLibrary ВСЕГДА присутствовали в fill-remaining запросе — сейчас это гарантируется только доверием к клиенту, на сервере защиты нет.
 > **Исправление:** Добавить `Array.isArray(allergies)` и `Array.isArray(userRecipes)` рядом с существующей проверкой, возвращать 400 при нарушении.
 > ✅ Исправлено (commit f2786e9): `worker/src/routes/fillRemaining.ts` — добавлены `Array.isArray(allergies)` и `Array.isArray(userRecipes)` в общую проверку входа, 400 при нарушении.
 
 **[CRIT-7]** `worker/src/routes/fillRemaining.ts:71-81`
+
 > **Проблема:** `data.options ?? []` возвращается клиенту без проверки, что Gemini вернул именно 3 варианта — только промпт (строка 34) просит об этом, не гарантия.
 > **Почему важно:** Прямое нарушение constraint №5 «ответ — ровно 3 варианта». Gemini может вернуть 0, 1 или 5 вариантов незаметно для приложения.
 > **Исправление:** Валидировать `data.options?.length === 3` после парсинга, при нарушении — ошибка или коррекция с логированием.
 > ✅ Исправлено (commit e43fd7d): `worker/src/routes/fillRemaining.ts` — при `data.options.length !== 3` логируется `console.error` с фактическим числом вариантов и телом ответа, клиенту возвращается 502. Выбрана ошибка вместо тихой коррекции (обрезка/паддинг сфабрикует несуществующие варианты, что хуже честного отказа).
 
 **[CRIT-8]** `worker/src/index.ts:19-22` + локальные catch-блоки во всех 6 маршрутах
+
 > **Проблема:** Глобальный error handler и большинство маршрутов возвращают `err.message` клиенту как есть (500/502).
 > **Почему важно:** Раскрытие внутренних деталей (SDK-ошибки, парсинг) клиенту — информационная утечка, противоречит духу правила «GEMINI_API_KEY и внутренности никогда не должны попадать к клиенту».
 > **Исправление:** Логировать полную ошибку на сервере (`console.error`), клиенту возвращать generic-сообщение.
@@ -78,61 +86,77 @@
 ## 🟠 Противоречия с документацией
 
 **[DOC-1]** `Technical_Project_Documentation.md:312` vs `STATUS.md`
+
 > Base64-картинки в Firestore помечены «Phase 1 TODO», но STATUS.md говорит «Phase 1 DoD закрыт». Констрейнт фактически не закрыт (см. CRIT-1) — документация вводит в заблуждение.
 > ✅ Исправлено: строка в таблице «Технические ограничения» (`Technical_Project_Documentation.md:314`) обновлена — вместо «Phase 1 TODO» указано решение CRIT-1 (`resolveImageField()` в `src/infrastructure/firebaseStorage.ts`, пишет в Firestore только URL).
 
 **[DOC-2]** `Technical_Project_Documentation.md:141`
+
 > `LocalStorageNutritionPlanRepository.ts` описан как активно используемый «localStorage fallback», но в реальности нигде не подключён (см. DEAD-1) — мёртвый код, а не рабочий fallback.
 > ✅ Исправлено: описание в таблице «Структура файлов» заменено на факт («не подключён нигде... мёртвый код, см. DEAD-1»). Само удаление/подключение файла — отдельная находка DEAD-1, не тронуто здесь.
 
 **[DOC-3]** `Technical_Project_Documentation.md:113` vs `src/services/RecipesRepository.ts:3-9`
+
 > Документация: `subscribe, add, update, delete, deleteAll`. Реально: `subscribeAll, add, update, delete, getById`. `deleteAll` не существует, `getById` не задокументирован.
 > ✅ Исправлено: таблица «Слой сервисов» обновлена на фактическую сигнатуру `subscribeAll, add, update, delete, getById`.
 
 **[DOC-4]** `Technical_Project_Documentation.md:114` vs `src/services/PlannerRepository.ts:3-7`
+
 > Документация обещает `update`, реально интерфейс — `subscribeAll, add, delete`. У `PlannerRepository` **нет метода `update()` вообще**.
 > ✅ Исправлено: таблица «Слой сервисов» обновлена на `subscribeAll, add, delete (нет update)`.
 
 **[DOC-5]** `Technical_Project_Documentation.md:116` vs `src/services/ProgramsRepository.ts:3-9`
+
 > `getById` присутствует в коде, но не упомянут в документации.
 > ✅ Исправлено: таблица «Слой сервисов» обновлена на `subscribeAll, add, update, delete, getById`.
 
 **[DOC-6]** `Technical_Project_Documentation.md:118` vs `src/services/NutritionPlanRepository.ts:3-6`
+
 > Документация: `subscribe, save`. Реальность: `get(): Promise<ActiveNutritionPlan | null>` / `set(plan): Promise<void>`. Похоже на copy-paste из строки `UserProfileRepository` выше.
 > ✅ Исправлено: таблица «Слой сервисов» обновлена на фактическую сигнатуру `get()`/`set(plan)`.
 
 **[DOC-7]** `docs/roadmap-archive/phase-1.md:26` vs `firestore.rules:55-58`
+
 > Архивная запись описывает перенос `activeNutritionPlan` в `settings/plan`, но реальная коллекция — `nutritionPlans/{uid}`, а путь `settings/*` в rules явно `deny`-ится (устаревшие данные).
 > ✅ Исправлено: строка чеклиста дополнена примечанием о переименовании в `nutritionPlans/{uid}` — исторический пункт сохранён (архив не переписывается), но актуальное имя коллекции теперь явно указано рядом.
 
 **[DOC-8]** `Application_description.md` («Вкладка Корзина», п.6) vs `src/features/cart/CartView.tsx`
+
 > Подсветка аллергенов в корзине красным цветом с иконкой и текстом «Осторожно: аллерген!» описана в документации, но в `CartView.tsx` нет вообще никакой allergy-логики (grep на «allerg» — пусто).
 > ✅ Исправлено: реализована фича (выбор пользователя — реализовать, а не убрать из документации). Добавлен `productAllergens()` в `src/shared/domain/allergies.ts` (общий matcher вынесен из `recipeAllergens`, переиспользован для одиночного названия товара). `CartView.tsx` принимает `allergies: string[]` пропом (передаётся из `App.tsx` как `userProfile.allergies`), `CartItemRow` подсвечивает строку красным и показывает `AlertTriangle` + текст «Осторожно: аллерген! (...)» для товаров с совпадением, пока не отмечены как купленные. Тесты: 121/121 зелёные, `tsc --noEmit` чистый.
 
 **[DOC-9]** `Application_description.md` («Вкладка Рецепты», п.3) vs `RecipesView.tsx`
+
 > Кнопка «Пересчитать КБЖУ» под блоком КБЖУ на карточке рецепта отсутствует в коде. Вместо неё — только степпер порций (см. LOGIC-5), который ничего не пересчитывает.
 > ✅ Исправлено: добавлена кнопка «Пересчитать КБЖУ» под блоком «КБЖУ (на порцию)» в детальной карточке рецепта (`RecipesView.tsx`). При нажатии вызывается `aiClient.calculateKbzhu()` по текущему списку ингредиентов, результат делится на `selectedRecipe.servings` (макросы в модели — per-portion) и персистится через `recipesRepo.update()`, а не только в локальный state. Степпер порций (LOGIC-5) не тронут — отдельная находка. Тесты: 121/121 зелёные, `tsc --noEmit` чистый.
 
 **[DOC-10]** `src/app/layout/AppHeader.tsx:17-79` vs `src/features/settings/SettingsModal.tsx:324-341`
+
 > Два независимых, рассинхронизированных переключателя языка: в AppHeader — чисто визуальный (не вызывает `changeLanguage()`, известная проблема), в SettingsModal — рабочий, вызывает `changeLanguage()` из `I18nProvider`. Раз рабочая реализация уже есть, AppHeader — избыточный и вводящий в заблуждение дубль, а не просто «косметическая» проблема.
 > ✅ Исправлено (выбор пользователя — сделать AppHeader рабочим, а не удалять): `AppHeader.tsx` теперь использует `useTranslation()` для реактивного `i18n.language` вместо локального `useState`, и вызывает `changeLanguage()` из `I18nProvider` при выборе языка — синхронизирован с SettingsModal (общий источник состояния — i18next). Устаревшая строка про ограничение убрана из таблицы «Технические ограничения» в `Technical_Project_Documentation.md`. Тесты: 121/121 зелёные, `tsc --noEmit` чистый.
 
 **[DOC-11]** `Technical_Project_Documentation.md:204` vs 5 маршрутов worker
+
 > Документация: везде `gemini-2.5-flash`. Реально используется `gemini-3-flash-preview` в `calculateKbzhu.ts:19`, `importFromUrl.ts:37`, `importFromPdf.ts:94,104`, `importFromPhoto.ts:47`, `fillRemaining.ts:64` (комментарий в `importFromPdf.ts:3-6` объясняет осознанный переход). `generateImage.ts` по-прежнему верно использует `gemini-2.5-flash-image`.
 > ✅ Исправлено: строка «Модели» в разделе «Google Gemini (AI Studio)» обновлена на `gemini-3-flash-preview` для 5 текстовых маршрутов; `gemini-2.5-flash-image` для generate-image оставлен без изменений (уже верен).
 
 **[DOC-12]** `Technical_Project_Documentation.md:179,206` vs `worker/src/middleware/rateLimit.ts:15-16`
+
 > Описано как «Token bucket», реально — счётчик по календарной минуте (`rate:${ip}:${Math.floor(Date.now()/60000)}`). Допускает всплеск до ~20 запросов за 2 секунды на границе минут, чего token bucket не допустил бы.
 > ✅ Исправлено: обе строки (в таблице «Структура файлов» и в разделе «Google Gemini») переписаны с «Token bucket» на точное описание — счётчик по календарной минуте с указанием формата ключа KV и оговоркой про всплеск на границе минут.
 
 **[DOC-13]** `Technical_Project_Documentation.md:190` (§5 «Firebase») vs `src/infrastructure/firestore/*.ts`, `firestore.rules`
+
 > Документация называет коллекции `planner_entries`, `cart_items`. Реальные имена — `planner`, `cart` (подтверждено кодом репозиториев, `firestore.rules` и `scripts/migrate-assign-user.ts`).
 > ✅ Исправлено попутно в рамках CRIT-1 (см. заметку там) — раздел «Firebase» уже указывает верные имена коллекций `recipes`, `planner`, `cart`, `programs`, `userProfiles`, `nutritionPlans` (строка 191).
 
 **[DOC-14]** `CLAUDE.md` («Development conventions») vs репозиторий
+
 > Указано «Prettier (format on save); ESLint», но нигде в репозитории нет ни конфига ESLint (`.eslintrc*`/`eslint.config*`), ни зависимости `eslint` в `package.json`. Заявленный процесс контроля качества фактически не существует.
+> ✅ Исправлено (commit 63d4e77, 4a7ad6d) — по выбору пользователя (только инструменты + Prettier-форматирование, без разбора существующих находок). Добавлен `eslint.config.js` (flat config, ESLint 10.7.0 + typescript-eslint 8.64.0 recommended + eslint-plugin-react-hooks 7.1.1 + eslint-plugin-react-refresh 0.5.3 + eslint-config-prettier 10.1.8 последним в цепочке), таргет — только `src/**/*.{ts,tsx}` (по образцу существующего разделения scope'ов: `worker/` и `scripts/` уже имеют отдельный typecheck, не объединялись). `.prettierrc.json`/`.prettierignore` добавлены — стиль подобран под уже сложившийся в коде (single quotes, semicolons, trailing comma, 2-space indent), исключены `node_modules`/`dist`/`coverage`/lock-файлы/`.playwright-mcp/`/`.worktrees/`. Новые npm-скрипты: `lint:eslint` (`eslint src`), `format` (`prettier --write .`), `format:check` (`prettier --check .`) — не объединены с существующим `lint` (`tsc --noEmit`). Прогнан разовый `prettier --write .` по всему репозиторию (97 файлов, чистое форматирование без изменения логики). `eslint src` подтверждён рабочим (не падает, конфиг валиден) и сообщает **35 errors / 2 warnings** на существующем коде (в основном `react-hooks/set-state-in-effect`, `@typescript-eslint/no-unused-vars`, `@typescript-eslint/no-explicit-any`, один `react-refresh/only-export-components` в `main.tsx`) — разбор этих находок вне scope DOC-14, зафиксирован как технический долг в `ROADMAP.md`. Тесты: 119/119 зелёные (18 файлов), `tsc --noEmit` чистый в корне и в `worker/`, `npm run build` проходит.
 
 **[DOC-15]** `.env.example` vs `Technical_Project_Documentation.md:212-225`
+
 > `.env.example` всё ещё содержит `GEMINI_API_KEY` и `APP_URL` — реликты старого AI Studio шаблона (собственный TODO-комментарий в файле призывает их убрать после перехода на Worker-прокси, который уже реализован). Технический документ описывает только `VITE_FIREBASE_*`/`VITE_AI_WORKER_URL`.
 > ✅ Исправлено: `GEMINI_API_KEY`/`APP_URL` убраны из `.env.example`, добавлен `VITE_AI_WORKER_URL` (реально используется в `aiClient.ts:16`, был описан в тех. документации, но отсутствовал в `.env.example`).
 
@@ -141,6 +165,7 @@
 ## 📋 Недокументированная логика
 
 **[UNDOC-1]** `scripts/migrate-assign-user.ts`
+
 > **Проблема:** Скрипт миграции (назначение `userId` на существующие документы + перенос `settings/profile`→`userProfiles`, `settings/plan`→`nutritionPlans`) нигде не упомянут в разделе «Структура файлов» `Technical_Project_Documentation.md`.
 > **Действие:** Добавить раздел `scripts/` в техдокументацию с описанием назначения и переменных окружения (`GOOGLE_APPLICATION_CREDENTIALS`, `MIGRATION_USER_UID`).
 > ✅ Исправлено (commit ff85a49)
@@ -150,38 +175,47 @@
 ## 🔵 Логические ошибки
 
 **[LOGIC-1]** `FirestoreCartRepository.ts:26-35`, `FirestorePlannerRepository.ts:26-34`, `FirestoreProgramsRepository.ts:36-44`, `FirestoreRecipesRepository.ts:33-41`, `FirestoreUserProfileRepository.ts:10-13`
+
 > Все `onSnapshot(query, onNext)` не передают `onError`. При ошибке подписки (истёкший токен, permission-denied) UI молча замирает на устаревших данных без какого-либо сигнала. Исправление: добавить `onError`-колбэк с логированием/сигналом наверх.
 > ✅ Исправлено (commit 80f5c20): интерфейсы `RecipesRepository`/`PlannerRepository`/`CartRepository`/`ProgramsRepository`/`UserProfileRepository` получили опциональный параметр `onError?: (error: Error) => void`; все 5 Firestore-реализаций передают его вторым аргументом в `onSnapshot`, логируют ошибку через `console.error` с указанием репозитория и пробрасывают её вызывающему коду. Error-tracking (Sentry и т.п.) в проекте не подключён, поэтому дальше `console.error` сигнал пока не идёт — при появлении error-reporting инфраструктуры подключить `onError` к ней.
 
 **[LOGIC-2]** `src/infrastructure/firestore/converters.ts:6-7`
+
 > `timestampToISO(null|undefined)` тихо возвращает `new Date().toISOString()`. Документ с реально отсутствующим `createdAt` (артефакт миграции) молча выпрыгивает в начало списка, как будто только что создан, маскируя проблему данных. Исправление: логировать warning вместо тихого дефолта.
 > ✅ Исправлено (commit c4209b2): `timestampToISO` логирует `console.warn('timestampToISO: missing createdAt, defaulting to current time')` перед фолбэком на текущее время; поведение (сам фолбэк) не менялось — три вызывающих репозитория (`recipes`/`programs`/`cart`) по-прежнему получают валидную ISO-строку для сортировки. Добавлен тест на факт логирования.
 
 **[LOGIC-3]** `src/features/tracker/AISuggestModal.tsx:74-147` + `TrackerView.tsx:89-124,351-433`
+
 > Из-за батчинга React `setSuggestion`/`setIsSuggesting(false)` результаты модалки практически недостижимы в обычном потоке — реальный UI выбора вариантов задублирован инлайн в `TrackerView.tsx`. Модалка — мёртвый вес, поддерживается два места с одинаковой логикой.
 > ✅ Исправлено (commit 3326f8d): подтверждено, что модалка технически не может показать результат (isOpen привязан к isSuggesting, который синхронно становится false в том же батче, где приходит suggestion). Спросил пользователя — выбрано удаление мёртвого кода вместо починки. `AISuggestModal.tsx` удалён; в `TrackerView.tsx` тип `SuggestionResult` заменён на существующий `FillRemainingResponse` из `services/ai/contracts.ts`, работающий инлайн-UI сохранён без изменений.
 
 **[LOGIC-4]** `src/features/planner/PlannerView.tsx:647`
+
 > Месячный вид считает калории только по `type: 'recipe'`, entries с `type: 'product'` молча игнорируются — тот же день показывает разные суммы в разных видах планера (день/неделя vs месяц).
 > ✅ Исправлено (commit e7350ae): `totalCals` в `renderMonthView()` теперь считается через `sumMacros(entries, recipes).calories` — ту же функцию, что уже использует день/неделя (`PlannerView.tsx:152,230,415,533`), вместо ручного `reduce` по `getRecipeById(e.recipeId)`. Добавлен регрессионный тест в `PlannerView.test.tsx` на product-entry в месячном виде.
 
 **[LOGIC-5]** `src/features/recipes/RecipesView.tsx:2499-2526`
+
 > Степпер порций (+/-) меняет только `selectedRecipe.servings` в локальном state; макросы ниже (2436-2461) читаются нескейленными, `recipesRepo.update()` не вызывается — изменение чисто косметическое и теряется при повторном открытии.
 > ✅ Исправлено (commit 46cc705, выбор пользователя — калькулятор, а не редактор рецепта): степпер больше не трогает `selectedRecipe.servings`. Добавлен отдельный локальный state `portionCount` (сбрасывается на `recipe.servings` при открытии другого рецепта через `useEffect` по `selectedRecipe?.id`), степпер меняет только его. Блок «КБЖУ» теперь показывает `macros × portionCount / recipe.servings` и подписан «на N порций»; под степпером добавлена подпись «Не меняет и не сохраняет рецепт — только пересчитывает КБЖУ». Постоянное изменение количества порций рецепта — через форму редактирования (поле «Порции», `RecipesView.tsx:2019`). Тесты: 123/123 зелёные, `tsc --noEmit` чистый.
 
 **[LOGIC-6]** `worker/src/routes/fillRemaining.ts:33`
+
 > `remaining.proteins/fats/carbs` подставляются в промпт без проверки на число (проверяется только `calories`). При отсутствии полей в промпт улетает буквальная строка `"undefined"`, незаметно портя качество AI-рекомендаций.
 > ✅ Исправлено (commit a7ec813): валидация на входе route расширена — теперь `typeof remaining.proteins/fats/carbs !== "number"` проверяется наравне с `calories`, запрос с неполным `Macros` отклоняется 400 до формирования промпта. Тестовой инфраструктуры в `worker/` нет (только `tsc --noEmit`), поэтому регрессионный тест не добавлен. `worker/tsc --noEmit` чистый, фронтенд-тесты 123/123 зелёные.
 
 **[LOGIC-7]** `worker/src/middleware/rateLimit.ts:18-33`
+
 > Последовательность KV `get`→вычисление→`put` не атомарна — при параллельных запросах с одного IP в одну минуту лимит может быть превышен (мягкое ограничение вместо строгого «11-й запрос → 429»).
 > ✅ Исправлено (commit f150a22, выбор пользователя — оставить как есть и задокументировать): это архитектурное ограничение Cloudflare KV (eventually consistent, нет compare-and-swap), а не баг в коде — строгая атомарность потребовала бы Durable Objects, что признано избыточным для задачи «защита от злоупотребления Gemini API» (не строгий биллинг-гейт). Добавлен поясняющий комментарий в `rateLimit.ts` и пункт в `CLAUDE.md` → Known constraints с указанием пути миграции на DO, если строгий лимит когда-нибудь понадобится. Код не менялся функционально. `worker/tsc --noEmit` чистый, фронтенд-тесты 123/123 зелёные.
 
 **[LOGIC-8]** worker-маршруты в целом
+
 > Идентичные сбои (ошибка Gemini) дают разные коды/формат ответа: `calculateKbzhu.ts`/`generateImage.ts` падают в общий 500-обработчик без локального try/catch, остальные 4 маршрута ловят локально и возвращают 502 с `Gemini error: ...`. Исправление: унифицировать обработку ошибок по всем 6 маршрутам.
 > ✅ Исправлено (commit eaa08c0): вызовы Gemini в `calculateKbzhu.ts` и `generateImage.ts` обёрнуты в тот же try/catch → `console.error` + `c.json({ error: ... }, 502)`, что уже использовался в `importFromUrl.ts`/`importFromPdf.ts`/`importFromPhoto.ts`/`fillRemaining.ts`. Теперь все 6 маршрутов при сбое Gemini единообразно возвращают 502 с описательным сообщением вместо смеси 500 (`app.onError`) и 502. Бизнес-логика не менялась. `worker/tsc --noEmit` чистый, фронтенд-тесты 123/123 зелёные.
 
-**[LOGIC-9]** *(информационная, низкий приоритет)* Ни один репозиторий (`PlannerRepository.add()`, `FirestoreRecipesRepository.add()/update()` и т.д.) не выполняет проверку аллергенов при записи — это архитектурно нормально (проверка живёт в UI-слое), но означает отсутствие defense-in-depth для safety-critical constraint №1: если какой-то будущий вызов пропустит UI-проверку, на уровне хранения её никто не перехватит.
+**[LOGIC-9]** _(информационная, низкий приоритет)_ Ни один репозиторий (`PlannerRepository.add()`, `FirestoreRecipesRepository.add()/update()` и т.д.) не выполняет проверку аллергенов при записи — это архитектурно нормально (проверка живёт в UI-слое), но означает отсутствие defense-in-depth для safety-critical constraint №1: если какой-то будущий вызов пропустит UI-проверку, на уровне хранения её никто не перехватит.
+
 > ✅ Исправлено (commit 9911d74, выбор пользователя — оставить как есть и задокументировать): встраивать проверку в репозитории означало бы дублировать доменную логику в слое, который готовится к замене Firebase → Supabase (Phase 3) — репозитории осознанно остаются чистым CRUD. Добавлен пункт в `CLAUDE.md` → Known constraints, явно требующий от любого нового пути записи в Planner/Tracker/AI-suggestions самому вызывать проверку аллергенов в UI-слое. Код не менялся. Фронтенд-тесты 123/123 зелёные.
 
 ---
@@ -189,37 +223,46 @@
 ## 🟡 Мёртвый / избыточный код
 
 **[DEAD-1]** `src/infrastructure/LocalStorageNutritionPlanRepository.ts` (весь файл)
+
 > Не используется нигде, кроме собственного теста (`grep` подтверждает). `RepositoryProvider.tsx` подключает только `FirestoreNutritionPlanRepository`. См. DOC-2. Удалить или осознанно подключить как задокументированный optimistic cache.
 > ✅ Исправлено (commit 74b440c, выбор пользователя — удалить): файл и его тест удалены полностью. Firebase/Supabase — единственный источник истины (CLAUDE.md), localStorage допустим только как optimistic cache поверх Firestore-репозитория, а не как его полноценная альтернативная реализация, чем этот класс фактически являлся. Тесты: 119/119 зелёные (было 123 — минус 4 из удалённого файла), `tsc --noEmit` чистый.
 
 **[DEAD-2]** `src/services/ai/contracts.ts:85`
+
 > `AiErrorResponse` экспортирован, но нигде не импортируется. `aiClient.ts:18-29` игнорирует структурированное тело ошибки от воркера, кидает generic `Error` с сырым текстом. Исправление: парсить как `AiErrorResponse` в `post()` либо удалить неиспользуемый тип.
 > ✅ Исправлено (commit 7f9b9ae) — `post()` парсит JSON-тело как `AiErrorResponse` и использует `data.error` в сообщении; все маршруты воркера уже возвращали `{ error: string }` консистентно, так что это не breaking change.
 
 **[DEAD-3]** `src/infrastructure/testing/Fake{Cart,Planner,Programs,Recipes,UserProfile,NutritionPlan}Repository.ts`
+
 > Почти идентичный boilerplate (`Set<callback>` + `emit()` + `counter` + `reset()`) продублирован в 6 файлах (~15 строк дублирования в каждом). Не срочно, но кандидат на общий generic-базовый класс.
 > ✅ Исправлено (commit 6b80a91) — `FakeCollectionRepository<T>` вынесен для 4 файлов (`Cart`/`Planner`/`Programs`/`Recipes`), которые реально совпадали по паттерну. `UserProfile` (синглтон без счётчика) и `NutritionPlan` (без подписчиков вообще) не подходят под этот паттерн — их подгонка под общий класс была бы натянутой абстракцией, оставлены как есть.
 
 **[DEAD-4]** `src/features/programs/ProgramsView.tsx:7-8,16-18,205`
+
 > Хелпер `cn()` (clsx+tailwind-merge) объявлен и импортирован, но нигде не используется в JSX — вместо удаления добавлена заглушка `void cn;` для подавления lint-предупреждения.
 > ✅ Исправлено (commit 46b8a69) — подтверждено, что `cn()` нигде не вызывается в файле. Удалены импорты `clsx`/`tailwind-merge`, сама функция `cn()` и заглушка `void cn;` вместе с поясняющим комментарием. Тесты: 119/119 зелёные, `tsc --noEmit` чистый.
 
 **[DEAD-5]** `src/features/tracker/AISuggestModal.tsx:74-147` — см. LOGIC-3, дублирующая недостижимая UI-логика.
+
 > ✅ Исправлено (commit 3326f8d) — закрыто тем же коммитом, что и LOGIC-3: `AISuggestModal.tsx` полностью удалён, отдельного фикса не требовалось.
 
 **[DEAD-6]** `src/features/programs/ProgramDetailModal.tsx:249`
+
 > `<AnimatePresence>{true && (...)}</AnimatePresence>` — условие `true &&` никогда не бывает false, бессмысленно.
 > ✅ Исправлено (commit e9440b8) — удалены обёртки `{true && (` и соответствующая `)}` вокруг обоих JSX-блоков (Program Details Modal, строки 249-910); `<div>` теперь передаётся в `AnimatePresence` напрямую, поведение анимации не изменилось. `tsc --noEmit` чистый, тесты: 119/119 зелёные.
 
 **[DEAD-7]** `package.json:22` (корень)
+
 > Зависимость `express` объявлена, но нигде не используется во всём репозитории (кроме `package.json`/lock-файла).
 > ✅ Исправлено (commit e76d83a) — подтверждено grep'ом по всему репозиторию (кроме node_modules/lock-файлов), что `express` нигде не импортируется и не требуется root-скриптами (`dev` использует только `vite`); worker имеет отдельный `package.json` без `express`. `express` и `@types/express` удалены из root `package.json`, `package-lock.json` перегенерирован через `npm install`. `tsc --noEmit` чистый, тесты: 119/119 зелёные (18 файлов), `npm run build` проходит успешно.
 
 **[DEAD-8]** `package.json:17` (корень)
+
 > `@google/genai` объявлена как зависимость фронтенда, но нигде не импортируется в `src/`. Помимо того что это мёртвая зависимость, её присутствие в клиентском `package.json` — риск: кто-то в будущем может импортировать её напрямую с ключом на клиенте, в обход Worker-прокси (Known constraint).
 > ✅ Исправлено (commit 54717a4) — подтверждено grep'ом по `src/`, что `@google/genai` нигде не импортируется; все Gemini-вызовы уже идут через Cloudflare Worker (`/api/ai/*`). `worker/package.json` (отдельный пакет) не тронут — там зависимость используется легитимно на сервере. `@google/genai` удалён из root `package.json`, `package-lock.json` перегенерирован через `npm install`. `tsc --noEmit` чистый, тесты: 119/119 зелёные (18 файлов), `npm run build` проходит успешно.
 
 **[DEAD-9]** `src/features/recipes/RecipesView.tsx:2280-2283`
+
 > Кнопка «Поделиться» на карточке рецепта отрендерена без `onClick`-обработчика вообще. В `ProgramsView.tsx` есть рабочий `handleShareProgram` для программ — значит, это не недостроенная фича, а забытый нерабочий контрол.
 > ✅ Исправлено (commit 14cb6eb) — по выбору пользователя реализован полный share (не только copy-link): `handleShareRecipe()` в `RecipesView.tsx` копирует ссылку `?recipeId=<id>` в буфер обмена (1:1 по образцу `handleShareProgram`), и добавлен парный `useEffect` в `App.tsx`, читающий `?recipeId=` и открывающий рецепт, как только `recipes` из `useData()` подгрузятся (`recipes.length === 0` — guard от преждевременного "не найден" во время загрузки). Ограничение унаследовано от существующего паттерна `programId`: рецепты в Firestore скопированы по `userId`, поэтому ссылка работает только в рамках одного аккаунта — межпользовательский шаринг не поддержан ни здесь, ни в `ProgramsView`, вне scope этой находки.
 
@@ -228,28 +271,34 @@
 ## ⚡ TypeScript strict compliance
 
 **[TS-1]** `fromFirestore()` в `FirestoreCartRepository.ts`, `FirestorePlannerRepository.ts`, `FirestoreProgramsRepository.ts`, `FirestoreRecipesRepository.ts`
+
 > Все поля приводятся через `as Type` без runtime-валидации. Испорченный/частично мигрированный документ типизируется корректно, но по факту содержит `undefined` там, где strict mode обещает обязательную строку/`Macros`. Исправление: лёгкий runtime-валидатор (zod или ручной guard) на границе с Firestore.
 > ✅ Исправлено (commit 0cdbe43): добавлены ручные guard'ы `requiredString`/`requiredNumber`/`requiredMacros` в `src/infrastructure/firestore/converters.ts` (тот же файл и стиль, что у существующего `timestampToISO` — `console.warn` с именем поля и испорченным значением, безопасный fallback `''`/`0`/нулевые macros, без throw, чтобы не ронять `onSnapshot`-подписку целиком из-за одного плохого поля). Zod не добавлялся (в проекте отсутствует, решено не вводить новую зависимость). Guard'ы применены только к полям, обязательным (не `?`) в соответствующих domain-типах: `CartItem.name/amount`, `PlannerEntry.date/mealType/type`, `Program.name/description/creator/link`, `Recipe.title/time/servings/macros`. Опциональные поля (`image?`, `author?`, `pdfUrl?`, `PlannerEntry.macros?` и т.д.) и массивы с уже существующим `?? []` fallback (`categories`, `ingredients`, `recipeIds`, `sourceDishes`) не тронуты. `PlannerEntry.type` валидируется как непустая строка (`requiredString`) с последующим кастом к union — невалидное третье значение guard не отловит, осознанное ограничение, задокументированное в самом коммите. Тесты: 119/119 зелёные, `tsc --noEmit` чистый.
 
 **[TS-2]** `FirestoreUserProfileRepository.ts:11`
+
 > `snap.data() as UserProfile` — приведение всего документа целиком, без пофилдовой мапинг-функции (хуже TS-1, вообще нет устойчивости к частичной форме). Привести к паттерну `fromFirestore()`, как у соседей.
 > ✅ Исправлено (commit 015ca32): добавлена локальная (не экспортируемая) функция `fromFirestore(data: Record<string, unknown>): UserProfile` в `FirestoreUserProfileRepository.ts`, переиспользующая `requiredString`/`requiredNumber` из `converters.ts` (TS-1) для всех обязательных скалярных полей. `gender: 'male' | 'female'` валидируется как непустая строка (`requiredString`) с последующим кастом к union — тот же приём, что у `PlannerEntry.type` в TS-1, невалидное третье значение guard не отловит (осознанное ограничение, унаследованное от TS-1). `allergies: string[]` — `(data['allergies'] as string[]) ?? []`, без поэлементной валидации, консистентно с уже нетронутыми массивными полями других репозиториев в TS-1. `subscribe()` теперь вызывает `fromFirestore(snap.data())` вместо прямого каста. Тесты: 119/119 зелёные (18 файлов), `tsc --noEmit` чистый.
 
 **[TS-3]** `src/infrastructure/testing/FakeAuthProvider.tsx:12`
+
 > `({ uid, email: 'test@test.com' } as unknown as FirebaseUser)` — двойной каст через `unknown`, полностью глушит структурную проверку. Приемлемо для тестового фейка, но без комментария о причине; если код начнёт читать `displayName`/`getIdToken`, скомпилируется, но упадёт в рантайме.
 > ✅ Исправлено (commit 026f25b) — добавлен однострочный комментарий непосредственно над кастом, объясняющий, что фейк заполняет только `uid`/`email` и что чтение других полей `FirebaseUser` (`displayName`, `getIdToken()` и т.п.) скомпилируется, но упадёт в рантайме. Сам двойной каст не менялся — аудит явно признал его приемлемым для тестового фейка. Тесты: 119/119 зелёные (18 файлов), `tsc --noEmit` чистый.
 
 **[TS-4]** `src/services/ai/contracts.ts:76-83`
+
 > `FillRemainingResponse.options` типизирован как открытый массив, без constraint «ровно 3». Компилятор не защищает от инварианта constraint №5 (см. CRIT-7 — рантайм-часть той же проблемы).
 
 > ✅ Исправлено (commit 9901b0f) — `FillRemainingResponse.options` типизирован как строгий tuple `[FillRemainingOption, FillRemainingOption, FillRemainingOption]`. В `worker/src/routes/fillRemaining.ts` сразу после рантайм-проверки `data.options.length === 3` (та самая проверка из CRIT-7) добавлен явный каст к tuple-типу — она и есть обоснование его безопасности. В `TrackerView.tsx` локальное состояние `suggestion` накапливает `options` из нескольких API-ответов при клике «ещё альтернативы» (может легитимно превышать 3 элемента), поэтому для него заведён отдельный тип `AccumulatedSuggestion` (`Omit<FillRemainingResponse, 'options'> & { options: FillRemainingOption[] }`) вместо строгого tuple. Тесты: 119/119 зелёные (18 файлов), `tsc --noEmit` чистый и в корне, и в `worker/`.
 
 **[TS-5]** `ProgramDetailModal.tsx:535,756,815,854`; `RecipesView.tsx:1213`
+
 > `(e: any)` для drag-and-drop обработчиков вместо `React.DragEvent<HTMLDivElement>` — теряется типобезопасность `e.dataTransfer`/`e.currentTarget`.
 
 > ✅ Исправлено (commit a3dc683) — все 5 мест. `onDrop` на plain `<div>` (`ProgramDetailModal.tsx:535,813`) типизированы напрямую как `React.DragEvent<HTMLDivElement>`. `onDragStart` на `motion.div` (`ProgramDetailModal.tsx:756,852`; `RecipesView.tsx:1221`) — отдельный случай: framer-motion типизирует `onDragStart` под свой pan-жест (`event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo`), но при `draggable=true` форвардит его как нативный DOM-листенер (подтверждено чтением исходников `motion-dom`/`framer-motion` — есть спецкейс `t.draggable && r.startsWith("onDrag")`, форсирующий проброс на DOM в обход общего фильтра motion-пропов). Компилятор об этом не знает, поэтому параметр обработчика оставлен под выведенным (framer-motion) типом, а внутри тела — явный `as unknown as React.DragEvent<HTMLDivElement>` с комментарием, объясняющим расхождение; `e.dataTransfer`/`e.currentTarget` внутри обработчика получили полную типобезопасность. Тесты: 119/119 зелёные (18 файлов), `tsc --noEmit` чистый.
 
 **[TS-6]** `src/vite-env.d.ts`
+
 > `ImportMetaEnv` не объявляет `VITE_AI_WORKER_URL`, хотя переменная используется в `aiClient.ts:16`. Работает благодаря index signature из базового `vite/client`, но теряется автодополнение и защита от опечатки в имени переменной. Добавить объявление для консистентности с остальными `VITE_*`.
 
 > ✅ Исправлено (commit 76418df) — добавлена `readonly VITE_AI_WORKER_URL?: string;` в `ImportMetaEnv` (`src/vite-env.d.ts`), опциональная — по аналогии с уже существующим `VITE_FIREBASE_MEASUREMENT_ID?`, консистентно с фактическим использованием через `?? ""` в `aiClient.ts:16`. Тесты: 119/119 зелёные (18 файлов), `tsc --noEmit` чистый.
@@ -263,12 +312,15 @@
 ## 🏛️ Соответствие соглашениям
 
 **[CONV-1]** `src/features/recipes/RecipesView.tsx` — 2590 строк
+
 > Один компонент смешивает CRUD рецептов, AI-импорт (фото/PDF/ссылка), фильтрацию, добавление в планер, работу с коллекциями, кроп изображений и 6+ модалок. Сильный кандидат на декомпозицию (`RecipeCard`, `RecipeDetailModal`, `AddRecipeModals`, `useRecipeFilters`).
 
 **[CONV-2]** `ProgramsView.tsx:571`; `ProgramDetailModal.tsx:175,284,1043,1207`
+
 > `Math.random().toString(36).substr(2, 9)` для генерации ID Subfolder/Resource — `substr` deprecated, `Math.random` не даёт устойчивости к коллизиям. Заменить на `crypto.randomUUID()`.
 
 **[CONV-3]** `worker/src/routes/importFromUrl.ts:81-84`
+
 > Блок из 4 однострочных комментариев читается как мини design-doc, а не как объяснение «почему». Незначительный стилистический момент, не дефект.
 
 ---
@@ -282,30 +334,39 @@
 ## 🐢 Производительность
 
 **[PERF-1]** `FirestoreCartRepository.ts:51-54`
+
 > `deleteAll()` шлёт по одному `deleteDoc` через `Promise.all` вместо единого `writeBatch` — нет атомарности, частичный сбой оставляет корзину частично очищенной без отката. Исправление: `writeBatch(db)` (с чанками по 500 при необходимости).
 
 **[PERF-2]** Все `subscribeAll`-запросы (Cart/Planner/Programs/Recipes)
+
 > Нет `limit()`/ограничения по дате — каждый listener ресинкает всю коллекцию пользователя на каждое изменение. Не критично сейчас, но CLAUDE.md целится в «десятки тысяч» пользователей с годами истории планера.
 
 **[PERF-3]** `src/features/recipes/RecipesView.tsx:301-354`
+
 > `filteredRecipes`/`allAuthors`/`allPrograms` пересчитываются на каждый рендер, включая каждую букву в поиске, без `useMemo`.
 
 **[PERF-4]** `src/features/planner/PlannerView.tsx`
+
 > Редьюс подсчёта макросов (задублированный 4×, см. CRIT-3) выполняется инлайн в теле рендера для каждой ячейки дня/приёма пищи; в недельном/месячном виде — внутри вложенных `.map()` (стоимость растёт как дни × приёмы пищи × записи на каждый рендер), без `useMemo`.
 
 **[PERF-5]** `RecipesView.tsx`, `PlannerView.tsx`
+
 > Обработчики `onClick`/`onToggle` не обёрнуты в `useCallback`, карточки/строки списков без `React.memo` — весь список перерендеривается при несвязанных изменениях state родителя (например, открытие фильтра).
 
 **[PERF-6]** `worker/src/routes/importFromUrl.ts:116-117`
+
 > Проверка размера (`buffer.byteLength > 600_000`) выполняется ПОСЛЕ полного `await imgResp.arrayBuffer()` — большое/вредоносное изображение полностью скачивается прежде, чем будет отброшено. Исправление: проверять `Content-Length` до чтения тела, либо стримить с ранним обрывом.
 
 **[PERF-7]** Все 6 маршрутов worker
+
 > Нет timeout на вызовы `generateContent()` и на два `fetch()` в `importFromUrl.ts:88,114`. Зависший upstream-запрос держит воркер без клиентского предела (кроме платформенных лимитов Cloudflare). Исправление: `AbortController` + разумный timeout (20-30с), чистый 504 клиенту.
 
 **[PERF-8]** `worker/src/routes/importFromPhoto.ts`
+
 > В отличие от `importFromUrl.ts` (лимит 600KB на скачиваемые изображения), нет проверки размера клиентских `images[].base64` перед отправкой в Gemini — рост стоимости/задержки без локального guard.
 
 ---
 
 ## ✅ Категорий без нарушений
+
 🔄 Импорты / зависимости (архитектура Repository pattern полностью чиста от Firebase-зависимостей в `src/services/`)
