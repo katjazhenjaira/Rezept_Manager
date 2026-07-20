@@ -205,7 +205,7 @@ export function ProgramDetailModal(props: ProgramDetailModalProps) {
     const file = e.target.files?.[0];
     if (!file) return;
     const newResource: Resource = {
-      id: Math.random().toString(36).substr(2, 9),
+      id: crypto.randomUUID(),
       type: 'pdf',
       url: file.name,
       title: file.name,
@@ -309,7 +309,7 @@ export function ProgramDetailModal(props: ProgramDetailModalProps) {
                     <button
                       onClick={async () => {
                         const newSubfolder: Subfolder = {
-                          id: Math.random().toString(36).substr(2, 9),
+                          id: crypto.randomUUID(),
                           name: 'Новая подпапка',
                           description: '',
                           recipeIds: [],
@@ -1374,7 +1374,7 @@ export function ProgramDetailModal(props: ProgramDetailModalProps) {
                             ) as HTMLInputElement;
                             if (!urlInput.value) return alert('Введите URL');
                             const newRes: Resource = {
-                              id: Math.random().toString(36).substr(2, 9),
+                              id: crypto.randomUUID(),
                               type: 'link',
                               url: urlInput.value,
                               title: titleInput.value || 'Ссылка',
@@ -1568,7 +1568,7 @@ export function ProgramDetailModal(props: ProgramDetailModalProps) {
                     onClick={async () => {
                       if (!resourceFormData.url) return alert('Введите URL');
                       const newResource: Resource = {
-                        id: Math.random().toString(36).substr(2, 9),
+                        id: crypto.randomUUID(),
                         type: activeResourceForm.type,
                         url: resourceFormData.url,
                         title:

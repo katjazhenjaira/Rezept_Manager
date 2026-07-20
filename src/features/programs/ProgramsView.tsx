@@ -671,7 +671,7 @@ export function ProgramsView(props: ProgramsViewProps) {
                           type="button"
                           onClick={() => {
                             const newSubfolder: Subfolder = {
-                              id: Math.random().toString(36).substr(2, 9),
+                              id: crypto.randomUUID(),
                               name: '',
                               description: '',
                               recipeIds: [],
