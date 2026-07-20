@@ -208,6 +208,7 @@
 
 **[DEAD-6]** `src/features/programs/ProgramDetailModal.tsx:249`
 > `<AnimatePresence>{true && (...)}</AnimatePresence>` — условие `true &&` никогда не бывает false, бессмысленно.
+> ✅ Исправлено (commit e9440b8) — удалены обёртки `{true && (` и соответствующая `)}` вокруг обоих JSX-блоков (Program Details Modal, строки 249-910); `<div>` теперь передаётся в `AnimatePresence` напрямую, поведение анимации не изменилось. `tsc --noEmit` чистый, тесты: 119/119 зелёные.
 
 **[DEAD-7]** `package.json:22` (корень)
 > Зависимость `express` объявлена, но нигде не используется во всём репозитории (кроме `package.json`/lock-файла).
