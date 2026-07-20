@@ -532,7 +532,7 @@ export function ProgramDetailModal(props: ProgramDetailModalProps) {
                                 onDragLeave={(e) => {
                                   e.currentTarget.classList.remove('bg-emerald-100');
                                 }}
-                                onDrop={(e: any) => {
+                                onDrop={(e: React.DragEvent<HTMLDivElement>) => {
                                   e.preventDefault();
                                   e.currentTarget.classList.remove('bg-emerald-100');
                                   const recipeId = e.dataTransfer.getData('recipeId');
@@ -753,9 +753,12 @@ export function ProgramDetailModal(props: ProgramDetailModalProps) {
                                                 onClick={() => onSelectRecipe(recipe)}
                                                 className="bg-white rounded-2xl border border-zinc-200 overflow-hidden hover:shadow-md transition-all group cursor-pointer flex items-center gap-3 p-2 relative"
                                                 draggable
-                                                onDragStart={(e: any) => {
-                                                  e.dataTransfer.setData('recipeId', recipe.id);
-                                                  e.dataTransfer.setData('sourceSubfolderId', subfolder.id);
+                                                // motion.div типизирует onDragStart под свой pan-жест (event: MouseEvent | TouchEvent | PointerEvent),
+                                                // но при draggable=true framer-motion форвардит его как нативный DOM-листенер — приводим к реальному типу.
+                                                onDragStart={(e) => {
+                                                  const dragEvent = e as unknown as React.DragEvent<HTMLDivElement>;
+                                                  dragEvent.dataTransfer.setData('recipeId', recipe.id);
+                                                  dragEvent.dataTransfer.setData('sourceSubfolderId', subfolder.id);
                                                 }}
                                               >
                                                 {recipeHasAllergens(recipe, userProfile.allergies) && (
@@ -810,7 +813,7 @@ export function ProgramDetailModal(props: ProgramDetailModalProps) {
                           onDragLeave={(e) => {
                             e.currentTarget.classList.remove('bg-zinc-100');
                           }}
-                          onDrop={(e: any) => {
+                          onDrop={(e: React.DragEvent<HTMLDivElement>) => {
                             e.preventDefault();
                             e.currentTarget.classList.remove('bg-zinc-100');
                             const recipeId = e.dataTransfer.getData('recipeId');
@@ -849,9 +852,12 @@ export function ProgramDetailModal(props: ProgramDetailModalProps) {
                                           onClick={() => onSelectRecipe(recipe)}
                                           className="bg-white rounded-2xl border border-zinc-200 overflow-hidden hover:shadow-xl transition-all group cursor-pointer flex flex-col h-full relative"
                                           draggable
-                                          onDragStart={(e: any) => {
-                                            e.dataTransfer.setData('recipeId', recipe.id);
-                                            e.dataTransfer.setData('sourceSubfolderId', 'main');
+                                          // motion.div типизирует onDragStart под свой pan-жест (event: MouseEvent | TouchEvent | PointerEvent),
+                                          // но при draggable=true framer-motion форвардит его как нативный DOM-листенер — приводим к реальному типу.
+                                          onDragStart={(e) => {
+                                            const dragEvent = e as unknown as React.DragEvent<HTMLDivElement>;
+                                            dragEvent.dataTransfer.setData('recipeId', recipe.id);
+                                            dragEvent.dataTransfer.setData('sourceSubfolderId', 'main');
                                           }}
                                         >
                                           {recipeHasAllergens(recipe, userProfile.allergies) && (

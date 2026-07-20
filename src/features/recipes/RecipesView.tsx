@@ -1218,9 +1218,12 @@ export function RecipesView({
                           : 'border-zinc-200',
                       )}
                       draggable={!isRecipeSelectionMode}
-                      onDragStart={(e: any) => {
-                        e.dataTransfer.setData('recipeId', recipe.id);
-                        e.dataTransfer.setData('sourceSubfolderId', 'main');
+                      // motion.div типизирует onDragStart под свой pan-жест (event: MouseEvent | TouchEvent | PointerEvent),
+                      // но при draggable=true framer-motion форвардит его как нативный DOM-листенер — приводим к реальному типу.
+                      onDragStart={(e) => {
+                        const dragEvent = e as unknown as React.DragEvent<HTMLDivElement>;
+                        dragEvent.dataTransfer.setData('recipeId', recipe.id);
+                        dragEvent.dataTransfer.setData('sourceSubfolderId', 'main');
                       }}
                     >
                       {recipeHasAllergens(recipe, userProfile.allergies) && (
