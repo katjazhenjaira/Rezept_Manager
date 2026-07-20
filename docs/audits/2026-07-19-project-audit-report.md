@@ -205,6 +205,7 @@
 > ✅ Исправлено (commit 46b8a69) — подтверждено, что `cn()` нигде не вызывается в файле. Удалены импорты `clsx`/`tailwind-merge`, сама функция `cn()` и заглушка `void cn;` вместе с поясняющим комментарием. Тесты: 119/119 зелёные, `tsc --noEmit` чистый.
 
 **[DEAD-5]** `src/features/tracker/AISuggestModal.tsx:74-147` — см. LOGIC-3, дублирующая недостижимая UI-логика.
+> ✅ Исправлено (commit 3326f8d) — закрыто тем же коммитом, что и LOGIC-3: `AISuggestModal.tsx` полностью удалён, отдельного фикса не требовалось.
 
 **[DEAD-6]** `src/features/programs/ProgramDetailModal.tsx:249`
 > `<AnimatePresence>{true && (...)}</AnimatePresence>` — условие `true &&` никогда не бывает false, бессмысленно.
