@@ -399,6 +399,12 @@ export function RecipesView({
     }
   };
 
+  const handleShareRecipe = (recipeId: string) => {
+    const shareUrl = `${window.location.origin}${window.location.pathname}?recipeId=${recipeId}`;
+    navigator.clipboard.writeText(shareUrl);
+    alert('Ссылка скопирована в буфер обмена!');
+  };
+
   const handleEdit = (recipe: Recipe) => {
     setEditingId(recipe.id);
     setFormData({
@@ -2264,7 +2270,10 @@ export function RecipesView({
                       <FolderPlus className="w-5 h-5 sm:w-6 sm:h-6" />
                       <span className="text-[10px] sm:text-xs font-bold">Сборники</span>
                     </button>
-                    <button className="flex flex-col items-center justify-center p-3 sm:p-4 bg-white border border-zinc-100 rounded-2xl text-zinc-600 hover:bg-zinc-50 transition-all gap-2">
+                    <button
+                      onClick={() => handleShareRecipe(selectedRecipe.id)}
+                      className="flex flex-col items-center justify-center p-3 sm:p-4 bg-white border border-zinc-100 rounded-2xl text-zinc-600 hover:bg-zinc-50 transition-all gap-2"
+                    >
                       <Share2 className="w-5 h-5 sm:w-6 sm:h-6" />
                       <span className="text-[10px] sm:text-xs font-bold">Поделиться</span>
                     </button>

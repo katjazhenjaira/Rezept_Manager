@@ -116,6 +116,20 @@ export default function App() {
   }, []);
 
   useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const recipeId = urlParams.get('recipeId');
+    if (!recipeId || recipes.length === 0) return;
+    const recipe = recipes.find(r => r.id === recipeId);
+    if (recipe) {
+      setSelectedRecipe(recipe);
+      setActiveTab('recipes');
+    } else {
+      alert("Рецепт не найден.");
+    }
+    window.history.replaceState({}, document.title, window.location.pathname);
+  }, [recipes]);
+
+  useEffect(() => {
     const savedCategories = localStorage.getItem('availableCategories');
     if (savedCategories) {
       try {
