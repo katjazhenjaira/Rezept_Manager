@@ -1,0 +1,10 @@
+node_modules
+dist
+coverage
+build
+package-lock.json
+worker/package-lock.json
+worker/node_modules
+worker/dist
+.playwright-mcp/
+.worktrees/
