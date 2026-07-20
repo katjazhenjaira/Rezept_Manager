@@ -11,6 +11,7 @@ import type {
   CalculateKbzhuResponse,
   FillRemainingRequest,
   FillRemainingResponse,
+  AiErrorResponse,
 } from "./contracts";
 
 const API_BASE = `${import.meta.env.VITE_AI_WORKER_URL ?? ""}/api/ai`;
@@ -22,8 +23,11 @@ async function post<TReq, TRes>(path: string, body: TReq): Promise<TRes> {
     body: JSON.stringify(body),
   });
   if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    throw new Error(`AI proxy ${path} failed: ${res.status} ${text}`);
+    const message = await res
+      .json()
+      .then((data: AiErrorResponse) => data.error)
+      .catch(() => res.statusText);
+    throw new Error(`AI proxy ${path} failed: ${res.status} ${message}`);
   }
   return (await res.json()) as TRes;
 }
