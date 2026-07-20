@@ -99,10 +99,6 @@ INSTRUCTIONS:
 
   let dishImage: string | undefined;
 
-  // Download the image server-side to avoid hotlink protection on external CDNs.
-  // Spoof Referer to the source page so CDN treats it as a legitimate request.
-  // Build a list of image URLs to try: og:image from HTML first, then Gemini's guess.
-  // og:image is designed for external crawlers and is more reliably accessible.
   const imageUrlCandidates: string[] = [];
 
   try {
@@ -118,6 +114,7 @@ INSTRUCTIONS:
       const ogMatch =
         html.match(/property=["']og:image["'][^>]*content=["']([^"']+)["']/i) ??
         html.match(/content=["']([^"']+)["'][^>]*property=["']og:image["']/i);
+      // og:image is designed for external crawlers and is more reliably accessible.
       if (ogMatch?.[1]) {
         try {
           // Resolve relative URLs and decode HTML entities (e.g. &amp; in CDN query strings).
@@ -135,9 +132,11 @@ INSTRUCTIONS:
 
   if (data.imageUrl) imageUrlCandidates.push(data.imageUrl);
 
+  // Download the image server-side to avoid hotlink protection on external CDNs.
   for (const candidate of imageUrlCandidates) {
     if (!validateExternalUrl(candidate)) continue;
     try {
+      // Spoof Referer to the source page so CDN treats it as a legitimate request.
       const imgResp = await safeFetch(candidate, { headers: { Referer: url } });
       if (!imgResp?.ok) continue;
       const buffer = await imgResp.arrayBuffer();
