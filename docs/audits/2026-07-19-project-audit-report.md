@@ -323,6 +323,8 @@
 
 > Блок из 4 однострочных комментариев читается как мини design-doc, а не как объяснение «почему». Незначительный стилистический момент, не дефект.
 
+> ✅ Исправлено (commit 5262688) — блок из 4 комментариев разнесён по местам фактического использования. Комментарий «Build a list of image URLs to try...» удалён как чистое объяснение «что» (дублирует название переменной `imageUrlCandidates` и соседние `.push()`). «og:image is designed for external crawlers...» перемещён к `if (ogMatch?.[1])` — точка, где og:image приоритизируется как первый кандидат. «Download the image server-side to avoid hotlink protection...» перемещён к циклу `for (const candidate of imageUrlCandidates)` — где происходит сама загрузка. «Spoof Referer to the source page...» перемещён к строке `safeFetch(candidate, { headers: { Referer: url } })` — где выставляется заголовок. Логика не менялась. `tsc --noEmit` чистый и в корне, и в `worker/`, тесты: 119/119 зелёные (18 файлов).
+
 ---
 
 ## 🔄 Импорты / зависимости
