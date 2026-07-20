@@ -251,6 +251,8 @@
 **[TS-6]** `src/vite-env.d.ts`
 > `ImportMetaEnv` не объявляет `VITE_AI_WORKER_URL`, хотя переменная используется в `aiClient.ts:16`. Работает благодаря index signature из базового `vite/client`, но теряется автодополнение и защита от опечатки в имени переменной. Добавить объявление для консистентности с остальными `VITE_*`.
 
+> ✅ Исправлено (commit 76418df) — добавлена `readonly VITE_AI_WORKER_URL?: string;` в `ImportMetaEnv` (`src/vite-env.d.ts`), опциональная — по аналогии с уже существующим `VITE_FIREBASE_MEASUREMENT_ID?`, консистентно с фактическим использованием через `?? ""` в `aiClient.ts:16`. Тесты: 119/119 зелёные (18 файлов), `tsc --noEmit` чистый.
+
 **[TS-7]** `scripts/migrate-assign-user.ts` не входит ни в `include` корневого `tsconfig.json` (`"src/**/*"` только), ни в `worker/tsconfig.json`. Скрипт не проходит статическую проверку типов через `npm run lint`/`tsc --noEmit`, полагаясь только на транспиляцию `tsx`. Добавить отдельный `tsconfig` или включить в `include`, если типобезопасность здесь важна.
 
 ---
