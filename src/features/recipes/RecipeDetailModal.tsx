@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Calendar,
   Users,
@@ -61,11 +61,14 @@ export function RecipeDetailModal({
   const [showSaveSuccess, setShowSaveSuccess] = useState(false);
   const [isCollectionPickerOpen, setIsCollectionPickerOpen] = useState(false);
   // Эфемерный калькулятор «на сколько порций считать КБЖУ» — не меняет и не сохраняет recipe.servings
-  const [portionCount, setPortionCount] = useState(1);
-
-  useEffect(() => {
+  const [portionCount, setPortionCount] = useState(() => Math.max(1, recipe.servings));
+  // Сброс portionCount при смене рецепта — паттерн "adjust state during render"
+  // (react-hooks/set-state-in-effect запрещает setState синхронно внутри useEffect).
+  const [portionCountRecipeId, setPortionCountRecipeId] = useState(recipe.id);
+  if (recipe.id !== portionCountRecipeId) {
+    setPortionCountRecipeId(recipe.id);
     setPortionCount(Math.max(1, recipe.servings));
-  }, [recipe.id]);
+  }
 
   // ── Planning state ──────────────────────────────────────────────────────────
   const [isPlanning, setIsPlanning] = useState(false);

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Search } from 'lucide-react';
 import { AnimatePresence } from 'motion/react';
 import { useRepositories } from '@/app/providers/RepositoryContext';
-import type { Recipe, UserProfile, Program, Subfolder } from '@/shared/domain/types';
+import type { Recipe, UserProfile, Program } from '@/shared/domain/types';
 import { RecipesEmptyState } from './RecipesEmptyState';
 import { RecipeCard } from './RecipeCard';
 import { RecipesToolbar } from './RecipesToolbar';
