@@ -64,6 +64,7 @@ export function SettingsModal({
   // Sync form from context only when the modal opens — prevents Firestore snapshot
   // updates from clobbering in-progress edits while the modal is visible.
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional: only on isOpen toggle, see comment above
     if (isOpen && contextProfile) setUserProfile(contextProfile);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
