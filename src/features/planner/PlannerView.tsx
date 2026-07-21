@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   BookOpen,
   Calendar,
@@ -38,6 +38,7 @@ import type {
   Recipe,
   UserProfile,
   ActiveNutritionPlan,
+  PlannerEntry,
   PlannerViewScale,
   PlannerViewMode,
 } from '@/shared/domain/types';
@@ -146,20 +147,31 @@ export function PlannerView({
     }
   };
 
+  // Группировка по дате пересчитывается только при изменении plannerEntries — раньше
+  // каждая ячейка day/week/month сканировала полный массив через .filter() на каждый рендер
+  // (PERF-4), независимо от того, что именно вызвало ре-рендер (например, открытие дропдауна).
+  const entriesByDate = useMemo(() => {
+    const map = new Map<string, PlannerEntry[]>();
+    for (const entry of plannerEntries) {
+      const list = map.get(entry.date);
+      if (list) list.push(entry);
+      else map.set(entry.date, [entry]);
+    }
+    return map;
+  }, [plannerEntries]);
+
   const getEntriesForDate = (date: Date) => {
     const dateStr = format(date, 'yyyy-MM-dd');
-    return plannerEntries.filter((e) => e.date === dateStr);
+    return entriesByDate.get(dateStr) ?? [];
   };
 
   const getRecipeById = (id: string | undefined) =>
     id ? recipes.find((r) => r.id === id) : undefined;
 
-  const getMacrosForDate = (date: Date) => {
-    const entries = getEntriesForDate(date);
-    return sumMacros(entries, recipes);
-  };
-
-  const selectedDateMacros = getMacrosForDate(selectedPlannerDate);
+  const selectedDateMacros = useMemo(() => {
+    const dateStr = format(selectedPlannerDate, 'yyyy-MM-dd');
+    return sumMacros(entriesByDate.get(dateStr) ?? [], recipes);
+  }, [entriesByDate, recipes, selectedPlannerDate]);
   const isSelectedDateOverLimit =
     selectedDateMacros.calories > userProfile.targetCalories ||
     selectedDateMacros.proteins > userProfile.targetProteins ||
@@ -529,8 +541,8 @@ export function PlannerView({
           <div key={meal} className="grid grid-cols-8 border-b border-zinc-100 last:border-b-0">
             {days.map((day) => {
               const dateStr = format(day, 'yyyy-MM-dd');
-              const dayMealEntries = plannerEntries.filter(
-                (e) => e.date === dateStr && e.mealType === meal,
+              const dayMealEntries = (entriesByDate.get(dateStr) ?? []).filter(
+                (e) => e.mealType === meal,
               );
               const cellMacros = sumMacros(dayMealEntries, recipes);
 
@@ -677,7 +689,7 @@ export function PlannerView({
         <div className="grid grid-cols-8 bg-zinc-50/50 border-t border-zinc-100">
           {days.map((day) => {
             const dateStr = format(day, 'yyyy-MM-dd');
-            const dayEntries = plannerEntries.filter((e) => e.date === dateStr);
+            const dayEntries = entriesByDate.get(dateStr) ?? [];
             const dayTotalMacros = sumMacros(dayEntries, recipes);
 
             return (
@@ -758,7 +770,7 @@ export function PlannerView({
         <div className="grid grid-cols-7">
           {days.map((day) => {
             const dateStr = format(day, 'yyyy-MM-dd');
-            const entries = plannerEntries.filter((e) => e.date === dateStr);
+            const entries = entriesByDate.get(dateStr) ?? [];
             const totalCals = sumMacros(entries, recipes).calories;
             const isCurrentMonth = day.getMonth() === selectedPlannerDate.getMonth();
 
