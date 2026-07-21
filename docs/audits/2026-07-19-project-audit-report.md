@@ -353,6 +353,8 @@
 
 > `filteredRecipes`/`allAuthors`/`allPrograms` пересчитываются на каждый рендер, включая каждую букву в поиске, без `useMemo`.
 
+> ✅ Исправлено (commit 54efbbc) — локация сместилась после CONV-1: эта логика теперь в `src/features/recipes/useRecipeFilters.ts` (не в `RecipesView.tsx`, как было на момент аудита). Все три значения обёрнуты в `useMemo` с явными зависимостями (`allAuthors` → `recipes`; `allPrograms` → `programs`; `filteredRecipes` → `recipes`, `programs` и все поля фильтра/сортировки). `hasActiveFilters` не мемоизирован — это дешёвые булевы сравнения примитивов, не оправдывает `useMemo`. Проверено: `tsc --noEmit` чисто, `eslint` без новых ошибок (28 problems: 27 errors/1 warning — не изменилось), `npm run test` 122/122, `npm run build` проходит.
+
 **[PERF-4]** `src/features/planner/PlannerView.tsx`
 
 > Редьюс подсчёта макросов (задублированный 4×, см. CRIT-3) выполняется инлайн в теле рендера для каждой ячейки дня/приёма пищи; в недельном/месячном виде — внутри вложенных `.map()` (стоимость растёт как дни × приёмы пищи × записи на каждый рендер), без `useMemo`.
