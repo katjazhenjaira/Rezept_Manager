@@ -8,6 +8,17 @@ import type {
 import type { Env } from '../types';
 import { UPSTREAM_TIMEOUT_MS, isTimeoutError } from '../helpers/timeout';
 
+// Matches the upload limit already advertised to the user in AddRecipeModals.tsx
+// ("JPG, PNG до 5MB") — that hint isn't enforced anywhere client- or server-side today,
+// so an oversized image currently goes straight to Gemini with no local guard (PERF-8).
+const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
+
+function base64ByteLength(base64: string): number {
+  const raw = base64.includes(',') ? base64.split(',')[1]! : base64;
+  const padding = raw.match(/=+$/)?.[0].length ?? 0;
+  return Math.floor((raw.length * 3) / 4) - padding;
+}
+
 export async function importFromPhoto(c: Context<{ Bindings: Env }>) {
   const body = await c.req.json<ImportFromPhotoRequest>();
   const { images, availableCategories } = body;
@@ -29,6 +40,9 @@ export async function importFromPhoto(c: Context<{ Bindings: Env }>) {
       },
       400,
     );
+  }
+  if (images.some((img) => base64ByteLength(img.base64) > MAX_IMAGE_BYTES)) {
+    return c.json({ error: 'Image too large (max 5MB per image)' }, 400);
   }
 
   const ai = new GoogleGenAI({ apiKey: c.env.GEMINI_API_KEY });
