@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { sumMacros, remainingMacros, resolveActiveTargets } from '../macros';
+import { sumMacros, remainingMacros, resolveActiveTargets, scaleMacros } from '../macros';
 import type { PlannerEntry, Recipe, UserProfile, ActiveNutritionPlan } from '../types';
 
 const baseProfile: UserProfile = {
@@ -190,5 +190,27 @@ describe('resolveActiveTargets', () => {
     const result = resolveActiveTargets(plan, baseProfile);
     expect(result.allowedProducts).toEqual([]);
     expect(result.forbiddenProducts).toEqual([]);
+  });
+});
+
+describe('scaleMacros', () => {
+  it('returns macros unchanged when portionCount equals baseServings (identity)', () => {
+    const macros = { calories: 300, proteins: 10, fats: 5, carbs: 55 };
+    expect(scaleMacros(macros, 2, 2)).toEqual(macros);
+  });
+
+  it('doubles all fields when portionCount is double baseServings', () => {
+    const macros = { calories: 300, proteins: 10, fats: 5, carbs: 55 };
+    expect(scaleMacros(macros, 4, 2)).toEqual({
+      calories: 600,
+      proteins: 20,
+      fats: 10,
+      carbs: 110,
+    });
+  });
+
+  it('clamps baseServings to 1 to avoid division by zero/NaN', () => {
+    const macros = { calories: 300, proteins: 10, fats: 5, carbs: 55 };
+    expect(scaleMacros(macros, 1, 0)).toEqual(macros);
   });
 });

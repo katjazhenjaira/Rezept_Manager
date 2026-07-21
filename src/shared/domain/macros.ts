@@ -38,6 +38,16 @@ export function remainingMacros(targets: Macros, actual: Macros): Macros {
   };
 }
 
+export function scaleMacros(macros: Macros, portionCount: number, baseServings: number): Macros {
+  const base = Math.max(1, baseServings);
+  return {
+    calories: Math.round((macros.calories * portionCount) / base),
+    proteins: Math.round((macros.proteins * portionCount) / base),
+    fats: Math.round((macros.fats * portionCount) / base),
+    carbs: Math.round((macros.carbs * portionCount) / base),
+  };
+}
+
 export function resolveActiveTargets(
   plan: ActiveNutritionPlan | null,
   profile: UserProfile,
