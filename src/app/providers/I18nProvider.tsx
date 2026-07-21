@@ -1,28 +1,6 @@
 import { useEffect, type ReactNode } from 'react';
-import i18n from 'i18next';
-import { initReactI18next, I18nextProvider } from 'react-i18next';
-import ru from '@/locales/ru.json';
-import de from '@/locales/de.json';
-import en from '@/locales/en.json';
-
-const STORAGE_KEY = 'rm_language';
-export type AppLanguage = 'ru' | 'de' | 'en';
-
-i18n.use(initReactI18next).init({
-  resources: {
-    ru: { translation: ru },
-    de: { translation: de },
-    en: { translation: en },
-  },
-  lng: (localStorage.getItem(STORAGE_KEY) as AppLanguage) ?? 'ru',
-  fallbackLng: 'ru',
-  interpolation: { escapeValue: false },
-});
-
-export function changeLanguage(lang: AppLanguage) {
-  i18n.changeLanguage(lang);
-  localStorage.setItem(STORAGE_KEY, lang);
-}
+import { I18nextProvider } from 'react-i18next';
+import i18n, { STORAGE_KEY, type AppLanguage } from './i18nConfig';
 
 export function I18nProvider({ children }: { children: ReactNode }) {
   useEffect(() => {

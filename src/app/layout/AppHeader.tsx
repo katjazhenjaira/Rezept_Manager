@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { useTranslation } from 'react-i18next';
-import { changeLanguage, type AppLanguage } from '@/app/providers/I18nProvider';
+import { changeLanguage, type AppLanguage } from '@/app/providers/i18nConfig';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));

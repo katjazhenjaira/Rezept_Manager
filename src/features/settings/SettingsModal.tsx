@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { signOut } from 'firebase/auth';
 import type { UserProfile } from '@/shared/domain/types';
 import { DEFAULT_PROFILE } from '@/shared/domain/defaults';
-import { changeLanguage, type AppLanguage } from '@/app/providers/I18nProvider';
+import { changeLanguage, type AppLanguage } from '@/app/providers/i18nConfig';
 import { useUserProfile } from '@/app/providers/UserProfileContext';
 import { auth } from '@/infrastructure/firebaseAuth';
 
