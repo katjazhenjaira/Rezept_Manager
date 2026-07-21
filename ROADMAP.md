@@ -30,7 +30,7 @@
 
 ## Технический долг
 
-- [ ] Проработать отчёт аудита кода `docs/audits/2026-07-19-project-audit-report.md` (51/60 закрыто; осталось: CONV-1 — декомпозиция `RecipesView.tsx`, в процессе по плану `docs/audits/conv-1-decomposition-plan.md`; PERF-1…8 — не начаты)
+- [ ] Проработать отчёт аудита кода `docs/audits/2026-07-19-project-audit-report.md` (52/60 закрыто; CONV-1 — декомпозиция `RecipesView.tsx` завершена по плану `docs/audits/conv-1-decomposition-plan.md`; осталось: PERF-1…8 — не начаты)
 - [ ] TODO (code review): разобрать находки `eslint src` (35 errors / 2 warnings) на существующем коде — см. DOC-14
 
 ## Баги

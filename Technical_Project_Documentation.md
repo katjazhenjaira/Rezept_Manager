@@ -113,7 +113,7 @@ StrictMode
 | Файл           | Роль                                                                                     |
 | -------------- | ---------------------------------------------------------------------------------------- |
 | `types.ts`     | Все TypeScript типы: Recipe, PlannerEntry, Program, CartItem, UserProfile, NutritionPlan |
-| `macros.ts`    | sumMacros(), remainingMacros(), resolveActiveTargets()                                   |
+| `macros.ts`    | sumMacros(), remainingMacros(), resolveActiveTargets(), scaleMacros() (CONV-1)           |
 | `allergies.ts` | recipeAllergens(), recipeHasAllergens()                                                  |
 | `defaults.ts`  | DEFAULT_PROFILE — дефолтные значения профиля                                             |
 
@@ -153,12 +153,25 @@ StrictMode
 | Папка       | Ключевые файлы                                                                                   | Роль                                               |
 | ----------- | ------------------------------------------------------------------------------------------------ | -------------------------------------------------- |
 | `auth/`     | AuthProvider.tsx, AuthContext.ts, useAuth.ts, LandingPage.tsx, LoginScreen.tsx, SignupScreen.tsx | Firebase Auth flow                                 |
-| `recipes/`  | RecipesView.tsx                                                                                  | 5 методов импорта: вручную, URL, PDF, фото, ссылка |
+| `recipes/`  | 7 файлов + оркестратор (см. таблицу ниже, CONV-1)                                                | 5 методов импорта: вручную, URL, PDF, фото, ссылка |
 | `planner/`  | PlannerView.tsx                                                                                  | Day/week/month/list вьюхи планировщика             |
 | `tracker/`  | TrackerView.tsx, AISuggestModal.tsx, ProgramSelectionModal.tsx                                   | КБЖУ трекер + AI советы                            |
 | `cart/`     | CartView.tsx, services/staples.ts                                                                | Список покупок + классификатор базовых продуктов   |
 | `programs/` | ProgramsView.tsx, ProgramDetailModal.tsx                                                         | Иерархия программ и подпапок                       |
 | `settings/` | SettingsModal.tsx                                                                                | Профиль, аллергии, цели, язык, выход               |
+
+### `src/features/recipes/` — декомпозирован на оркестратор + 7 файлов (CONV-1, `docs/audits/2026-07-19-project-audit-report.md`)
+
+| Файл                      | Роль                                                                                                       |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `RecipesView.tsx`         | Оркестратор (333 строки): состояние формы add/edit, `toggleFavorite`, `handleEdit`, единственный вызов `useRecipeFilters`, JSX-скелет (toolbar/sidebar/grid/модалки) |
+| `RecipesEmptyState.tsx`   | Пустое состояние библиотеки (4 CTA: фото/PDF/ссылка/вручную)                                                                                                          |
+| `RecipeCard.tsx`          | Карточка рецепта в гриде: drag-start, selection-mode чекбокс, allergen-бейдж, favorite-toggle                                                                        |
+| `useRecipeFilters.ts`     | Вся логика поиска/фильтрации/сортировки рецептов; вызывается ровно один раз, в `RecipesView.tsx`                                                                     |
+| `RecipesToolbar.tsx`      | Sticky-тулбар: поиск, переключатель Все/Избранное, фильтр-дропдаун, дропдаун добавления рецепта                                                                      |
+| `RecipeFilterSidebar.tsx` | Десктопный постоянный сайдбар с теми же фильтрами (тот же `useRecipeFilters`, без дублирования состояния)                                                            |
+| `AddRecipeModals.tsx`     | Модалки добавления/редактирования: вручную, по ссылке, PDF, фото (cross-tab), продукт-в-рецепт, delete-confirm                                                       |
+| `RecipeDetailModal.tsx`   | Детальная модалка: степпер порций (`scaleMacros()`), пересчёт КБЖУ, планирование, коллекции, share, delete                                                            |
 
 ### `src/app/` — providers и layout
 
