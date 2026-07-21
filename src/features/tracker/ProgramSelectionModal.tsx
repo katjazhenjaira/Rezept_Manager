@@ -42,7 +42,9 @@ export function ProgramSelectionModal({ isOpen, onClose }: ProgramSelectionModal
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
+    // Resets the form on every close, not just once — must run in an effect tied to isOpen.
     if (!isOpen) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setCustomPlanForm({ name: '', calories: 0, proteins: 0, fats: 0, carbs: 0 });
     }
   }, [isOpen]);
