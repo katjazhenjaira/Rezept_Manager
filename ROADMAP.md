@@ -35,7 +35,7 @@
 
 ## Баги
 
-- [ ] Импорт рецепта по ссылке не работает (вкладка «Рецепты» → «Импорт по ссылке»). Требует диагностики: воспроизвести с конкретным URL, проверить цепочку `RecipesView.handleLinkSubmit` → `aiClient.importFromUrl()` → Worker `/api/ai/import-from-url` (`worker/src/routes/importFromUrl.ts`) → Gemini.
+- [ ] Импорт рецепта по ссылке не работает (вкладка «Рецепты» → «Импорт по ссылке»). Требует диагностики: воспроизвести с конкретным URL, проверить цепочку `AddRecipeModals.handleLinkSubmit` → `aiClient.importFromUrl()` → Worker `/api/ai/import-from-url` (`worker/src/routes/importFromUrl.ts`) → Gemini.
 
 ## Активные фазы
 
