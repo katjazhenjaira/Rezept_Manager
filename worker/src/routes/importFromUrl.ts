@@ -138,10 +138,41 @@ INSTRUCTIONS:
     try {
       // Spoof Referer to the source page so CDN treats it as a legitimate request.
       const imgResp = await safeFetch(candidate, { headers: { Referer: url } });
-      if (!imgResp?.ok) continue;
-      const buffer = await imgResp.arrayBuffer();
-      if (buffer.byteLength > 600_000) continue;
-      const bytes = new Uint8Array(buffer);
+      if (!imgResp?.ok || !imgResp.body) continue;
+
+      // Content-Length lets well-behaved servers skip early, but a server can omit it or
+      // lie — the actual size guard is the streamed read-and-abort loop below (PERF-6).
+      const declaredLength = Number(imgResp.headers.get('content-length'));
+      if (Number.isFinite(declaredLength) && declaredLength > 600_000) continue;
+
+      const MAX_IMAGE_BYTES = 600_000;
+      const reader = imgResp.body.getReader();
+      const chunks: Uint8Array[] = [];
+      let totalBytes = 0;
+      let tooLarge = false;
+      try {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          if (!value) continue;
+          totalBytes += value.byteLength;
+          if (totalBytes > MAX_IMAGE_BYTES) {
+            tooLarge = true;
+            break;
+          }
+          chunks.push(value);
+        }
+      } finally {
+        reader.cancel().catch(() => {});
+      }
+      if (tooLarge) continue;
+
+      const bytes = new Uint8Array(totalBytes);
+      let offset = 0;
+      for (const chunk of chunks) {
+        bytes.set(chunk, offset);
+        offset += chunk.byteLength;
+      }
       let binary = '';
       const chunkSize = 8192;
       for (let i = 0; i < bytes.length; i += chunkSize) {
