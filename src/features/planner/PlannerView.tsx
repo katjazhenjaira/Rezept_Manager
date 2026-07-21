@@ -62,9 +62,6 @@ export type PlannerViewProps = {
 export function PlannerView({
   recipes,
   userProfile,
-  activeNutritionPlan: _activeNutritionPlan,
-  checkedEntries: _checkedEntries,
-  onCheckedEntriesChange: _onCheckedEntriesChange,
   onSelectRecipe,
   onNavigateToCart,
   mealTypes,
@@ -1061,7 +1058,7 @@ export function PlannerView({
 
                       // Simple amount extraction and summing attempt
                       const amountMatch = ing.match(
-                        /^([\d.,/]+(?:\s*[г|кг|мл|л|шт|ст\.л|ч\.л|зубчик|щепотка|пучок|банка|упаковка])?)/i,
+                        /^([\d.,/]+(?:\s*[г|кг|мл|л|шт|ст.л|ч.л|зубчик|щепотка|пучок|банка|упаковка])?)/i,
                       );
                       if (amountMatch) {
                         const newAmount = (amountMatch[1] ?? '').trim();
