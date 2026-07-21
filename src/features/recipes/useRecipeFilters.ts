@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import type { Recipe, Program, RecipeView } from '@/shared/domain/types';
 
 export function useRecipeFilters(recipes: Recipe[], programs: Program[]) {
@@ -27,54 +27,73 @@ export function useRecipeFilters(recipes: Recipe[], programs: Program[]) {
     setFilterMaxCalories(1000);
   };
 
-  const allAuthors = Array.from(new Set(recipes.map((r) => r.author || '').filter(Boolean))).sort();
-  const allPrograms = programs.map((p) => p.name).sort();
+  const allAuthors = useMemo(
+    () => Array.from(new Set(recipes.map((r) => r.author || '').filter(Boolean))).sort(),
+    [recipes],
+  );
+  const allPrograms = useMemo(() => programs.map((p) => p.name).sort(), [programs]);
 
-  const filteredRecipes = recipes
-    .filter((recipe) => {
-      const matchesSearch = recipe.title.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesView = recipeView === 'all' || (recipeView === 'favorites' && recipe.isFavorite);
-      const matchesCategory =
-        filterCategories.length === 0 ||
-        filterCategories.every((cat) => recipe.categories.includes(cat));
-      const matchesAuthor =
-        filterAuthors.length === 0 || filterAuthors.includes(recipe.author || '');
+  const filteredRecipes = useMemo(
+    () =>
+      recipes
+        .filter((recipe) => {
+          const matchesSearch = recipe.title.toLowerCase().includes(searchQuery.toLowerCase());
+          const matchesView =
+            recipeView === 'all' || (recipeView === 'favorites' && recipe.isFavorite);
+          const matchesCategory =
+            filterCategories.length === 0 ||
+            filterCategories.every((cat) => recipe.categories.includes(cat));
+          const matchesAuthor =
+            filterAuthors.length === 0 || filterAuthors.includes(recipe.author || '');
 
-      const matchesProgram =
-        filterPrograms.length === 0 ||
-        filterPrograms.some((progName) => {
-          const program = programs.find((p) => p.name === progName);
-          if (!program) return false;
-          const allRecipeIdsInProgram = [
-            ...program.recipeIds,
-            ...(program.subfolders?.flatMap((sf) => sf.recipeIds) || []),
-          ];
-          return allRecipeIdsInProgram.includes(recipe.id);
-        });
+          const matchesProgram =
+            filterPrograms.length === 0 ||
+            filterPrograms.some((progName) => {
+              const program = programs.find((p) => p.name === progName);
+              if (!program) return false;
+              const allRecipeIdsInProgram = [
+                ...program.recipeIds,
+                ...(program.subfolders?.flatMap((sf) => sf.recipeIds) || []),
+              ];
+              return allRecipeIdsInProgram.includes(recipe.id);
+            });
 
-      const timeValue = parseInt(recipe.time) || 0;
-      const matchesTime = timeValue <= filterMaxTime;
-      const matchesCalories = recipe.macros.calories <= filterMaxCalories;
+          const timeValue = parseInt(recipe.time) || 0;
+          const matchesTime = timeValue <= filterMaxTime;
+          const matchesCalories = recipe.macros.calories <= filterMaxCalories;
 
-      return (
-        matchesSearch &&
-        matchesView &&
-        matchesCategory &&
-        matchesAuthor &&
-        matchesProgram &&
-        matchesTime &&
-        matchesCalories
-      );
-    })
-    .sort((a, b) => {
-      if (filterSortBy === 'newest')
-        return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
-      if (filterSortBy === 'oldest')
-        return new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime();
-      if (filterSortBy === 'time') return (parseInt(a.time) || 0) - (parseInt(b.time) || 0);
-      if (filterSortBy === 'calories') return a.macros.calories - b.macros.calories;
-      return 0;
-    });
+          return (
+            matchesSearch &&
+            matchesView &&
+            matchesCategory &&
+            matchesAuthor &&
+            matchesProgram &&
+            matchesTime &&
+            matchesCalories
+          );
+        })
+        .sort((a, b) => {
+          if (filterSortBy === 'newest')
+            return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
+          if (filterSortBy === 'oldest')
+            return new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime();
+          if (filterSortBy === 'time') return (parseInt(a.time) || 0) - (parseInt(b.time) || 0);
+          if (filterSortBy === 'calories') return a.macros.calories - b.macros.calories;
+          return 0;
+        }),
+    [
+      recipes,
+      programs,
+      searchQuery,
+      recipeView,
+      filterCategories,
+      filterAuthors,
+      filterPrograms,
+      filterMaxTime,
+      filterMaxCalories,
+      filterSortBy,
+    ],
+  );
 
   const hasActiveFilters =
     filterCategories.length > 0 ||
