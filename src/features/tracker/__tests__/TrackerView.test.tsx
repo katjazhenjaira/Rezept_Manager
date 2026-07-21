@@ -13,6 +13,7 @@ import { FakeUserProfileRepository } from '@/infrastructure/testing/FakeUserProf
 import { FakeNutritionPlanRepository } from '@/infrastructure/testing/FakeNutritionPlanRepository';
 import type { UserProfile, ActiveNutritionPlan, PlannerEntry, Recipe } from '@/shared/domain/types';
 import type { DataState } from '@/app/providers/DataContext';
+import type { TrackerViewProps } from '../TrackerView';
 
 vi.mock('@/services/ai/aiClient', () => ({
   aiClient: {
@@ -112,7 +113,7 @@ describe('TrackerView', () => {
   });
 
   it('renders without crashing', async () => {
-    let mod: { TrackerView: React.ComponentType<any> } | null = null;
+    let mod: { TrackerView: React.ComponentType<TrackerViewProps> };
     try {
       mod = await import('../TrackerView');
     } catch {
@@ -139,7 +140,7 @@ describe('TrackerView', () => {
   });
 
   it('shows meal from plannerEntries for today when entry is checked', async () => {
-    let mod: { TrackerView: React.ComponentType<any> } | null = null;
+    let mod: { TrackerView: React.ComponentType<TrackerViewProps> };
     try {
       mod = await import('../TrackerView');
     } catch {
@@ -166,7 +167,7 @@ describe('TrackerView', () => {
   });
 
   it('calls onNavigateToPlanner when empty state link is clicked', async () => {
-    let mod: { TrackerView: React.ComponentType<any> } | null = null;
+    let mod: { TrackerView: React.ComponentType<TrackerViewProps> };
     try {
       mod = await import('../TrackerView');
     } catch {
