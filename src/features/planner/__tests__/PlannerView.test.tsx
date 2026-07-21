@@ -12,6 +12,7 @@ import { FakeProgramsRepository } from '@/infrastructure/testing/FakeProgramsRep
 import { FakeUserProfileRepository } from '@/infrastructure/testing/FakeUserProfileRepository';
 import { FakeNutritionPlanRepository } from '@/infrastructure/testing/FakeNutritionPlanRepository';
 import type { UserProfile, ActiveNutritionPlan, PlannerEntry } from '@/shared/domain/types';
+import type { PlannerViewProps } from '../PlannerView';
 
 const mockProfile: UserProfile = {
   name: 'Тест',
@@ -48,7 +49,7 @@ function Wrapper({ children }: { children: ReactNode }) {
 
 describe('PlannerView', () => {
   it('renders without crashing', async () => {
-    let PlannerViewModule: { PlannerView: React.ComponentType<any> } | null = null;
+    let PlannerViewModule: { PlannerView: React.ComponentType<PlannerViewProps> };
     try {
       PlannerViewModule = await import('../PlannerView');
     } catch {
