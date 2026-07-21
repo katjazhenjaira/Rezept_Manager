@@ -79,19 +79,14 @@ export function ProgramDetailModal(props: ProgramDetailModalProps) {
     program,
     recipes,
     userProfile,
-    availableCategories,
     programRecipeFilter,
-    onProgramRecipeFilterChange,
     onClose,
     onDeleteProgram,
     onStartRecipeSelection,
     onRecipeTargetSet,
     photoInputRef,
-    isAddingManual,
     onIsAddingManualChange,
-    isAddingLink,
     onIsAddingLinkChange,
-    isAddingPDF,
     onIsAddingPDFChange,
     onSelectRecipe,
   } = props;
@@ -130,7 +125,7 @@ export function ProgramDetailModal(props: ProgramDetailModalProps) {
   };
 
   const [openSubfolderId, setOpenSubfolderId] = useState<string | null>(null);
-  const [editingSubfolderId, setEditingSubfolderId] = useState<string | null>(null);
+  const [, setEditingSubfolderId] = useState<string | null>(null);
   const [editingEntity, setEditingEntity] = useState<{
     type: 'program' | 'subfolder';
     id: string;
