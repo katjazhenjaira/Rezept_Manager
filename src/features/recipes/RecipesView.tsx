@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import {
-  BookOpen,
   Calendar,
   Users,
   Plus,
@@ -14,7 +13,6 @@ import {
   Trash2,
   Edit,
   Activity,
-  Filter,
   Download,
   Loader2,
   Check,
@@ -31,6 +29,8 @@ import type { Recipe, UserProfile, Program, Subfolder } from '@/shared/domain/ty
 import { extractImageFromPDF } from '@/shared/utils/pdfUtils';
 import { RecipesEmptyState } from './RecipesEmptyState';
 import { RecipeCard } from './RecipeCard';
+import { RecipesToolbar } from './RecipesToolbar';
+import { RecipeFilterSidebar } from './RecipeFilterSidebar';
 import { useRecipeFilters } from './useRecipeFilters';
 
 // ─── Utility ─────────────────────────────────────────────────────────────────
@@ -74,67 +74,6 @@ const cropImage = (
     img.src = base64;
   });
 };
-
-// ─── Sub-components ───────────────────────────────────────────────────────────
-
-const AddRecipeOption = ({
-  icon,
-  label,
-  onClick,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  onClick: () => void;
-}) => (
-  <button
-    onClick={onClick}
-    className="w-full px-4 py-3 text-left text-sm font-medium text-zinc-700 hover:bg-zinc-50 flex items-center gap-3 transition-colors"
-  >
-    {icon}
-    {label}
-  </button>
-);
-
-function SidebarItem({
-  active,
-  onClick,
-  icon,
-  label,
-  count,
-}: {
-  active: boolean;
-  onClick: () => void;
-  icon: React.ReactNode;
-  label: string;
-  count?: number;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className={cn(
-        'w-full flex items-center justify-between px-4 py-2.5 rounded-xl transition-all duration-200',
-        active
-          ? 'bg-emerald-50 text-emerald-700 font-bold'
-          : 'text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900',
-      )}
-    >
-      <div className="flex items-center gap-3">
-        {icon}
-        <span className="text-sm">{label}</span>
-      </div>
-      {count !== undefined && (
-        <span
-          className={cn(
-            'text-[10px] px-1.5 py-0.5 rounded-md font-bold',
-            active ? 'bg-emerald-200 text-emerald-800' : 'bg-zinc-200 text-zinc-500',
-          )}
-        >
-          {count}
-        </span>
-      )}
-    </button>
-  );
-}
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 
@@ -217,8 +156,6 @@ export function RecipesView({
     hasActiveFilters,
     resetFilters,
   } = useRecipeFilters(recipes, programs);
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [isAddRecipeDropdownOpen, setIsAddRecipeDropdownOpen] = useState(false);
 
   // ── Recipe detail / editing state ──────────────────────────────────────────
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -581,287 +518,34 @@ export function RecipesView({
   return (
     <>
       {/* ── Toolbar (sticky below global header) ── */}
-      <div className="sticky top-16 z-30 bg-white border-b border-zinc-200 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 py-3">
-          <div className="flex flex-wrap items-center gap-3">
-            {/* Search */}
-            <div className="relative flex-1 min-w-[200px]">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
-              <input
-                type="text"
-                placeholder="Поиск рецептов..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 bg-zinc-100 border border-zinc-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-emerald-500 transition-all outline-none"
-              />
-            </div>
-
-            {/* View Filter */}
-            <div className="flex bg-zinc-100 p-1 rounded-xl border border-zinc-200">
-              <button
-                onClick={() => setRecipeView('all')}
-                className={cn(
-                  'px-4 py-1.5 rounded-lg text-xs font-bold transition-all',
-                  recipeView === 'all' ? 'bg-white shadow-sm text-emerald-600' : 'text-zinc-500',
-                )}
-              >
-                Все
-              </button>
-              <button
-                onClick={() => setRecipeView('favorites')}
-                className={cn(
-                  'px-4 py-1.5 rounded-lg text-xs font-bold transition-all',
-                  recipeView === 'favorites'
-                    ? 'bg-white shadow-sm text-emerald-600'
-                    : 'text-zinc-500',
-                )}
-              >
-                Избранное
-              </button>
-            </div>
-
-            {/* Filter Dropdown */}
-            <div className="relative">
-              <button
-                onClick={() => setIsFilterOpen(!isFilterOpen)}
-                className={cn(
-                  'flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl transition-all font-bold border text-sm',
-                  isFilterOpen || hasActiveFilters
-                    ? 'bg-emerald-50 border-emerald-200 text-emerald-600'
-                    : 'bg-white border-zinc-200 text-zinc-600 hover:bg-zinc-50',
-                )}
-              >
-                <Filter className="w-4 h-4" />
-                <span>Фильтр</span>
-                {hasActiveFilters && <span className="w-2 h-2 bg-emerald-500 rounded-full" />}
-              </button>
-
-              <AnimatePresence>
-                {isFilterOpen && (
-                  <>
-                    <div className="fixed inset-0 z-30" onClick={() => setIsFilterOpen(false)} />
-                    <motion.div
-                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                      className="absolute right-0 mt-2 w-72 bg-white rounded-2xl shadow-2xl border border-zinc-100 p-5 z-40 space-y-6 max-h-[80vh] overflow-y-auto custom-scrollbar"
-                    >
-                      <div className="space-y-3">
-                        <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">
-                          Сортировка
-                        </label>
-                        <div className="grid grid-cols-2 gap-2">
-                          {(
-                            [
-                              ['newest', 'Сначала новые'],
-                              ['oldest', 'Сначала старые'],
-                              ['time', 'По времени'],
-                              ['calories', 'По калориям'],
-                            ] as const
-                          ).map(([val, label]) => (
-                            <button
-                              key={val}
-                              onClick={() => setFilterSortBy(val)}
-                              className={cn(
-                                'px-3 py-1.5 rounded-lg text-xs font-bold transition-all border',
-                                filterSortBy === val
-                                  ? 'bg-emerald-600 border-emerald-600 text-white'
-                                  : 'bg-zinc-50 border-zinc-100 text-zinc-500 hover:border-emerald-200',
-                              )}
-                            >
-                              {label}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-                      <div className="space-y-3">
-                        <div className="flex items-center justify-between">
-                          <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">
-                            Категория
-                          </label>
-                          <button
-                            onClick={onOpenSettings}
-                            className="text-[10px] font-bold text-emerald-600 hover:text-emerald-700 flex items-center gap-1"
-                          >
-                            <Plus className="w-3 h-3" /> Категория
-                          </button>
-                        </div>
-                        <div className="flex flex-wrap gap-2">
-                          {availableCategories.map((cat) => (
-                            <button
-                              key={cat}
-                              onClick={() => toggleFilterCategory(cat)}
-                              className={cn(
-                                'px-3 py-1.5 rounded-lg text-xs font-bold transition-all border',
-                                filterCategories.includes(cat)
-                                  ? 'bg-emerald-600 border-emerald-600 text-white'
-                                  : 'bg-zinc-50 border-zinc-100 text-zinc-500 hover:border-emerald-200',
-                              )}
-                            >
-                              {cat}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-                      <div className="space-y-3">
-                        <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">
-                          Авторы
-                        </label>
-                        <select
-                          className="w-full p-2.5 rounded-xl border border-zinc-200 text-sm font-bold bg-zinc-50 focus:ring-2 focus:ring-emerald-500 outline-none"
-                          value={filterAuthors[0] || ''}
-                          onChange={(e) => {
-                            const val = e.target.value;
-                            setFilterAuthors(val ? [val] : []);
-                          }}
-                        >
-                          <option value="">Все авторы</option>
-                          {allAuthors.map((author) => (
-                            <option key={author} value={author}>
-                              {author}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-
-                      <div className="space-y-3">
-                        <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">
-                          Программы
-                        </label>
-                        <select
-                          className="w-full p-2.5 rounded-xl border border-zinc-200 text-sm font-bold bg-zinc-50 focus:ring-2 focus:ring-emerald-500 outline-none"
-                          value={filterPrograms[0] || ''}
-                          onChange={(e) => {
-                            const val = e.target.value;
-                            setFilterPrograms(val ? [val] : []);
-                          }}
-                        >
-                          <option value="">Все программы</option>
-                          {allPrograms.map((prog) => (
-                            <option key={prog} value={prog}>
-                              {prog}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-
-                      <div className="space-y-3">
-                        <div className="flex justify-between items-center">
-                          <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">
-                            Время
-                          </label>
-                          <span className="text-xs font-bold text-emerald-600">
-                            {filterMaxTime} мин
-                          </span>
-                        </div>
-                        <input
-                          type="range"
-                          min="5"
-                          max="120"
-                          step="5"
-                          value={filterMaxTime}
-                          onChange={(e) => setFilterMaxTime(parseInt(e.target.value))}
-                          className="w-full accent-emerald-600"
-                        />
-                      </div>
-
-                      <div className="space-y-3">
-                        <div className="flex justify-between items-center">
-                          <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">
-                            Калории
-                          </label>
-                          <span className="text-xs font-bold text-emerald-600">
-                            {filterMaxCalories}
-                          </span>
-                        </div>
-                        <input
-                          type="range"
-                          min="100"
-                          max="1000"
-                          step="50"
-                          value={filterMaxCalories}
-                          onChange={(e) => setFilterMaxCalories(parseInt(e.target.value))}
-                          className="w-full accent-emerald-600"
-                        />
-                      </div>
-
-                      <button
-                        onClick={resetFilters}
-                        className="w-full py-2 text-xs font-bold text-zinc-400 hover:text-red-500 transition-colors border-t border-zinc-50 pt-4"
-                      >
-                        Сбросить всё
-                      </button>
-                    </motion.div>
-                  </>
-                )}
-              </AnimatePresence>
-            </div>
-
-            {/* Add Recipe Dropdown */}
-            <div className="relative">
-              <button
-                onClick={() => setIsAddRecipeDropdownOpen(!isAddRecipeDropdownOpen)}
-                className="flex items-center gap-2 px-4 py-2.5 bg-emerald-600 text-white rounded-xl font-bold text-sm hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-100"
-              >
-                <Plus className="w-4 h-4" />
-                <span>Добавить рецепт</span>
-              </button>
-
-              <AnimatePresence>
-                {isAddRecipeDropdownOpen && (
-                  <>
-                    <div
-                      className="fixed inset-0 z-40"
-                      onClick={() => setIsAddRecipeDropdownOpen(false)}
-                    />
-                    <motion.div
-                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                      className="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-2xl border border-zinc-100 overflow-hidden z-50"
-                    >
-                      <AddRecipeOption
-                        icon={<Camera className="w-4 h-4 text-emerald-500" />}
-                        label="Загрузить фото"
-                        onClick={() => {
-                          photoInputRef.current?.click();
-                          setIsAddRecipeDropdownOpen(false);
-                        }}
-                      />
-                      <AddRecipeOption
-                        icon={<FileText className="w-4 h-4 text-emerald-500" />}
-                        label="PDF документ"
-                        onClick={() => {
-                          setIsAddingPDF(true);
-                          setIsAddRecipeDropdownOpen(false);
-                        }}
-                      />
-                      <AddRecipeOption
-                        icon={<LinkIcon className="w-4 h-4 text-emerald-500" />}
-                        label="Вставить ссылку"
-                        onClick={() => {
-                          setIsAddingLink(true);
-                          setIsAddRecipeDropdownOpen(false);
-                        }}
-                      />
-                      <AddRecipeOption
-                        icon={<Edit3 className="w-4 h-4 text-emerald-500" />}
-                        label="Добавить вручную"
-                        onClick={() => {
-                          setIsAddingManual(true);
-                          setIsAddRecipeDropdownOpen(false);
-                        }}
-                      />
-                    </motion.div>
-                  </>
-                )}
-              </AnimatePresence>
-            </div>
-          </div>
-        </div>
-      </div>
+      <RecipesToolbar
+        searchQuery={searchQuery}
+        onSearchQueryChange={setSearchQuery}
+        recipeView={recipeView}
+        onRecipeViewChange={setRecipeView}
+        hasActiveFilters={hasActiveFilters}
+        filterSortBy={filterSortBy}
+        onFilterSortByChange={setFilterSortBy}
+        availableCategories={availableCategories}
+        onOpenSettings={onOpenSettings}
+        filterCategories={filterCategories}
+        onToggleFilterCategory={toggleFilterCategory}
+        filterAuthors={filterAuthors}
+        onFilterAuthorsChange={setFilterAuthors}
+        allAuthors={allAuthors}
+        filterPrograms={filterPrograms}
+        onFilterProgramsChange={setFilterPrograms}
+        allPrograms={allPrograms}
+        filterMaxTime={filterMaxTime}
+        onFilterMaxTimeChange={setFilterMaxTime}
+        filterMaxCalories={filterMaxCalories}
+        onFilterMaxCaloriesChange={setFilterMaxCalories}
+        onResetFilters={resetFilters}
+        photoInputRef={photoInputRef}
+        onAddPDF={() => setIsAddingPDF(true)}
+        onAddLink={() => setIsAddingLink(true)}
+        onAddManual={() => setIsAddingManual(true)}
+      />
 
       {/* ── Main content area ── */}
       <div className="max-w-7xl mx-auto px-4 py-8 pb-32">
@@ -875,135 +559,25 @@ export function RecipesView({
         ) : (
           <div className="flex flex-col lg:flex-row gap-8">
             {/* Sidebar for Desktop */}
-            <aside className="hidden lg:block w-64 flex-shrink-0 space-y-8 sticky top-36 max-h-[calc(100vh-160px)] overflow-y-auto pr-2 custom-scrollbar">
-              <div className="space-y-2">
-                <h3 className="text-xs font-bold text-zinc-400 uppercase tracking-widest px-4">
-                  Библиотека
-                </h3>
-                <SidebarItem
-                  active={recipeView === 'all'}
-                  onClick={() => setRecipeView('all')}
-                  icon={<BookOpen className="w-5 h-5" />}
-                  label="Все рецепты"
-                  count={recipes.length}
-                />
-                <SidebarItem
-                  active={recipeView === 'favorites'}
-                  onClick={() => setRecipeView('favorites')}
-                  icon={<Activity className="w-5 h-5" />}
-                  label="Избранное"
-                  count={recipes.filter((r) => r.isFavorite).length}
-                />
-              </div>
-
-              <div className="space-y-4 px-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-xs font-bold text-zinc-400 uppercase tracking-widest">
-                    Категории
-                  </h3>
-                  <button
-                    onClick={onOpenSettings}
-                    className="p-1 hover:bg-zinc-100 rounded-md text-emerald-600 transition-colors"
-                    title="Добавить категорию"
-                  >
-                    <Plus className="w-4 h-4" />
-                  </button>
-                </div>
-
-                <div className="flex flex-wrap gap-2">
-                  {availableCategories.map((cat) => (
-                    <button
-                      key={cat}
-                      onClick={() => toggleFilterCategory(cat)}
-                      className={cn(
-                        'px-2.5 py-1 rounded-lg text-xs font-bold transition-all border flex items-center gap-2',
-                        filterCategories.includes(cat)
-                          ? 'bg-emerald-600 border-emerald-600 text-white'
-                          : 'bg-zinc-50 border-zinc-100 text-zinc-500 hover:border-emerald-200',
-                      )}
-                    >
-                      {cat}
-                    </button>
-                  ))}
-                </div>
-
-                <div className="space-y-3">
-                  <label className="text-xs font-bold text-zinc-400 uppercase tracking-widest">
-                    Авторы
-                  </label>
-                  <select
-                    className="w-full p-2 rounded-xl border border-zinc-200 text-xs font-bold bg-zinc-50 focus:ring-2 focus:ring-emerald-500 outline-none"
-                    value={filterAuthors[0] || ''}
-                    onChange={(e) => {
-                      const val = e.target.value;
-                      setFilterAuthors(val ? [val] : []);
-                    }}
-                  >
-                    <option value="">Все авторы</option>
-                    {allAuthors.map((author) => (
-                      <option key={author} value={author}>
-                        {author}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="space-y-3">
-                  <label className="text-xs font-bold text-zinc-400 uppercase tracking-widest">
-                    Программы
-                  </label>
-                  <select
-                    className="w-full p-2 rounded-xl border border-zinc-200 text-xs font-bold bg-zinc-50 focus:ring-2 focus:ring-emerald-500 outline-none"
-                    value={filterPrograms[0] || ''}
-                    onChange={(e) => {
-                      const val = e.target.value;
-                      setFilterPrograms(val ? [val] : []);
-                    }}
-                  >
-                    <option value="">Все программы</option>
-                    {allPrograms.map((prog) => (
-                      <option key={prog} value={prog}>
-                        {prog}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <label className="text-sm font-medium text-zinc-600">
-                      Время (до {filterMaxTime} мин)
-                    </label>
-                  </div>
-                  <input
-                    type="range"
-                    min="5"
-                    max="120"
-                    step="5"
-                    value={filterMaxTime}
-                    onChange={(e) => setFilterMaxTime(parseInt(e.target.value))}
-                    className="w-full accent-emerald-600"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <label className="text-sm font-medium text-zinc-600">
-                      Калории (до {filterMaxCalories})
-                    </label>
-                  </div>
-                  <input
-                    type="range"
-                    min="100"
-                    max="1000"
-                    step="50"
-                    value={filterMaxCalories}
-                    onChange={(e) => setFilterMaxCalories(parseInt(e.target.value))}
-                    className="w-full accent-emerald-600"
-                  />
-                </div>
-              </div>
-            </aside>
+            <RecipeFilterSidebar
+              recipes={recipes}
+              recipeView={recipeView}
+              onRecipeViewChange={setRecipeView}
+              onOpenSettings={onOpenSettings}
+              availableCategories={availableCategories}
+              filterCategories={filterCategories}
+              onToggleFilterCategory={toggleFilterCategory}
+              filterAuthors={filterAuthors}
+              onFilterAuthorsChange={setFilterAuthors}
+              allAuthors={allAuthors}
+              filterPrograms={filterPrograms}
+              onFilterProgramsChange={setFilterPrograms}
+              allPrograms={allPrograms}
+              filterMaxTime={filterMaxTime}
+              onFilterMaxTimeChange={setFilterMaxTime}
+              filterMaxCalories={filterMaxCalories}
+              onFilterMaxCaloriesChange={setFilterMaxCalories}
+            />
 
             {/* Main Grid Area */}
             <div className="flex-1 space-y-6">
