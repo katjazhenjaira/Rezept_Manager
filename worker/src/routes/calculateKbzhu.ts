@@ -5,6 +5,7 @@ import type {
   CalculateKbzhuResponse,
 } from '../../../src/services/ai/contracts';
 import type { Env } from '../types';
+import { UPSTREAM_TIMEOUT_MS, isTimeoutError } from '../helpers/timeout';
 
 export async function calculateKbzhu(c: Context<{ Bindings: Env }>) {
   const body = await c.req.json<CalculateKbzhuRequest>();
@@ -33,11 +34,13 @@ export async function calculateKbzhu(c: Context<{ Bindings: Env }>) {
           },
           required: ['calories', 'proteins', 'fats', 'carbs'],
         },
+        abortSignal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS),
       },
     });
     parsed = JSON.parse(response.text ?? '{}') as Partial<CalculateKbzhuResponse>;
   } catch (err) {
     console.error('[calculateKbzhu] error:', err);
+    if (isTimeoutError(err)) return c.json({ error: 'Upstream request timed out' }, 504);
     return c.json({ error: 'Failed to calculate KBJU' }, 502);
   }
 

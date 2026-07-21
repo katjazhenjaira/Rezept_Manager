@@ -1,4 +1,5 @@
 import { GoogleGenAI } from '@google/genai';
+import { UPSTREAM_TIMEOUT_MS } from './timeout';
 
 export async function generateImageDataUri(
   ai: GoogleGenAI,
@@ -19,6 +20,7 @@ export async function generateImageDataUri(
         aspectRatio: '4:3',
         imageSize: '1K',
       },
+      abortSignal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS),
     },
   });
 

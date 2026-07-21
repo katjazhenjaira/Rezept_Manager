@@ -5,6 +5,7 @@ import type {
   GenerateImageResponse,
 } from '../../../src/services/ai/contracts';
 import { generateImageDataUri } from '../helpers/generateImageDataUri';
+import { isTimeoutError } from '../helpers/timeout';
 import type { Env } from '../types';
 
 export async function generateImage(c: Context<{ Bindings: Env }>) {
@@ -22,6 +23,7 @@ export async function generateImage(c: Context<{ Bindings: Env }>) {
     dataUri = await generateImageDataUri(ai, title, ingredients);
   } catch (err) {
     console.error('[generateImage] error:', err);
+    if (isTimeoutError(err)) return c.json({ error: 'Upstream request timed out' }, 504);
     return c.json({ error: 'Failed to generate image' }, 502);
   }
 

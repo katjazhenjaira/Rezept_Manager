@@ -6,6 +6,7 @@ import type {
   ImportedRecipe,
 } from '../../../src/services/ai/contracts';
 import type { Env } from '../types';
+import { UPSTREAM_TIMEOUT_MS, isTimeoutError } from '../helpers/timeout';
 
 export async function importFromPhoto(c: Context<{ Bindings: Env }>) {
   const body = await c.req.json<ImportFromPhotoRequest>();
@@ -110,12 +111,14 @@ MUST include 'dishBoundingBox' with ymin, xmin, ymax, xmax for the main dish sho
             'servings',
           ],
         },
+        abortSignal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS),
       },
     });
 
     data = JSON.parse(response.text ?? '{}') as typeof data;
   } catch (err) {
     console.error('[importFromPhoto] error:', err);
+    if (isTimeoutError(err)) return c.json({ error: 'Upstream request timed out' }, 504);
     return c.json({ error: 'Failed to import recipe from photo' }, 502);
   }
 

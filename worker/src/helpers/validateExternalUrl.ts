@@ -1,3 +1,5 @@
+import { UPSTREAM_TIMEOUT_MS } from './timeout';
+
 const PRIVATE_HOSTNAMES = new Set(['localhost', '0.0.0.0']);
 
 function isPrivateIPv4(hostname: string): boolean {
@@ -62,7 +64,13 @@ export async function safeFetch(
   if (!current) return null;
 
   for (let hop = 0; hop <= maxRedirects; hop++) {
-    const resp = await fetch(current.href, { ...init, redirect: 'manual' });
+    // Fresh timeout budget per hop — a slow redirect chain shouldn't starve the final
+    // request of its own allowance (PERF-7). Caller-supplied init has no signal today.
+    const resp = await fetch(current.href, {
+      ...init,
+      redirect: 'manual',
+      signal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS),
+    });
     if (resp.status >= 300 && resp.status < 400) {
       const location = resp.headers.get('location');
       if (!location) return null;

@@ -7,6 +7,7 @@ import type {
 } from '../../../src/services/ai/contracts';
 import { generateImageDataUri } from '../helpers/generateImageDataUri';
 import { safeFetch, validateExternalUrl } from '../helpers/validateExternalUrl';
+import { UPSTREAM_TIMEOUT_MS, isTimeoutError } from '../helpers/timeout';
 import type { Env } from '../types';
 
 export async function importFromUrl(c: Context<{ Bindings: Env }>) {
@@ -78,6 +79,7 @@ export async function importFromUrl(c: Context<{ Bindings: Env }>) {
             'servings',
           ],
         },
+        abortSignal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS),
       },
       contents: `TASK: Extract the recipe details ONLY from the provided URL: ${url}.
 CONTEXT: This link might be a website, an Instagram Reel, or a TikTok video.
@@ -94,6 +96,7 @@ INSTRUCTIONS:
     data = JSON.parse(response.text ?? '{}') as typeof data;
   } catch (err) {
     console.error('[importFromUrl] error:', err);
+    if (isTimeoutError(err)) return c.json({ error: 'Upstream request timed out' }, 504);
     return c.json({ error: 'Failed to import recipe from URL' }, 502);
   }
 
@@ -186,12 +189,18 @@ INSTRUCTIONS:
   }
 
   if (!dishImage) {
-    const generated = await generateImageDataUri(
-      ai,
-      data.title ?? 'Новый рецепт',
-      data.ingredients ?? [],
-    );
-    if (generated) dishImage = generated;
+    // AI-generated fallback image is a nice-to-have, not required for a successful
+    // import — a timeout or generation failure here must not fail the whole request.
+    try {
+      const generated = await generateImageDataUri(
+        ai,
+        data.title ?? 'Новый рецепт',
+        data.ingredients ?? [],
+      );
+      if (generated) dishImage = generated;
+    } catch (err) {
+      console.error('[importFromUrl] fallback image generation failed:', err);
+    }
   }
 
   const recipe: ImportedRecipe = {

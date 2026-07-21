@@ -10,6 +10,7 @@ import type {
   ImportedRecipe,
 } from '../../../src/services/ai/contracts';
 import type { Env } from '../types';
+import { UPSTREAM_TIMEOUT_MS, isTimeoutError } from '../helpers/timeout';
 
 const RESPONSE_SCHEMA = {
   type: Type.OBJECT,
@@ -106,7 +107,11 @@ export async function importFromPdf(c: Context<{ Bindings: Env }>) {
       const response = await ai.models.generateContent({
         model: 'gemini-3-flash-preview',
         contents: [{ text: buildPrompt(availableCategories) + '\n\nPDF content:\n' + pdfText }],
-        config: { responseMimeType: 'application/json', responseSchema: RESPONSE_SCHEMA },
+        config: {
+          responseMimeType: 'application/json',
+          responseSchema: RESPONSE_SCHEMA,
+          abortSignal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS),
+        },
       });
       data = JSON.parse(response.text ?? '{"recipes":[]}') as typeof data;
     } else {
@@ -117,12 +122,17 @@ export async function importFromPdf(c: Context<{ Bindings: Env }>) {
           { inlineData: { mimeType: 'application/pdf', data: pdfBase64! } },
           { text: buildPrompt(availableCategories) },
         ],
-        config: { responseMimeType: 'application/json', responseSchema: RESPONSE_SCHEMA },
+        config: {
+          responseMimeType: 'application/json',
+          responseSchema: RESPONSE_SCHEMA,
+          abortSignal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS),
+        },
       });
       data = JSON.parse(response.text ?? '{"recipes":[]}') as typeof data;
     }
   } catch (err) {
     console.error('[importFromPdf] error:', err);
+    if (isTimeoutError(err)) return c.json({ error: 'Upstream request timed out' }, 504);
     return c.json({ error: 'Failed to import recipe from PDF' }, 502);
   }
 
