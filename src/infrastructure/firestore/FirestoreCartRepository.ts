@@ -8,6 +8,7 @@ import {
   query,
   getDocs,
   where,
+  writeBatch,
 } from 'firebase/firestore';
 import { db } from '@/infrastructure/firebaseApp';
 import type { CartItem } from '@/shared/domain/types';
@@ -64,6 +65,14 @@ export class FirestoreCartRepository implements CartRepository {
 
   async deleteAll(): Promise<void> {
     const snap = await getDocs(query(collection(db, 'cart'), where('userId', '==', this.uid)));
-    await Promise.all(snap.docs.map((d) => deleteDoc(doc(db, 'cart', d.id))));
+    // Firestore caps a single batch at 500 writes — chunk to stay under the limit.
+    const chunkSize = 500;
+    for (let i = 0; i < snap.docs.length; i += chunkSize) {
+      const batch = writeBatch(db);
+      for (const d of snap.docs.slice(i, i + chunkSize)) {
+        batch.delete(doc(db, 'cart', d.id));
+      }
+      await batch.commit();
+    }
   }
 }
