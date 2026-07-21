@@ -14,7 +14,7 @@ import { RecipeSelectionBar } from '@/app/layout/RecipeSelectionBar';
 import { SettingsModal } from '@/features/settings/SettingsModal';
 import { CartView } from '@/features/cart/CartView';
 import { ProgramsView } from '@/features/programs/ProgramsView';
-import type { Tab, Recipe, UserProfile, Program } from '@/shared/domain/types';
+import type { Tab, Recipe } from '@/shared/domain/types';
 import { DEFAULT_PROFILE } from '@/shared/domain/defaults';
 import { RecipesView } from '@/features/recipes/RecipesView';
 import { PlannerView } from '@/features/planner/PlannerView';
@@ -32,22 +32,32 @@ export default function App() {
   const [isScanning, setIsScanning] = useState(false);
 
   // Categories state
-  const [availableCategories, setAvailableCategories] = useState([
-    'Завтрак',
-    'Обед',
-    'Ужин',
-    'Перекус',
-    'Десерт',
-    'Мясо',
-    'Рыба',
-    'Веган',
-    'Вегетарианское',
-    'Напитки',
-    'Основное блюдо',
-    'Гарниры',
-    'Салаты',
-    'Супы',
-  ]);
+  const [availableCategories, setAvailableCategories] = useState<string[]>(() => {
+    const savedCategories = localStorage.getItem('availableCategories');
+    if (savedCategories) {
+      try {
+        return JSON.parse(savedCategories);
+      } catch (e) {
+        console.error('Error parsing saved categories:', e);
+      }
+    }
+    return [
+      'Завтрак',
+      'Обед',
+      'Ужин',
+      'Перекус',
+      'Десерт',
+      'Мясо',
+      'Рыба',
+      'Веган',
+      'Вегетарианское',
+      'Напитки',
+      'Основное блюдо',
+      'Гарниры',
+      'Салаты',
+      'Супы',
+    ];
+  });
 
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isRecipeSelectionMode, setIsRecipeSelectionMode] = useState(false);
@@ -128,7 +138,7 @@ export default function App() {
       };
       handleSharedProgram();
     }
-  }, []);
+  }, [programsRepo]);
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -136,6 +146,8 @@ export default function App() {
     if (!recipeId || recipes.length === 0) return;
     const recipe = recipes.find((r) => r.id === recipeId);
     if (recipe) {
+      // Deep-link redirect: waits for async recipes to load, so must run in an effect.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSelectedRecipe(recipe);
       setActiveTab('recipes');
     } else {
@@ -143,17 +155,6 @@ export default function App() {
     }
     window.history.replaceState({}, document.title, window.location.pathname);
   }, [recipes]);
-
-  useEffect(() => {
-    const savedCategories = localStorage.getItem('availableCategories');
-    if (savedCategories) {
-      try {
-        setAvailableCategories(JSON.parse(savedCategories));
-      } catch (e) {
-        console.error('Error parsing saved categories:', e);
-      }
-    }
-  }, []);
 
   useEffect(() => {
     localStorage.setItem('availableCategories', JSON.stringify(availableCategories));
