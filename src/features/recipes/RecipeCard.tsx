@@ -26,7 +26,10 @@ export type RecipeCardProps = {
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-export function RecipeCard({
+// React.memo — грид рецептов не должен перерендериваться при несвязанных
+// изменениях state родителя (например, набор текста в форме добавления рецепта),
+// пока пропы конкретной карточки не изменились (PERF-5).
+export const RecipeCard = React.memo(function RecipeCard({
   recipe,
   userProfile,
   isRecipeSelectionMode,
@@ -171,4 +174,4 @@ export function RecipeCard({
       </div>
     </motion.div>
   );
-}
+});

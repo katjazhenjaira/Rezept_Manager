@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { Search } from 'lucide-react';
 import { AnimatePresence } from 'motion/react';
 import { useRepositories } from '@/app/providers/RepositoryContext';
@@ -129,41 +129,49 @@ export function RecipesView({
 
   // ─── Handlers ────────────────────────────────────────────────────────────────
 
-  const toggleFavorite = async (id: string, e?: React.MouseEvent) => {
-    e?.stopPropagation();
-    const recipe = recipes.find((r) => r.id === id);
-    if (!recipe) return;
-    try {
-      await recipesRepo.update(id, { isFavorite: !recipe.isFavorite });
-      if (selectedRecipe?.id === id) {
-        setSelectedRecipe({ ...selectedRecipe, isFavorite: !selectedRecipe.isFavorite });
+  // useCallback — стабильная ссылка на колбэк нужна, чтобы React.memo(RecipeCard)
+  // (PERF-5) реально предотвращал перерендер грида на несвязанные изменения state.
+  const toggleFavorite = useCallback(
+    async (id: string, e?: React.MouseEvent) => {
+      e?.stopPropagation();
+      const recipe = recipes.find((r) => r.id === id);
+      if (!recipe) return;
+      try {
+        await recipesRepo.update(id, { isFavorite: !recipe.isFavorite });
+        if (selectedRecipe?.id === id) {
+          setSelectedRecipe({ ...selectedRecipe, isFavorite: !selectedRecipe.isFavorite });
+        }
+      } catch (error) {
+        console.error('Error updating favorite status:', error);
       }
-    } catch (error) {
-      console.error('Error updating favorite status:', error);
-    }
-  };
+    },
+    [recipes, recipesRepo, selectedRecipe, setSelectedRecipe],
+  );
 
-  const handleEdit = (recipe: Recipe) => {
-    setEditingId(recipe.id);
-    setFormData({
-      title: recipe.title,
-      author: recipe.author || '',
-      sourceUrl: recipe.sourceUrl || '',
-      image: recipe.image || null,
-      time: recipe.time,
-      servings: recipe.servings,
-      categories: recipe.categories,
-      ingredients: recipe.ingredients.join('\n'),
-      steps: recipe.steps.join('\n'),
-      calories: recipe.macros.calories,
-      proteins: recipe.macros.proteins,
-      fats: recipe.macros.fats,
-      carbs: recipe.macros.carbs,
-      substitutions: recipe.substitutions || '',
-    });
-    setIsAddingManual(true);
-    setSelectedRecipe(null);
-  };
+  const handleEdit = useCallback(
+    (recipe: Recipe) => {
+      setEditingId(recipe.id);
+      setFormData({
+        title: recipe.title,
+        author: recipe.author || '',
+        sourceUrl: recipe.sourceUrl || '',
+        image: recipe.image || null,
+        time: recipe.time,
+        servings: recipe.servings,
+        categories: recipe.categories,
+        ingredients: recipe.ingredients.join('\n'),
+        steps: recipe.steps.join('\n'),
+        calories: recipe.macros.calories,
+        proteins: recipe.macros.proteins,
+        fats: recipe.macros.fats,
+        carbs: recipe.macros.carbs,
+        substitutions: recipe.substitutions || '',
+      });
+      setIsAddingManual(true);
+      setSelectedRecipe(null);
+    },
+    [setIsAddingManual, setSelectedRecipe],
+  );
 
   // ─── Render ───────────────────────────────────────────────────────────────────
 
