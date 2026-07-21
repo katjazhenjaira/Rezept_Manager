@@ -2,52 +2,50 @@
 
 ## Активная фаза
 
-Проработка отчёта аудита кода `docs/audits/2026-07-19-project-audit-report.md` (51/60 закрыто). Phase 3 (миграция на Supabase) не начата, ждёт после аудита.
+Отчёт аудита кода `docs/audits/2026-07-19-project-audit-report.md` полностью закрыт (60/60 находок проработаны). Phase 3 (миграция на Supabase) не начата — теперь ничего не блокирует старт, кроме выбора пользователя, с чего продолжить.
 
 ## Следующий шаг
 
-Внутри CONV-1 (декомпозиция `src/features/recipes/RecipesView.tsx`, 2617→2409 строк) выполняется пошаговый план — **план и текущий прогресс лежат в `docs/audits/conv-1-decomposition-plan.md`** (там же чек-лист шагов с отметками `[x]`/`[ ]`).
+Не выбран явно — на выбор пользователя в следующей сессии:
 
-Готово: шаг 0 (dead-code чистка, commit `33e8cd5`), шаг 1 (`RecipesEmptyState.tsx`, commit `9253de4`), шаг 2 (`RecipeCard.tsx`, commit `b6e3ee9`).
-
-**Следующий конкретный шаг — Шаг 3: извлечь `useRecipeFilters.ts`** (только логика фильтрации, JSX тулбара/сайдбара пока остаётся инлайн в `RecipesView.tsx`). Полные детали — в плане.
-
-После завершения всех 8 шагов CONV-1 — остаётся раздел 🐢 Производительность (PERF-1…8, не начат) в отчёте аудита.
+- Начать **Phase 3** (миграция на Supabase) — детали в `ROADMAP.md`.
+- Или сначала разобрать **TODO (code review): `eslint src` (35 errors / 2 warnings)** на существующем коде — см. DOC-14 в `ROADMAP.md`.
+- Плюс два открытых остатка из аудита, не привязанных к конкретной фазе (см. `ROADMAP.md` → «Технический долг»): **PERF-2** (`subscribeAll` без `limit()`, отложена — требует решения по пагинации UI) и **PERF-5 остаток** (`PlannerView.tsx` — нужен `PlannerEntryCard` перед `React.memo`).
 
 ## Blocker
 
-Нет. (DOC-14 разблокирована и закрыта в этой же сессии — место на диске освободилось, ESLint+Prettier установлены.)
+Нет.
 
 ## Обновлено
 
-2026-07-20
+2026-07-21
 
 ---
 
 ## Итоги последней сессии
 
-- Закрыт весь раздел DEAD (DEAD-1…9, включая ретроактивную отметку DEAD-5, закрытой ещё в прошлой сессии вместе с LOGIC-3)
-- Закрыт весь раздел ⚡ TypeScript strict compliance (TS-1…7): runtime-guard'ы на границе с Firestore, `fromFirestore()` для UserProfile, задокументирован double-cast в FakeAuthProvider, tuple-тип для `FillRemainingResponse.options`, типизированы drag-and-drop обработчики, `VITE_AI_WORKER_URL` в `ImportMetaEnv`, отдельный `scripts/tsconfig.json`
-- DOC-14 закрыта: установлены и реально работают ESLint (flat config) + Prettier, весь репозиторий отформатирован; `eslint src` показывает 29 errors/2 warnings на существующем коде — зафиксировано как TODO в ROADMAP.md, не исправлялось (вне скоупа находки)
-- Закрыт раздел 🏛️ Соответствие соглашениям кроме CONV-1: CONV-2 (`crypto.randomUUID()` вместо `Math.random().toString(36).substr`), CONV-3 (комментарии разнесены по месту использования)
-- CONV-1 (декомпозиция RecipesView.tsx) — начата по детальному плану, выполнены шаги 0-2 из 7 (см. `docs/audits/conv-1-decomposition-plan.md`)
-- Каждая находка/шаг — отдельный коммит с указанием ID; вся работа над рефакторингом велась через субагентов (по прямому указанию пользователя)
+- CONV-1 (декомпозиция `RecipesView.tsx`) завершена: шаги 3-7 из плана (шаги 0-2 были сделаны в предыдущей сессии) — `RecipesView.tsx` 2617 → 333 строки, 7 новых файлов (`RecipesEmptyState`, `RecipeCard`, `useRecipeFilters`, `RecipesToolbar`, `RecipeFilterSidebar`, `AddRecipeModals`, `RecipeDetailModal`) + `scaleMacros()` в `macros.ts` с unit-тестами
+- Ручной browser smoke-test (Playwright MCP, реальный тестовый Firebase-аккаунт, credentials от пользователя) — нашёл 2 pre-existing бага, не регрессия рефакторинга, оба зафиксированы в `ROADMAP.md` → «Баги»
+- Весь раздел 🐢 Производительность отчёта аудита закрыт: PERF-1, PERF-3, PERF-4, PERF-6, PERF-7, PERF-8 исправлены; PERF-2 осознанно отложена; PERF-5 закрыта частично (только `RecipesView.tsx`)
+- **Отчёт аудита кода `docs/audits/2026-07-19-project-audit-report.md` полностью закрыт (60/60)** — весь цикл проработки, начатый 2026-07-19, завершён
+- Каждая находка/шаг — отдельный коммит с указанием ID; рефакторинг CONV-1 велся через субагентов по прямому указанию пользователя, PERF-находки — напрямую
 
 ## Ключевые решения, влияющие на следующий шаг
 
-- CONV-1 выполняется как многошаговый рефакторинг с явным письменным планом (не одним коммитом) — план учитывает отсутствие тестов на `RecipesView.tsx` и порядок извлечения от минимального риска к максимальному
-- Для CONV-1 критично: `useRecipeFilters()` должен вызываться **ровно один раз** (в `RecipesView.tsx`), иначе тулбар и сайдбар разойдутся в независимые копии состояния — явная проверка на шаге 4
-- Оставшиеся находки аудита: CONV-1 (в процессе) + PERF-1…8 (не начаты) = 9 из 60
-- `worker/` не имеет тестовой инфраструктуры (только `tsc --noEmit`) — для находок в `worker/src/**` верификация ограничивается typecheck
+- CONV-1 закрыт полностью — декомпозиция `RecipesView.tsx` больше не блокирует ничего в `ROADMAP.md`
+- Два новых пункта технического долга в `ROADMAP.md` (не входят в закрытый отчёт, но выросли из него): PERF-2 (пагинация Cart/Recipes/Programs — продуктовое решение) и PERF-5 остаток (`PlannerEntryCard` для `PlannerView.tsx`)
+- Три новых пункта в `ROADMAP.md` → «Баги», найдены при смоук-тесте CONV-1 (все — pre-existing, не регрессия)
+- Новый паттерн-constraint в `CLAUDE.md` → Known constraints: `render*View()`-функции, вызываемые условно внутри тела компонента, не могут содержать хуки — мемоизация поднимается на уровень компонента (пример: `entriesByDate` в `PlannerView.tsx`)
+- Новый паттерн в `CLAUDE.md` → Known constraints: все upstream-вызовы в `worker/` (`generateContent()`/`fetch()`) обязаны иметь `AbortSignal.timeout()` — `helpers/timeout.ts`
 - Repository pattern уже реализован — для Supabase нужны только новые реализации интерфейсов из `src/services/`
 
 ---
 
 ## Где искать контекст
 
-- `ROADMAP.md` — активные + будущие фазы (Phase 3, 4, 5), технический долг, известные баги
-- `docs/audits/2026-07-19-project-audit-report.md` — отчёт аудита, 51/60 закрыто
-- `docs/audits/conv-1-decomposition-plan.md` — план и прогресс декомпозиции RecipesView.tsx (CONV-1)
+- `ROADMAP.md` — активные + будущие фазы (Phase 3, 4, 5), технический долг (PERF-2, PERF-5 остаток, eslint TODO), известные баги
+- `docs/audits/2026-07-19-project-audit-report.md` — отчёт аудита, закрыт полностью (60/60)
+- `docs/audits/conv-1-decomposition-plan.md` — план декомпозиции RecipesView.tsx (CONV-1), все шаги [x]
 - `Application_description.md` — бизнес-логика (6 вкладок, AI-правила, UX)
 - `Technical_Project_Documentation.md` — архитектура, стек, файловая структура, env vars
 - `docs/roadmap-archive/` — завершённые фазы (0a, 0b, 1, 2) + журнал решений
