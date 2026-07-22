@@ -10,19 +10,18 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reporter: ['text', 'lcov'],
-      include: [
-        'src/shared/domain/**',
-        'src/features/cart/services/**',
-        'src/infrastructure/firestore/converters.ts',
-        'src/infrastructure/firestore/FirestoreNutritionPlanRepository.ts',
-        'src/infrastructure/testing/**',
-        'src/app/providers/**',
-        'src/app/layout/**',
-        'src/features/recipes/useRecipeFilters.ts',
-        'src/services/ai/aiClient.ts',
-        'src/shared/utils/pdfUtils.ts',
+      // Раньше здесь был allowlist, отстававший от реального покрытия (TEST-4):
+      // отчёт молчал о фактических дырах. Берём весь src/, исключая только то,
+      // что принципиально не покрывается юнит-тестами.
+      include: ['src/**'],
+      exclude: [
+        '**/__tests__/**',
+        'src/main.tsx', // bootstrap: ReactDOM.createRoot, без логики
+        'src/infrastructure/firebaseApp.ts', // инициализация Firebase SDK по env
+        'src/test-setup.ts', // конфигурация самого тест-раннера
+        'src/vite-env.d.ts',
+        '**/*.d.ts',
       ],
-      exclude: ['**/__tests__/**'],
     },
   },
   resolve: {
