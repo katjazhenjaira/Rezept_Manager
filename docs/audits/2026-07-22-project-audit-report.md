@@ -29,7 +29,7 @@
 
 | # | Группа | Находки | Статус |
 |---|--------|---------|--------|
-| 1 | TrackerView (safety-critical) | CRIT-1, LOG-7, PERF-1 | — |
+| 1 | TrackerView (safety-critical) | CRIT-1, LOG-7, PERF-1 | ✅ |
 | 2 | PlannerView + App.tsx (safety-critical) | CRIT-2, DEAD-2, LOG-3, TS-4 | — |
 | 3 | SettingsModal | TEST-1, LOG-1 | — |
 | 4 | ProgramSelectionModal | TEST-2, LOG-2 | — |
@@ -253,6 +253,8 @@
 
 > **Проблема:** `todayEntries` (filter по всем записям планера), `checkedEntriesData` (второй filter), `actualMacros` (`sumMacros` по всем рецептам) пересчитываются на каждый рендер — включая рендеры от `isSuggesting`, `selectedSuggestionIds`, открытия модалки выбора программы. При «годах истории планера» (сценарий из PERF-2 в roadmap) это полный проход по коллекции на каждый клик чекбокса.
 > **Исправление:** `useMemo` на `todayEntries`/`actualMacros` с зависимостями `[plannerEntries, today]` и `[checkedEntriesData, recipes]` — по образцу `entriesByDate` в `PlannerView.tsx:150`.
+>
+> ✅ Исправлено (commit d8caab2)
 
 > Отложенные PERF-2 (`subscribeAll` без `limit()`) и PERF-5-остаток (`PlannerEntryCard`) из отчёта 2026-07-19 по-прежнему актуальны, но как новые находки не переоткрываются — они уже висят в «Техническом долге» `ROADMAP.md`.
 
