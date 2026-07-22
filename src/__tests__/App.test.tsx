@@ -96,4 +96,49 @@ describe('App', () => {
       expect(window.alert).not.toHaveBeenCalled();
     });
   });
+
+  describe('availableCategories из localStorage (TS-4)', () => {
+    function readCategories(): unknown {
+      return JSON.parse(screen.getByTestId('categories').textContent ?? 'null');
+    }
+
+    it('использует сохранённый список строк', () => {
+      localStorage.setItem('availableCategories', JSON.stringify(['Завтрак', 'Полдник']));
+
+      renderApp(repos);
+
+      expect(readCategories()).toEqual(['Завтрак', 'Полдник']);
+    });
+
+    it('падает на дефолт, если в localStorage не массив', () => {
+      localStorage.setItem('availableCategories', '{"a":1}');
+
+      renderApp(repos);
+
+      const categories = readCategories();
+      expect(Array.isArray(categories)).toBe(true);
+      expect(categories).toContain('Завтрак');
+    });
+
+    it('падает на дефолт, если массив содержит не-строки', () => {
+      localStorage.setItem('availableCategories', '["Завтрак", 42, null]');
+
+      renderApp(repos);
+
+      const categories = readCategories();
+      expect(Array.isArray(categories)).toBe(true);
+      expect(categories).not.toContain(42);
+      expect(categories).toContain('Обед');
+    });
+
+    it('падает на дефолт, если в localStorage невалидный JSON', () => {
+      localStorage.setItem('availableCategories', '{not json');
+
+      renderApp(repos);
+
+      const categories = readCategories();
+      expect(Array.isArray(categories)).toBe(true);
+      expect(categories).toContain('Завтрак');
+    });
+  });
 });

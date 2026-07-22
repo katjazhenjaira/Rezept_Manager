@@ -36,7 +36,13 @@ export default function App() {
     const savedCategories = localStorage.getItem('availableCategories');
     if (savedCategories) {
       try {
-        return JSON.parse(savedCategories);
+        const parsed: unknown = JSON.parse(savedCategories);
+        // localStorage правится извне: без проверки формы объект вида {"a":1} попал бы
+        // в state как string[] и уронил бы .map/.includes уже в рендере.
+        if (Array.isArray(parsed) && parsed.every((item) => typeof item === 'string')) {
+          return parsed;
+        }
+        console.error('Saved categories have unexpected shape, falling back to defaults');
       } catch (e) {
         console.error('Error parsing saved categories:', e);
       }
