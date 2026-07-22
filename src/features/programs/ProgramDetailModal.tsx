@@ -263,6 +263,7 @@ export function ProgramDetailModal(props: ProgramDetailModalProps) {
           forbiddenProducts: editFormData.forbiddenProducts,
         });
       } else {
+        if (!editingEntity.programId) return;
         const newSubfolders = program.subfolders?.map((sf) =>
           sf.id === editingEntity.id
             ? {
@@ -279,7 +280,7 @@ export function ProgramDetailModal(props: ProgramDetailModalProps) {
               }
             : sf,
         );
-        await programsRepo.update(editingEntity.programId!, { subfolders: newSubfolders });
+        await programsRepo.update(editingEntity.programId, { subfolders: newSubfolders });
       }
       setEditingEntity(null);
     } catch (error) {

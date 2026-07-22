@@ -337,6 +337,20 @@ describe('ProgramDetailModal', () => {
       });
     });
 
+    it('не пишет в репозиторий, если у редактируемой подпапки нет id программы', async () => {
+      const { repos } = renderModal({
+        program: makeProgram({ id: '', subfolders: [makeSubfolder()] }),
+      });
+      const update = vi.spyOn(repos.programs, 'update');
+
+      fireEvent.click(subfolderEditButton('Неделя 1'));
+      fillTargets(['1200', '110', '35', '100']);
+      fireEvent.click(screen.getByText('Сохранить'));
+
+      await waitFor(() => expect(screen.getByText('Сохранить')).toBeInTheDocument());
+      expect(update).not.toHaveBeenCalled();
+    });
+
     it('сообщает об ошибке и оставляет форму открытой, если запись не удалась', async () => {
       const { repos } = renderModal({ program: makeProgram() });
       vi.spyOn(repos.programs, 'update').mockRejectedValue(new Error('offline'));
