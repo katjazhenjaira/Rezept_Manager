@@ -78,6 +78,23 @@ export type RecipeFormData = {
   substitutions: string;
 };
 
+const EMPTY_FORM_DATA: RecipeFormData = {
+  title: '',
+  author: '',
+  sourceUrl: '',
+  image: null,
+  time: '',
+  servings: 2,
+  categories: [],
+  ingredients: '',
+  steps: '',
+  calories: 0,
+  proteins: 0,
+  fats: 0,
+  carbs: 0,
+  substitutions: '',
+};
+
 export type ProductFormData = {
   name: string;
   amount: string;
@@ -236,28 +253,17 @@ export function AddRecipeModals({
         }
       }
 
-      setIsAddingManual(false);
-      setEditingId(null);
-      setFormData({
-        title: '',
-        author: '',
-        sourceUrl: '',
-        image: null,
-        time: '',
-        servings: 2,
-        categories: [],
-        ingredients: '',
-        steps: '',
-        calories: 0,
-        proteins: 0,
-        fats: 0,
-        carbs: 0,
-        substitutions: '',
-      });
+      closeManualModal();
     } catch (error) {
       console.error('Error saving recipe:', error);
       alert('Ошибка при сохранении рецепта');
     }
+  };
+
+  const closeManualModal = () => {
+    setIsAddingManual(false);
+    setEditingId(null);
+    setFormData(EMPTY_FORM_DATA);
   };
 
   const analyzePhoto = async (
@@ -796,7 +802,7 @@ export function AddRecipeModals({
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              onClick={() => setIsAddingManual(false)}
+              onClick={closeManualModal}
               className="absolute inset-0 bg-zinc-900/60 backdrop-blur-sm"
             />
             <motion.div
@@ -819,10 +825,7 @@ export function AddRecipeModals({
                   {editingId ? 'Редактировать рецепт' : 'Новый рецепт'}
                 </h3>
                 <button
-                  onClick={() => {
-                    setIsAddingManual(false);
-                    setEditingId(null);
-                  }}
+                  onClick={closeManualModal}
                   className="text-zinc-400 hover:text-zinc-600"
                 >
                   <Plus className="w-6 h-6 rotate-45" />
@@ -1127,10 +1130,7 @@ export function AddRecipeModals({
                 <div className="pt-6 flex gap-4">
                   <button
                     type="button"
-                    onClick={() => {
-                      setIsAddingManual(false);
-                      setEditingId(null);
-                    }}
+                    onClick={closeManualModal}
                     className="flex-1 px-4 py-4 border border-zinc-200 rounded-2xl font-bold hover:bg-zinc-50 transition-colors text-zinc-600"
                   >
                     Отмена
