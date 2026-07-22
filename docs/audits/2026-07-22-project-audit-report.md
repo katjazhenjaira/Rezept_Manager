@@ -62,6 +62,8 @@
 > **Проблема:** `PlannerView` принимает проп `activeNutritionPlan` (объявлен в `PlannerViewProps:53`, передаётся из `App.tsx:196`), но **не деструктурирует и не использует его**. Индикатор превышения лимита считается от `userProfile.targetCalories/targetProteins/targetFats/targetCarbs`. `TrackerView.tsx:72` для тех же данных использует `resolveActiveTargets(activeNutritionPlan, profile)`.
 > **Почему важно:** Нарушение constraint №2 («KBZHU consistency — суммы калорий и макросов в Planner, Tracker и Programs должны оставаться синхронными») и №3 («Active program overrides profile goals»). При активной программе «Сушка» (1400 ккал) Планер продолжает подсвечивать красным по цели профиля (1800 ккал): один и тот же день выглядит «в норме» в Планере и «превышено» в Трекере.
 > **Исправление:** В `PlannerView` заменить прямое чтение `userProfile.target*` на `resolveActiveTargets(activeNutritionPlan, userProfile)` — функция уже существует и покрыта тестами. Добавить регрессионный тест на согласованность Planner/Tracker при активном плане.
+>
+> ✅ Исправлено (commit 3479069)
 
 ---
 
