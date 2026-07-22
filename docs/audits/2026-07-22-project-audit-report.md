@@ -87,6 +87,8 @@
 
 > **Проблема:** Таблица `src/features/` указывает для `tracker/` файлы «TrackerView.tsx, **AISuggestModal.tsx**, ProgramSelectionModal.tsx». Файла `AISuggestModal.tsx` не существует — вся логика AI-подсказок живёт внутри `TrackerView.tsx` (строки 75-139 и JSX 374-466).
 > **Исправление:** Убрать `AISuggestModal.tsx` из таблицы (либо выделить компонент, если декомпозиция планируется).
+>
+> ✅ Исправлено (commit 9ac6944) — строка `tracker/` приведена к факту, добавлено пояснение, что UI AI-подсказок живёт inline в `TrackerView.tsx`. Декомпозиция не планировалась. Заодно проверено, что таблица `src/features/` отражает файлы, добавленные при проработке этого аудита (`cart/CartItemRow.tsx`, `app/layout/DataErrorBanner.tsx` — уже присутствуют).
 
 **[DOC-4]** `Technical_Project_Documentation.md:38,350`
 
