@@ -248,6 +248,8 @@
 
 > **Проблема:** `content.items.map((item: any) => item.str)` — явный `any` на параметре; `TextItem` из `pdfjs-dist` даёт `.str` типизированно.
 > **Исправление:** `(item) => ('str' in item ? item.str : '')` с типом `TextItem | TextMarkedContent`.
+>
+> ✅ Исправлено (commit 7b08cb2)
 
 **[TS-3]** `src/features/programs/ProgramDetailModal.tsx:264`
 
