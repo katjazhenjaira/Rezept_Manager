@@ -80,6 +80,8 @@
 
 > **Проблема:** В §9 «Что покрыто» тот же несуществующий `src/infrastructure/LocalStorageNutritionPlanRepository.ts` указан как покрытый тестами.
 > **Исправление:** Убрать пункт.
+>
+> ✅ Исправлено (commit 0ffe022)
 
 **[DOC-3]** `Technical_Project_Documentation.md:158`
 
