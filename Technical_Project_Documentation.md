@@ -204,6 +204,9 @@ StrictMode
 | `src/middleware/rateLimit.ts`         | Счётчик по календарной минуте: 10 req/min на IP через KV (ключ `rate:{ip}:{Math.floor(Date.now()/60000)}`) |
 | `src/helpers/generateImageDataUri.ts` | Хелпер генерации data URI через Gemini                                                                     |
 | `src/types.ts`                        | Env type: GEMINI_API_KEY (secret), RATE_LIMIT_KV (KV binding)                                              |
+| `tsconfig.json`                       | `include` содержит `../src/services/ai/contracts.ts` — см. «Общий контракт фронтенд↔воркер» ниже           |
+
+**Общий контракт фронтенд↔воркер.** `worker/` — отдельный npm-пакет (свой `package.json`, `tsconfig.json`, свой прогон vitest), но DTO AI-маршрутов **не дублируются**: все 6 роутов делают `import type { … } from '../../../src/services/ai/contracts'`, а `worker/tsconfig.json` явно добавляет этот файл в `include`, чтобы `tsc --noEmit` воркера видел его вне своего rootDir. Связь только на уровне типов — рантайм-зависимости от `src/` у воркера нет, в бандл wrangler ничего из фронтенда не попадает (`import type` стирается на компиляции). Практическое следствие: **`src/services/ai/contracts.ts` — единственный источник истины для Request/Response обеих сторон**; ломающее изменение DTO ловится typecheck-ом в обоих пакетах сразу, поэтому править контракт нужно вместе с прогоном `npm run lint` и `npm --prefix worker run typecheck`.
 
 ### `scripts/` — служебные скрипты (запускаются вручную, вне сборки приложения)
 
