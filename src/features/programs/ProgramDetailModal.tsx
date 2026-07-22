@@ -196,7 +196,7 @@ export function ProgramDetailModal(props: ProgramDetailModalProps) {
     }
   };
 
-  const handleSubfolderPdfUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleSubfolderPdfUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     const newResource: Resource = {
@@ -212,20 +212,25 @@ export function ProgramDetailModal(props: ProgramDetailModalProps) {
       return;
     }
     if (activeResourceForm) {
-      if (activeResourceForm.targetId === 'main') {
-        void programsRepo.update(program.id, {
-          resources: [...(program.resources || []), newResource],
-        });
-      } else {
-        const newSubfolders = program.subfolders?.map((sf) =>
-          sf.id === activeResourceForm.targetId
-            ? { ...sf, resources: [...(sf.resources || []), newResource] }
-            : sf,
-        );
-        void programsRepo.update(program.id, { subfolders: newSubfolders });
+      try {
+        if (activeResourceForm.targetId === 'main') {
+          await programsRepo.update(program.id, {
+            resources: [...(program.resources || []), newResource],
+          });
+        } else {
+          const newSubfolders = program.subfolders?.map((sf) =>
+            sf.id === activeResourceForm.targetId
+              ? { ...sf, resources: [...(sf.resources || []), newResource] }
+              : sf,
+          );
+          await programsRepo.update(program.id, { subfolders: newSubfolders });
+        }
+        setActiveResourceForm(null);
+        alert(`Файл ${file.name} загружен`);
+      } catch (error) {
+        console.error('Error attaching resource:', error);
+        alert('Ошибка при добавлении файла');
       }
-      setActiveResourceForm(null);
-      alert(`Файл ${file.name} загружен`);
     }
   };
 

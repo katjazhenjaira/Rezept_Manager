@@ -410,4 +410,38 @@ describe('ProgramDetailModal', () => {
       consoleError.mockRestore();
     });
   });
+
+  describe('handleSubfolderPdfUpload — прикрепление документа', () => {
+    function fileInput(container: HTMLElement): HTMLInputElement {
+      const input = container.querySelector<HTMLInputElement>('input[type="file"]');
+      if (!input) throw new Error('Скрытый file-input не найден');
+      return input;
+    }
+
+    it('кладёт документ в форму редактирования, ничего не записывая в репозиторий', async () => {
+      const { container, repos } = renderModal({ program: makeProgram() });
+      const update = vi.spyOn(repos.programs, 'update');
+
+      fireEvent.click(screen.getByTitle('Редактировать программу'));
+      fireEvent.change(fileInput(container), {
+        target: { files: [new File(['%PDF'], 'plan.pdf', { type: 'application/pdf' })] },
+      });
+
+      expect(await screen.findByText('plan.pdf')).toBeInTheDocument();
+      expect(update).not.toHaveBeenCalled();
+    });
+
+    it('игнорирует выбор файла, когда форма редактирования закрыта', async () => {
+      const { container, repos } = renderModal({ program: makeProgram() });
+      const update = vi.spyOn(repos.programs, 'update');
+
+      fireEvent.change(fileInput(container), {
+        target: { files: [new File(['%PDF'], 'plan.pdf', { type: 'application/pdf' })] },
+      });
+
+      await Promise.resolve();
+      expect(update).not.toHaveBeenCalled();
+      expect(globalThis.alert).not.toHaveBeenCalled();
+    });
+  });
 });
