@@ -89,6 +89,8 @@
 > **Исправление:** Убрать `AISuggestModal.tsx` из таблицы (либо выделить компонент, если декомпозиция планируется).
 >
 > ✅ Исправлено (commit 9ac6944) — строка `tracker/` приведена к факту, добавлено пояснение, что UI AI-подсказок живёт inline в `TrackerView.tsx`. Декомпозиция не планировалась. Заодно проверено, что таблица `src/features/` отражает файлы, добавленные при проработке этого аудита (`cart/CartItemRow.tsx`, `app/layout/DataErrorBanner.tsx` — уже присутствуют).
+>
+> ➕ Дополнительно (commit 90b104a): grep выявил **второе** упоминание того же удалённого файла, не указанное в находке — §3 «Data flow» → «AI fill remaining КБЖУ», шаг 4 (`AISuggestModal` → выбор → `plannerRepo.add()`). Приведено к факту: inline-UI подсказок в `TrackerView` → allergy-гейт (`recipeAllergens`/`productAllergens` + `confirm`, добавлен при проработке CRIT-1) → `plannerRepo.add()`.
 
 **[DOC-4]** `Technical_Project_Documentation.md:38,350`
 
