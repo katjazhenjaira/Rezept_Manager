@@ -358,6 +358,7 @@ npm run test:worker      # то же, из корня
 - `src/App.tsx` — deep-link на программу (ошибка загрузки), валидация `availableCategories` из localStorage
 - `src/features/planner/` — PlannerView smoke tests + лимиты КБЖУ от активной программы
 - `src/features/tracker/` — TrackerView smoke tests; ProgramSelectionModal: сброс на «По умолчанию», выбор программы и подпапки с цепочкой наследования КБЖУ (подпапка → программа → профиль → 0), создание своего плана
+- `src/features/programs/` — ProgramDetailModal: drag-n-drop перенос рецептов (корень ↔ подпапки, между подпапками, no-op при совпадении источника и цели), редактирование целей и ограничений программы/подпапки (успех и ошибка записи), добавление продуктов программы в корзину (разбор «название + количество», пометка базовых, ошибка записи)
 - `src/features/settings/` — SettingsModal: toggle пресетных и своих аллергий → `saveUserProfile`, сохранение профиля (успех/ошибка), управление категориями, смена языка, выход из аккаунта
 - `worker/src/helpers/` — `validateExternalUrl` (SSRF-набор: протоколы, localhost/*.local, приватные IPv4/IPv6, IPv4-mapped и IPv4-compatible формы), `safeFetch` (ревалидация каждого redirect-хопа, блок редиректа на приватный хост), `timeout` (`isTimeoutError`, `UPSTREAM_TIMEOUT_MS`), `generateImageDataUri`
 - `worker/src/middleware/rateLimit.ts` — лимит через fake KV (счётчик, TTL, 429, минутные бакеты, X-Forwarded-For)
