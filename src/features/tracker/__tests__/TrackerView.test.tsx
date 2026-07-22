@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { DataContext } from '@/app/providers/DataContext';
 import { UserProfileContext } from '@/app/providers/UserProfileContext';
@@ -13,21 +13,37 @@ import { FakeUserProfileRepository } from '@/infrastructure/testing/FakeUserProf
 import { FakeNutritionPlanRepository } from '@/infrastructure/testing/FakeNutritionPlanRepository';
 import type { UserProfile, ActiveNutritionPlan, PlannerEntry, Recipe } from '@/shared/domain/types';
 import type { DataState } from '@/app/providers/DataContext';
-import type { TrackerViewProps } from '../TrackerView';
+import { TrackerView, type TrackerViewProps } from '../TrackerView';
+import { aiClient } from '@/services/ai/aiClient';
+import type { FillRemainingResponse } from '@/services/ai/contracts';
+
+const defaultSuggestion: FillRemainingResponse = {
+  options: [
+    {
+      id: 'opt-1',
+      type: 'product',
+      description: 'Творог 5%',
+      macros: { calories: 120, proteins: 18, fats: 5, carbs: 3 },
+    },
+    {
+      id: 'opt-2',
+      type: 'product',
+      description: 'Яблоко',
+      macros: { calories: 80, proteins: 0, fats: 0, carbs: 20 },
+    },
+    {
+      id: 'opt-3',
+      type: 'product',
+      description: 'Куриное филе 100 г',
+      macros: { calories: 165, proteins: 31, fats: 4, carbs: 0 },
+    },
+  ],
+  reason: 'Хороший источник белка',
+};
 
 vi.mock('@/services/ai/aiClient', () => ({
   aiClient: {
-    fillRemaining: vi.fn().mockResolvedValue({
-      options: [
-        {
-          id: 'opt-1',
-          type: 'product',
-          description: 'Творог 5%',
-          macros: { calories: 120, proteins: 18, fats: 5, carbs: 3 },
-        },
-      ],
-      reason: 'Хороший источник белка',
-    }),
+    fillRemaining: vi.fn(),
   },
 }));
 
@@ -88,13 +104,13 @@ const fakeRepos = {
   nutritionPlan: new FakeNutritionPlanRepository(),
 };
 
-function makeWrapper(data: typeof emptyData) {
+function makeWrapper(data: typeof emptyData, profile: UserProfile | null = mockProfile) {
   return function Wrapper({ children }: { children: ReactNode }) {
     return (
       <RepositoryContext.Provider value={fakeRepos}>
         <UserProfileContext.Provider
           value={{
-            userProfile: mockProfile,
+            userProfile: profile,
             saveUserProfile: mockSaveUserProfile,
             activeNutritionPlan: mockNutritionPlan,
             setActivePlan: mockSetActivePlan,
@@ -107,9 +123,46 @@ function makeWrapper(data: typeof emptyData) {
   };
 }
 
+const profileWithAllergy: UserProfile = { ...mockProfile, allergies: ['молоко'] };
+
+const milkRecipe: Recipe = {
+  id: 'r-milk',
+  title: 'Молочная каша',
+  macros: { calories: 300, proteins: 10, fats: 8, carbs: 45 },
+  ingredients: ['Овсяные хлопья 60 г', 'Молоко 200 мл'],
+  steps: [],
+  categories: [],
+  time: '10 мин',
+  servings: 1,
+  createdAt: new Date().toISOString(),
+};
+
+const dataWithMilkRecipe: DataState = {
+  recipes: [milkRecipe],
+  plannerEntries: [],
+  cartItems: [],
+  programs: [],
+};
+
+/** Прогоняет сценарий «получить AI-подсказку → выбрать её → добавить в рацион». */
+async function suggestAndAdd(optionLabel: string) {
+  fireEvent.click(screen.getByText(/заполнить остаток кбжу/i));
+  const option = await screen.findByText(optionLabel);
+  fireEvent.click(option);
+  fireEvent.click(screen.getByText(/добавить в рацион/i));
+}
+
 describe('TrackerView', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    fakeRepos.planner.reset();
+    vi.mocked(aiClient.fillRemaining).mockResolvedValue(defaultSuggestion);
+    vi.stubGlobal('alert', vi.fn());
+    vi.stubGlobal('confirm', vi.fn(() => true));
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
   });
 
   it('renders without crashing', async () => {
@@ -193,5 +246,109 @@ describe('TrackerView', () => {
 
     fireEvent.click(screen.getByText(/перейти в планер/i));
     expect(onNavigateToPlanner).toHaveBeenCalledOnce();
+  });
+
+  // CRIT-1: safety-critical constraint №1 — allergy check обязателен перед добавлением
+  // AI-подсказки в планер (Tracker / AI-suggestions).
+  describe('allergy-гейт для AI-подсказок', () => {
+    function renderWithSuggestion(data: DataState = emptyData) {
+      const Wrapper = makeWrapper(data, profileWithAllergy);
+      return render(
+        <Wrapper>
+          <TrackerView
+            checkedEntries={[]}
+            onCheckedEntriesChange={vi.fn()}
+            mealTypes={['Завтрак', 'Обед', 'Ужин', 'Перекус']}
+            onSelectRecipe={vi.fn()}
+            onNavigateToPlanner={vi.fn()}
+          />
+        </Wrapper>,
+      );
+    }
+
+    it('не добавляет продукт с аллергеном, если пользователь отменил confirm', async () => {
+      vi.mocked(aiClient.fillRemaining).mockResolvedValue({
+        ...defaultSuggestion,
+        options: [
+          {
+            id: 'opt-milk',
+            type: 'product',
+            description: 'Молоко 3.2%, 200 мл',
+            macros: { calories: 120, proteins: 6, fats: 6, carbs: 9 },
+          },
+          defaultSuggestion.options[1],
+          defaultSuggestion.options[2],
+        ],
+      });
+      vi.mocked(confirm).mockReturnValue(false);
+      const addSpy = vi.spyOn(fakeRepos.planner, 'add');
+
+      renderWithSuggestion();
+      await suggestAndAdd('Молоко 3.2%, 200 мл');
+
+      await waitFor(() => expect(confirm).toHaveBeenCalled());
+      expect(vi.mocked(confirm).mock.calls[0]?.[0]).toContain('молоко');
+      expect(addSpy).not.toHaveBeenCalled();
+    });
+
+    it('не добавляет рецепт с аллергеном в ингредиентах, если пользователь отменил confirm', async () => {
+      vi.mocked(aiClient.fillRemaining).mockResolvedValue({
+        ...defaultSuggestion,
+        options: [
+          {
+            id: 'opt-recipe',
+            type: 'recipe',
+            recipeId: 'r-milk',
+            description: 'Молочная каша',
+            macros: milkRecipe.macros,
+          },
+          defaultSuggestion.options[1],
+          defaultSuggestion.options[2],
+        ],
+      });
+      vi.mocked(confirm).mockReturnValue(false);
+      const addSpy = vi.spyOn(fakeRepos.planner, 'add');
+
+      renderWithSuggestion(dataWithMilkRecipe);
+      await suggestAndAdd('Молочная каша');
+
+      await waitFor(() => expect(confirm).toHaveBeenCalled());
+      expect(vi.mocked(confirm).mock.calls[0]?.[0]).toContain('молоко');
+      expect(addSpy).not.toHaveBeenCalled();
+    });
+
+    it('добавляет вариант с аллергеном, если пользователь подтвердил confirm', async () => {
+      vi.mocked(aiClient.fillRemaining).mockResolvedValue({
+        ...defaultSuggestion,
+        options: [
+          {
+            id: 'opt-milk',
+            type: 'product',
+            description: 'Молоко 3.2%, 200 мл',
+            macros: { calories: 120, proteins: 6, fats: 6, carbs: 9 },
+          },
+          defaultSuggestion.options[1],
+          defaultSuggestion.options[2],
+        ],
+      });
+      vi.mocked(confirm).mockReturnValue(true);
+      const addSpy = vi.spyOn(fakeRepos.planner, 'add');
+
+      renderWithSuggestion();
+      await suggestAndAdd('Молоко 3.2%, 200 мл');
+
+      await waitFor(() => expect(addSpy).toHaveBeenCalledOnce());
+      expect(confirm).toHaveBeenCalled();
+    });
+
+    it('не спрашивает подтверждение для варианта без аллергенов', async () => {
+      const addSpy = vi.spyOn(fakeRepos.planner, 'add');
+
+      renderWithSuggestion();
+      await suggestAndAdd('Яблоко');
+
+      await waitFor(() => expect(addSpy).toHaveBeenCalledOnce());
+      expect(confirm).not.toHaveBeenCalled();
+    });
   });
 });

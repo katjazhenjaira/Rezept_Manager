@@ -25,6 +25,7 @@ import {
   resolveActiveTargets,
 } from '@/shared/domain/macros';
 import { DEFAULT_PROFILE } from '@/shared/domain/defaults';
+import { recipeAllergens, productAllergens } from '@/shared/domain/allergies';
 import type { Recipe } from '@/shared/domain/types';
 import type { FillRemainingResponse, FillRemainingOption } from '@/services/ai/contracts';
 
@@ -117,6 +118,30 @@ export function TrackerView({
     const selectedOptions = suggestion.options.filter((opt) =>
       selectedSuggestionIds.includes(opt.id),
     );
+
+    // Safety-critical constraint №1: AI получает список аллергий в промпте, но это доверие
+    // к модели, а не гейт. Детерминированная проверка обязана быть здесь, перед записью.
+    const allergies = userProfile?.allergies ?? [];
+    const allergens = new Set<string>();
+    for (const option of selectedOptions) {
+      if (option.type === 'recipe') {
+        const recipe = recipes.find((r) => r.id === option.recipeId);
+        if (recipe) {
+          recipeAllergens(recipe, allergies).forEach((a) => allergens.add(a));
+        }
+      } else {
+        productAllergens(option.description, allergies).forEach((a) => allergens.add(a));
+      }
+    }
+    if (allergens.size > 0) {
+      if (
+        !confirm(
+          `Осторожно! Среди выбранных вариантов есть ингредиенты, на которые у вас аллергия: ${[...allergens].join(', ')}. Все равно добавить?`,
+        )
+      ) {
+        return;
+      }
+    }
 
     try {
       for (const option of selectedOptions) {
