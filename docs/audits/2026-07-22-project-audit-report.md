@@ -73,6 +73,8 @@
 
 > **Проблема:** В таблице «`src/infrastructure/` — реализации» присутствует строка `LocalStorageNutritionPlanRepository.ts`. Файл удалён при проработке DEAD-1 аудита 2026-07-19; в репозитории его нет.
 > **Исправление:** Убрать строку из таблицы.
+>
+> ✅ Исправлено (commit 7cddd06)
 
 **[DOC-2]** `Technical_Project_Documentation.md:355`
 
