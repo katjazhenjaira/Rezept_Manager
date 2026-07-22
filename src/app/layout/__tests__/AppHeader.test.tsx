@@ -51,6 +51,9 @@ describe('AppHeader', () => {
 
     await waitFor(() => expect(i18n.language).toBe('de'));
     expect(localStorage.getItem(STORAGE_KEY)).toBe('de');
-    expect(screen.queryByText('Deutsch')).not.toBeInTheDocument();
+    // Закрытие дропдауна — состояние React, а смена языка в i18next резолвится
+    // отдельным промисом: синхронная проверка успевает поймать ещё не применённый
+    // ререндер, поэтому ждём исчезновения пункта, а не утверждаем его сразу.
+    await waitFor(() => expect(screen.queryByText('Deutsch')).not.toBeInTheDocument());
   });
 });

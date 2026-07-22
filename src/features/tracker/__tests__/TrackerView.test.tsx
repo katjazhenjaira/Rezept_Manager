@@ -18,6 +18,7 @@ import { aiClient } from '@/services/ai/aiClient';
 import type { FillRemainingResponse } from '@/services/ai/contracts';
 import { DEFAULT_PROFILE } from '@/shared/domain/defaults';
 import { sumMacros } from '@/shared/domain/macros';
+import { format } from 'date-fns';
 
 const defaultSuggestion: FillRemainingResponse = {
   options: [
@@ -74,7 +75,10 @@ const mockNutritionPlan: ActiveNutritionPlan | null = null;
 const mockSetActivePlan = vi.fn().mockResolvedValue(undefined);
 const mockSaveUserProfile = vi.fn().mockResolvedValue(undefined);
 
-const today = new Date().toISOString().slice(0, 10);
+// TrackerView определяет «сегодня» через локальную дату (date-fns format), поэтому
+// toISOString() здесь непригоден: в окне между локальной полуночью и полуночью UTC
+// он даёт вчерашнюю дату, и записи планера перестают совпадать с фикстурой.
+const today = format(new Date(), 'yyyy-MM-dd');
 
 const mockRecipe: Recipe = {
   id: 'r1',
