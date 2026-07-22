@@ -199,6 +199,8 @@
 
 > **Проблема:** Семь пропов — `recipeTarget`, `onRecipeTargetCleared`, `isAddingManual`, `isAddingLink`, `isAddingPDF`, `isScanning`, `onIsScanningChange` — объявлены в `ProgramDetailModalProps`, прокинуты по цепочке `App → ProgramsView → ProgramDetailModal`, но в самом `ProgramDetailModal` не деструктурируются (строки 78-92) и не читаются через `props.` (обращений `props.` в файле нет вообще). Живой prop-drilling через три уровня в никуда.
 > **Исправление:** Убрать семь пропов из типа и из места передачи в `ProgramsView.tsx`.
+>
+> ✅ Исправлено (commit 290f9f8)
 
 **[DEAD-2]** `src/features/planner/PlannerView.tsx:53-55`
 
