@@ -163,7 +163,7 @@ StrictMode
 
 | Файл                      | Роль                                                                                                                                                                 |
 | ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `RecipesView.tsx`         | Оркестратор (333 строки): состояние формы add/edit, `toggleFavorite`, `handleEdit`, единственный вызов `useRecipeFilters`, JSX-скелет (toolbar/sidebar/grid/модалки) |
+| `RecipesView.tsx`         | Оркестратор: состояние формы add/edit, `toggleFavorite`, `handleEdit`, единственный вызов `useRecipeFilters`, JSX-скелет (toolbar/sidebar/grid/модалки) |
 | `RecipesEmptyState.tsx`   | Пустое состояние библиотеки (4 CTA: фото/PDF/ссылка/вручную)                                                                                                         |
 | `RecipeCard.tsx`          | Карточка рецепта в гриде: drag-start, selection-mode чекбокс, allergen-бейдж, favorite-toggle                                                                        |
 | `useRecipeFilters.ts`     | Вся логика поиска/фильтрации/сортировки рецептов; вызывается ровно один раз, в `RecipesView.tsx`                                                                     |
@@ -404,7 +404,7 @@ npm run test:worker      # то же, из корня
 | Firestore: не хранить base64-картинки       | Лимит документа ~1 МБ; AI-generated images ~700 КБ+             | Решено (CRIT-1): `resolveImageField()` (`src/infrastructure/firebaseStorage.ts`) грузит `data:` URI в Firebase Storage, в Firestore пишется только URL |
 | `GEMINI_API_KEY` только в Cloudflare secret | Безопасность — ключ не должен попасть в клиентский бандл        | Всегда через Worker proxy `/api/ai/*`                                                                                                                  |
 | Canvas API недоступен в Cloudflare Worker   | Workers runtime не поддерживает Canvas                          | PDF-операции (`extractImageFromPDF`) только на клиенте через `pdfjs-dist`                                                                              |
-| `App.tsx` < 300 строк (не < 200)            | Достигнуто 277; < 200 требует отдельного RecipeSelectionContext | Запланировано как future TODO                                                                                                                          |
+| `App.tsx` < 300 строк (не < 200)            | Цель декомпозиции — держать `App.tsx` под 300 строк; сейчас в пределах цели, но запас мал (на 2026-07-22 — 297 строк, проверять `wc -l src/App.tsx`). Порог < 200 требует отдельного RecipeSelectionContext | Запланировано как future TODO                                                                                                                          |
 
 ---
 
