@@ -127,6 +127,8 @@
 > **Проблема:** Все 7 числовых полей профиля пишут результат `parseInt`/`parseFloat` без fallback: `age: parseInt(e.target.value)`. Очистка поля даёт `NaN`, который попадает в `userProfile` и далее в `saveUserProfile()` → Firestore.
 > **Почему важно:** `NaN` в `targetCalories` разносится по `resolveActiveTargets()` → `remainingMacros()` → прогресс-бары Трекера и лимиты Планера отображают `NaN`, а `Math.min(100, (actual / NaN) * 100)` даёт `NaN` в `style.width`. Восстановить значение можно только повторным вводом.
 > **Исправление:** `parseInt(e.target.value) || 0` (как уже сделано в `ProgramSelectionModal.tsx:144`), либо валидация формы перед `saveUserProfile`.
+>
+> ✅ Исправлено (commit 3502e2a)
 
 **[LOG-2]** `src/features/tracker/ProgramSelectionModal.tsx:313`
 
