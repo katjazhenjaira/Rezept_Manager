@@ -145,40 +145,44 @@ describe('useRecipeFilters', () => {
   });
 
   describe('sorting', () => {
+    // date-rank, time-rank, and calorie-rank are mutually different permutations here
+    // (r1/r2/r3 never occupy the same relative order twice), so each sort mode gets a
+    // unique expected id-order below — a mode that fell back to sorting by the wrong
+    // field would fail instead of accidentally matching another mode's expectation.
     const recipes = [
       makeRecipe({
         id: 'r1',
         title: 'A',
-        createdAt: '2026-01-01',
-        time: '30 мин',
-        macros: { calories: 300, proteins: 1, fats: 1, carbs: 1 },
+        createdAt: '2026-03-01', // newest
+        time: '60 мин', // longest
+        macros: { calories: 300, proteins: 1, fats: 1, carbs: 1 }, // middle
       }),
       makeRecipe({
         id: 'r2',
         title: 'B',
-        createdAt: '2026-03-01',
-        time: '10 мин',
-        macros: { calories: 100, proteins: 1, fats: 1, carbs: 1 },
+        createdAt: '2026-02-01', // middle
+        time: '10 мин', // shortest
+        macros: { calories: 400, proteins: 1, fats: 1, carbs: 1 }, // highest
       }),
       makeRecipe({
         id: 'r3',
         title: 'C',
-        createdAt: '2026-02-01',
-        time: '20 мин',
-        macros: { calories: 200, proteins: 1, fats: 1, carbs: 1 },
+        createdAt: '2026-01-01', // oldest
+        time: '30 мин', // middle
+        macros: { calories: 100, proteins: 1, fats: 1, carbs: 1 }, // lowest
       }),
     ];
 
     it('newest sorts by createdAt descending', () => {
       const { result } = renderHook(() => useRecipeFilters(recipes, []));
       act(() => result.current.setFilterSortBy('newest'));
-      expect(result.current.filteredRecipes.map((r) => r.id)).toEqual(['r2', 'r3', 'r1']);
+      expect(result.current.filteredRecipes.map((r) => r.id)).toEqual(['r1', 'r2', 'r3']);
     });
 
     it('oldest sorts by createdAt ascending', () => {
       const { result } = renderHook(() => useRecipeFilters(recipes, []));
       act(() => result.current.setFilterSortBy('oldest'));
-      expect(result.current.filteredRecipes.map((r) => r.id)).toEqual(['r1', 'r3', 'r2']);
+      expect(result.current.filteredRecipes.map((r) => r.id)).toEqual(['r3', 'r2', 'r1']);
     });
 
     it('time sorts by parseInt(time) ascending', () => {
@@ -190,7 +194,7 @@ describe('useRecipeFilters', () => {
     it('calories sorts ascending', () => {
       const { result } = renderHook(() => useRecipeFilters(recipes, []));
       act(() => result.current.setFilterSortBy('calories'));
-      expect(result.current.filteredRecipes.map((r) => r.id)).toEqual(['r2', 'r3', 'r1']);
+      expect(result.current.filteredRecipes.map((r) => r.id)).toEqual(['r3', 'r1', 'r2']);
     });
   });
 
