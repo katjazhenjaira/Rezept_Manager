@@ -136,7 +136,10 @@ export default function App() {
           alert('Программа не найдена.');
         }
       };
-      handleSharedProgram();
+      void handleSharedProgram().catch((error) => {
+        console.error('Error loading shared program:', error);
+        alert('Не удалось загрузить программу.');
+      });
     }
   }, [programsRepo]);
 
