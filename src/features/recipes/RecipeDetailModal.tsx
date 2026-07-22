@@ -79,10 +79,15 @@ export function RecipeDetailModal({
 
   // ─── Handlers ────────────────────────────────────────────────────────────────
 
-  const handleShareRecipe = () => {
+  const handleShareRecipe = async () => {
     const shareUrl = `${window.location.origin}${window.location.pathname}?recipeId=${recipe.id}`;
-    navigator.clipboard.writeText(shareUrl);
-    alert('Ссылка скопирована в буфер обмена!');
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      alert('Ссылка скопирована в буфер обмена!');
+    } catch (error) {
+      console.error('Error copying share link:', error);
+      alert('Не удалось скопировать ссылку');
+    }
   };
 
   const handleAddToPlanner = async (date: string, mealType: string) => {
@@ -284,7 +289,7 @@ export function RecipeDetailModal({
                 <span className="text-[10px] sm:text-xs font-bold">Сборники</span>
               </button>
               <button
-                onClick={() => handleShareRecipe()}
+                onClick={() => void handleShareRecipe()}
                 className="flex flex-col items-center justify-center p-3 sm:p-4 bg-white border border-zinc-100 rounded-2xl text-zinc-600 hover:bg-zinc-50 transition-all gap-2"
               >
                 <Share2 className="w-5 h-5 sm:w-6 sm:h-6" />
@@ -368,9 +373,7 @@ export function RecipeDetailModal({
                     <h4 className="font-bold text-emerald-900">Добавить в план питания</h4>
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <label className="text-xs font-bold text-emerald-700 uppercase">
-                          День
-                        </label>
+                        <label className="text-xs font-bold text-emerald-700 uppercase">День</label>
                         <input
                           type="date"
                           value={planDetails.day}
@@ -384,9 +387,7 @@ export function RecipeDetailModal({
                         </label>
                         <select
                           value={planDetails.meal}
-                          onChange={(e) =>
-                            setPlanDetails({ ...planDetails, meal: e.target.value })
-                          }
+                          onChange={(e) => setPlanDetails({ ...planDetails, meal: e.target.value })}
                           className="w-full bg-white border border-emerald-200 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-emerald-500"
                         >
                           <option>Завтрак</option>
@@ -450,9 +451,7 @@ export function RecipeDetailModal({
                         </div>
                         <div>
                           <p className="text-xs text-emerald-800/60 mb-0.5">Жиры</p>
-                          <p className="font-bold text-lg text-emerald-900">
-                            {scaledMacros.fats}г
-                          </p>
+                          <p className="font-bold text-lg text-emerald-900">{scaledMacros.fats}г</p>
                         </div>
                         <div>
                           <p className="text-xs text-emerald-800/60 mb-0.5">Углеводы</p>
@@ -567,9 +566,7 @@ export function RecipeDetailModal({
                       <Activity className="w-4 h-4 text-emerald-500" />
                       Замена ингредиентов и советы
                     </h4>
-                    <p className="text-zinc-600 text-sm leading-relaxed">
-                      {recipe.substitutions}
-                    </p>
+                    <p className="text-zinc-600 text-sm leading-relaxed">{recipe.substitutions}</p>
                   </div>
                 )}
 

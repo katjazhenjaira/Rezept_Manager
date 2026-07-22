@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
-import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { describe, it, expect, vi, afterEach } from 'vitest';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { RepositoryContext } from '@/app/providers/RepositoryContext';
 import { FakeRecipesRepository } from '@/infrastructure/testing/FakeRecipesRepository';
@@ -133,5 +133,59 @@ describe('RecipeDetailModal', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'В избранное' }));
     expect(onToggleFavorite).toHaveBeenCalledWith('r1');
+  });
+
+  describe('handleShareRecipe — копирование ссылки', () => {
+    function renderModal() {
+      render(
+        <Wrapper>
+          <RecipeDetailModal
+            recipe={recipe}
+            programs={[]}
+            userProfile={mockProfile}
+            onSelectedRecipeChange={vi.fn()}
+            onToggleFavorite={vi.fn()}
+            onEdit={vi.fn()}
+            onDeleteRequested={vi.fn()}
+          />
+        </Wrapper>,
+      );
+    }
+
+    afterEach(() => {
+      vi.unstubAllGlobals();
+    });
+
+    it('сообщает об успехе только после успешной записи в буфер обмена', async () => {
+      const writeText = vi.fn<(text: string) => Promise<void>>().mockResolvedValue(undefined);
+      vi.stubGlobal('navigator', { clipboard: { writeText } });
+      const alertMock = vi.fn();
+      vi.stubGlobal('alert', alertMock);
+
+      renderModal();
+      fireEvent.click(screen.getByRole('button', { name: 'Поделиться' }));
+
+      await waitFor(() =>
+        expect(alertMock).toHaveBeenCalledWith('Ссылка скопирована в буфер обмена!'),
+      );
+      expect(writeText).toHaveBeenCalledWith(expect.stringContaining('?recipeId=r1'));
+    });
+
+    it('сообщает об ошибке, если буфер обмена недоступен', async () => {
+      const writeText = vi
+        .fn<(text: string) => Promise<void>>()
+        .mockRejectedValue(new Error('denied'));
+      vi.stubGlobal('navigator', { clipboard: { writeText } });
+      const alertMock = vi.fn();
+      vi.stubGlobal('alert', alertMock);
+      const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+      renderModal();
+      fireEvent.click(screen.getByRole('button', { name: 'Поделиться' }));
+
+      await waitFor(() => expect(alertMock).toHaveBeenCalledWith('Не удалось скопировать ссылку'));
+      expect(alertMock).not.toHaveBeenCalledWith('Ссылка скопирована в буфер обмена!');
+      consoleError.mockRestore();
+    });
   });
 });
