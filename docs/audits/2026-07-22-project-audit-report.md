@@ -229,6 +229,8 @@
 
 > **Проблема:** В `coverage.include` перечислен `'src/infrastructure/LocalStorageNutritionPlanRepository.ts'` — файл удалён (см. DOC-1).
 > **Исправление:** Убрать строку.
+>
+> ✅ Исправлено (commit 62ee52b)
 
 **[DEAD-6]** `worker/src/routes/importFromPdf.ts:106`
 
