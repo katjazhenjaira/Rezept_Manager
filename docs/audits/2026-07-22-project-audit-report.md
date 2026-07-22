@@ -188,6 +188,8 @@
 
 > **Проблема:** `activeNutritionPlan`, `checkedEntries`, `onCheckedEntriesChange` объявлены в `PlannerViewProps` и передаются из `App.tsx:196-198`, но не деструктурируются в компоненте.
 > **Исправление:** `activeNutritionPlan` — начать использовать (см. CRIT-2, это не удаление, а починка); `checkedEntries`/`onCheckedEntriesChange` — удалить, если Планер действительно не должен отмечать съеденное.
+>
+> ✅ Исправлено (commit 6550ee4)
 
 **[DEAD-3]** `src/features/programs/ProgramDetailModal.tsx:128`
 
