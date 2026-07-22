@@ -23,6 +23,11 @@ export async function extractImageFromPDF(
     if (!context) return '';
     canvas.height = viewport.height;
     canvas.width = viewport.width;
+    // `any` нужен из-за расхождения типов и рантайма pdfjs-dist 5.x: тип RenderParameters
+    // объявляет поле `canvas` обязательным, хотя render() выводит его из контекста
+    // (`render({ canvasContext, canvas = canvasContext.canvas, ... })` в pdf.mjs).
+    // Передать `canvas` явно нельзя без смены пути рендера: при заданном `canvas`
+    // pdfjs игнорирует переданный контекст и берёт собственный через canvas.getContext.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await (page as any).render({ canvasContext: context, viewport }).promise;
     const x = (box.xmin / 1000) * canvas.width;
