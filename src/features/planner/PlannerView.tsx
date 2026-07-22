@@ -33,7 +33,7 @@ import {
 import { ru } from 'date-fns/locale';
 import { useData } from '@/app/providers/DataContext';
 import { recipeAllergens } from '@/shared/domain/allergies';
-import { sumMacros } from '@/shared/domain/macros';
+import { resolveActiveTargets, sumMacros } from '@/shared/domain/macros';
 import type {
   Recipe,
   UserProfile,
@@ -62,6 +62,7 @@ export type PlannerViewProps = {
 export function PlannerView({
   recipes,
   userProfile,
+  activeNutritionPlan,
   onSelectRecipe,
   onNavigateToCart,
   mealTypes,
@@ -169,11 +170,19 @@ export function PlannerView({
     const dateStr = format(selectedPlannerDate, 'yyyy-MM-dd');
     return sumMacros(entriesByDate.get(dateStr) ?? [], recipes);
   }, [entriesByDate, recipes, selectedPlannerDate]);
+  // Активная программа перекрывает цели профиля (constraint №3), а Трекер уже считает
+  // превышение через resolveActiveTargets — Планер обязан использовать тот же источник,
+  // иначе один и тот же день выглядит «в норме» здесь и «превышено» там (constraint №2).
+  const activeTargets = useMemo(
+    () => resolveActiveTargets(activeNutritionPlan, userProfile),
+    [activeNutritionPlan, userProfile],
+  );
+
   const isSelectedDateOverLimit =
-    selectedDateMacros.calories > userProfile.targetCalories ||
-    selectedDateMacros.proteins > userProfile.targetProteins ||
-    selectedDateMacros.fats > userProfile.targetFats ||
-    selectedDateMacros.carbs > userProfile.targetCarbs;
+    selectedDateMacros.calories > activeTargets.calories ||
+    selectedDateMacros.proteins > activeTargets.proteins ||
+    selectedDateMacros.fats > activeTargets.fats ||
+    selectedDateMacros.carbs > activeTargets.carbs;
 
   const renderDayView = () => {
     const entries = getEntriesForDate(selectedPlannerDate);
@@ -209,7 +218,7 @@ export function PlannerView({
             <div
               className={cn(
                 'text-center p-2 rounded-xl min-w-[50px] border transition-colors',
-                totalMacros.calories > userProfile.targetCalories
+                totalMacros.calories > activeTargets.calories
                   ? 'bg-red-50 border-red-100'
                   : 'bg-zinc-50 border-zinc-100',
               )}
@@ -218,7 +227,7 @@ export function PlannerView({
               <p
                 className={cn(
                   'font-bold text-xs',
-                  totalMacros.calories > userProfile.targetCalories
+                  totalMacros.calories > activeTargets.calories
                     ? 'text-red-600'
                     : 'text-emerald-600',
                 )}
@@ -229,7 +238,7 @@ export function PlannerView({
             <div
               className={cn(
                 'text-center p-2 rounded-xl min-w-[40px] border transition-colors',
-                totalMacros.proteins > userProfile.targetProteins
+                totalMacros.proteins > activeTargets.proteins
                   ? 'bg-red-50 border-red-100'
                   : 'bg-zinc-50 border-zinc-100',
               )}
@@ -238,7 +247,7 @@ export function PlannerView({
               <p
                 className={cn(
                   'font-bold text-xs',
-                  totalMacros.proteins > userProfile.targetProteins
+                  totalMacros.proteins > activeTargets.proteins
                     ? 'text-red-600'
                     : 'text-zinc-700',
                 )}
@@ -249,7 +258,7 @@ export function PlannerView({
             <div
               className={cn(
                 'text-center p-2 rounded-xl min-w-[40px] border transition-colors',
-                totalMacros.fats > userProfile.targetFats
+                totalMacros.fats > activeTargets.fats
                   ? 'bg-red-50 border-red-100'
                   : 'bg-zinc-50 border-zinc-100',
               )}
@@ -258,7 +267,7 @@ export function PlannerView({
               <p
                 className={cn(
                   'font-bold text-xs',
-                  totalMacros.fats > userProfile.targetFats ? 'text-red-600' : 'text-zinc-700',
+                  totalMacros.fats > activeTargets.fats ? 'text-red-600' : 'text-zinc-700',
                 )}
               >
                 {totalMacros.fats}г
@@ -267,7 +276,7 @@ export function PlannerView({
             <div
               className={cn(
                 'text-center p-2 rounded-xl min-w-[40px] border transition-colors',
-                totalMacros.carbs > userProfile.targetCarbs
+                totalMacros.carbs > activeTargets.carbs
                   ? 'bg-red-50 border-red-100'
                   : 'bg-zinc-50 border-zinc-100',
               )}
@@ -276,7 +285,7 @@ export function PlannerView({
               <p
                 className={cn(
                   'font-bold text-xs',
-                  totalMacros.carbs > userProfile.targetCarbs ? 'text-red-600' : 'text-zinc-700',
+                  totalMacros.carbs > activeTargets.carbs ? 'text-red-600' : 'text-zinc-700',
                 )}
               >
                 {totalMacros.carbs}г
@@ -459,7 +468,7 @@ export function PlannerView({
                 <p className="opacity-70 uppercase text-[9px] mb-0.5">Белки</p>
                 <p
                   className={cn(
-                    totalMacros.proteins > userProfile.targetProteins &&
+                    totalMacros.proteins > activeTargets.proteins &&
                       'text-red-100 underline decoration-2 underline-offset-4',
                   )}
                 >
@@ -470,7 +479,7 @@ export function PlannerView({
                 <p className="opacity-70 uppercase text-[9px] mb-0.5">Жиры</p>
                 <p
                   className={cn(
-                    totalMacros.fats > userProfile.targetFats &&
+                    totalMacros.fats > activeTargets.fats &&
                       'text-red-100 underline decoration-2 underline-offset-4',
                   )}
                 >
@@ -481,7 +490,7 @@ export function PlannerView({
                 <p className="opacity-70 uppercase text-[9px] mb-0.5">Углеводы</p>
                 <p
                   className={cn(
-                    totalMacros.carbs > userProfile.targetCarbs &&
+                    totalMacros.carbs > activeTargets.carbs &&
                       'text-red-100 underline decoration-2 underline-offset-4',
                   )}
                 >
@@ -698,7 +707,7 @@ export function PlannerView({
                 <div
                   className={cn(
                     'p-1.5 rounded-lg border transition-colors',
-                    dayTotalMacros.calories > userProfile.targetCalories
+                    dayTotalMacros.calories > activeTargets.calories
                       ? 'bg-red-50 border-red-100'
                       : 'bg-zinc-50/50 border-zinc-100',
                   )}
@@ -706,7 +715,7 @@ export function PlannerView({
                   <p
                     className={cn(
                       'text-[10px] font-bold mb-0.5',
-                      dayTotalMacros.calories > userProfile.targetCalories
+                      dayTotalMacros.calories > activeTargets.calories
                         ? 'text-red-600'
                         : 'text-emerald-600',
                     )}
@@ -716,21 +725,21 @@ export function PlannerView({
                   <p className="text-[7px] font-bold text-zinc-500">
                     <span
                       className={cn(
-                        dayTotalMacros.proteins > userProfile.targetProteins && 'text-red-600',
+                        dayTotalMacros.proteins > activeTargets.proteins && 'text-red-600',
                       )}
                     >
                       {dayTotalMacros.proteins}
                     </span>{' '}
                     /
                     <span
-                      className={cn(dayTotalMacros.fats > userProfile.targetFats && 'text-red-600')}
+                      className={cn(dayTotalMacros.fats > activeTargets.fats && 'text-red-600')}
                     >
                       {dayTotalMacros.fats}
                     </span>{' '}
                     /
                     <span
                       className={cn(
-                        dayTotalMacros.carbs > userProfile.targetCarbs && 'text-red-600',
+                        dayTotalMacros.carbs > activeTargets.carbs && 'text-red-600',
                       )}
                     >
                       {dayTotalMacros.carbs}

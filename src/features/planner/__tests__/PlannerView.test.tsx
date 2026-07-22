@@ -12,7 +12,7 @@ import { FakeProgramsRepository } from '@/infrastructure/testing/FakeProgramsRep
 import { FakeUserProfileRepository } from '@/infrastructure/testing/FakeUserProfileRepository';
 import { FakeNutritionPlanRepository } from '@/infrastructure/testing/FakeNutritionPlanRepository';
 import type { UserProfile, ActiveNutritionPlan, PlannerEntry } from '@/shared/domain/types';
-import type { PlannerViewProps } from '../PlannerView';
+import { PlannerView, type PlannerViewProps } from '../PlannerView';
 
 const mockProfile: UserProfile = {
   name: 'Тест',
@@ -111,5 +111,59 @@ describe('PlannerView', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Месяц' }));
 
     expect(screen.getByText('250')).toBeDefined();
+  });
+
+  describe('лимиты КБЖУ при активной программе (CRIT-2)', () => {
+    const overLimitEntry: PlannerEntry = {
+      id: 'over-1',
+      date: format(new Date(), 'yyyy-MM-dd'),
+      mealType: 'Завтрак',
+      type: 'product',
+      productName: 'Торт',
+      macros: { calories: 1500, proteins: 50, fats: 30, carbs: 100 },
+    };
+
+    const activePlan: ActiveNutritionPlan = {
+      name: 'Сушка',
+      calories: 1400,
+      proteins: 90,
+      fats: 50,
+      carbs: 150,
+      isCustom: false,
+    };
+
+    function renderPlanner(plan: ActiveNutritionPlan | null, entries: PlannerEntry[]) {
+      return render(
+        <RepositoryContext.Provider value={fakeRepos}>
+          <DataContext.Provider value={{ ...emptyData, plannerEntries: entries }}>
+            <PlannerView
+              recipes={[]}
+              userProfile={mockProfile}
+              activeNutritionPlan={plan}
+              checkedEntries={[]}
+              onCheckedEntriesChange={vi.fn()}
+              onSelectRecipe={vi.fn()}
+              onNavigateToCart={vi.fn()}
+              mealTypes={['Завтрак', 'Обед', 'Ужин', 'Перекус']}
+              onMealTypesChange={vi.fn()}
+            />
+          </DataContext.Provider>
+        </RepositoryContext.Provider>,
+      );
+    }
+
+    it('считает превышение от целей активной программы, а не от профиля', () => {
+      // 1500 ккал: в пределах цели профиля (1800), но выше цели программы (1400).
+      // Трекер (resolveActiveTargets) для тех же данных показал бы превышение — Планер обязан совпасть.
+      renderPlanner(activePlan, [overLimitEntry]);
+
+      expect(screen.getByText(/Вы превышаете норму/i)).toBeDefined();
+    });
+
+    it('без активной программы использует цели профиля', () => {
+      renderPlanner(null, [overLimitEntry]);
+
+      expect(screen.queryByText(/Вы превышаете норму/i)).toBeNull();
+    });
   });
 });
