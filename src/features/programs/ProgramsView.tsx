@@ -51,17 +51,11 @@ export type ProgramsViewProps = {
   onSelectedRecipeIdsChange: (ids: string[]) => void;
   onStartRecipeSelection: (programId: string, subfolderId: string | 'main') => void;
   onAddSelectedRecipes: () => Promise<void>;
-  recipeTarget: { programId: string; subfolderId: string | 'main' } | null;
-  onRecipeTargetCleared: () => void;
   onRecipeTargetSet: (target: { programId: string; subfolderId: string | 'main' }) => void;
   photoInputRef: React.RefObject<HTMLInputElement | null>;
-  isAddingManual: boolean;
   onIsAddingManualChange: (v: boolean) => void;
-  isAddingLink: boolean;
   onIsAddingLinkChange: (v: boolean) => void;
-  isAddingPDF: boolean;
   onIsAddingPDFChange: (v: boolean) => void;
-  isScanning: boolean;
   onIsScanningChange: (v: boolean) => void;
   onSelectRecipe: (recipe: Recipe) => void;
 };
@@ -87,17 +81,11 @@ export function ProgramsView(props: ProgramsViewProps) {
     openProgramId,
     onOpenProgramIdChange,
     onStartRecipeSelection,
-    recipeTarget,
-    onRecipeTargetCleared,
     onRecipeTargetSet,
     photoInputRef,
-    isAddingManual,
     onIsAddingManualChange,
-    isAddingLink,
     onIsAddingLinkChange,
-    isAddingPDF,
     onIsAddingPDFChange,
-    isScanning,
     onIsScanningChange,
     onSelectRecipe,
   } = props;
@@ -1123,17 +1111,10 @@ export function ProgramsView(props: ProgramsViewProps) {
             onDeleteProgram={setProgramToDelete}
             onStartRecipeSelection={onStartRecipeSelection}
             onRecipeTargetSet={onRecipeTargetSet}
-            recipeTarget={recipeTarget}
-            onRecipeTargetCleared={onRecipeTargetCleared}
             photoInputRef={photoInputRef}
-            isAddingManual={isAddingManual}
             onIsAddingManualChange={onIsAddingManualChange}
-            isAddingLink={isAddingLink}
             onIsAddingLinkChange={onIsAddingLinkChange}
-            isAddingPDF={isAddingPDF}
             onIsAddingPDFChange={onIsAddingPDFChange}
-            isScanning={isScanning}
-            onIsScanningChange={onIsScanningChange}
             onSelectRecipe={onSelectRecipe}
             userProfile={userProfile}
           />

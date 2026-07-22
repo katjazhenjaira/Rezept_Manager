@@ -98,17 +98,10 @@ function renderModal(options: RenderOptions = {}) {
     onDeleteProgram: vi.fn(),
     onStartRecipeSelection: vi.fn(),
     onRecipeTargetSet: vi.fn(),
-    recipeTarget: null,
-    onRecipeTargetCleared: vi.fn(),
     photoInputRef: createRef<HTMLInputElement>(),
-    isAddingManual: false,
     onIsAddingManualChange: vi.fn(),
-    isAddingLink: false,
     onIsAddingLinkChange: vi.fn(),
-    isAddingPDF: false,
     onIsAddingPDFChange: vi.fn(),
-    isScanning: false,
-    onIsScanningChange: vi.fn(),
     onSelectRecipe,
   };
 

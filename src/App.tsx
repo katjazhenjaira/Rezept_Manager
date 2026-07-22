@@ -235,17 +235,11 @@ export default function App() {
             onSelectedRecipeIdsChange={setSelectedRecipeIds}
             onStartRecipeSelection={handleStartRecipeSelection}
             onAddSelectedRecipes={handleAddSelectedRecipes}
-            recipeTarget={recipeTarget}
-            onRecipeTargetCleared={() => setRecipeTarget(null)}
             onRecipeTargetSet={setRecipeTarget}
             photoInputRef={photoInputRef}
-            isAddingManual={isAddingManual}
             onIsAddingManualChange={setIsAddingManual}
-            isAddingLink={isAddingLink}
             onIsAddingLinkChange={setIsAddingLink}
-            isAddingPDF={isAddingPDF}
             onIsAddingPDFChange={setIsAddingPDF}
-            isScanning={isScanning}
             onIsScanningChange={setIsScanning}
             onSelectRecipe={setSelectedRecipe}
           />
