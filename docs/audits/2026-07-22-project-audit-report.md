@@ -54,6 +54,8 @@
 > **Проблема:** `handleAddSelectedSuggestions()` записывает выбранные AI-варианты в планер через `plannerRepo.add()` без какой-либо проверки аллергенов. Для `option.type === 'recipe'` рецепт берётся из библиотеки пользователя по `option.recipeId` — `recipeHasAllergens()` не вызывается; для `option.type === 'product'` не вызывается `productAllergens()`.
 > **Почему важно:** Прямое нарушение safety-critical constraint №1 CLAUDE.md («Allergy check обязателен перед добавлением рецепта в Planner / **Tracker** / **AI-suggestions**») и Known constraint «Любой новый путь добавления рецепта в Planner/Tracker/AI-suggestions обязан сам вызвать проверку аллергенов в UI/hook-слое — на уровне репозитория её никто не перехватит». Три остальных пути записи в планер (`PlannerView.tsx:118`, `RecipeDetailModal.tsx:88`) гейт имеют — этот единственный его обходит. Передача `allergies` в промпт `fillRemaining` — это доверие к модели, а не детерминированный гейт.
 > **Исправление:** Перед циклом `plannerRepo.add()` прогнать каждую выбранную опцию через `recipeAllergens()` (для `type === 'recipe'`) / `productAllergens(option.description)` (для `type === 'product'`) и показать тот же `confirm()`-гейт, что в `PlannerView.handleAddToPlanner()`. Покрыть тестом (сейчас `TrackerView.test.tsx` этот путь не проверяет).
+>
+> ✅ Исправлено (commit dc302db)
 
 **[CRIT-2]** `src/features/planner/PlannerView.tsx:172-176`, `src/App.tsx:196`
 
