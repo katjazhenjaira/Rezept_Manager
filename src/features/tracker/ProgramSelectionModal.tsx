@@ -310,11 +310,11 @@ export function ProgramSelectionModal({ isOpen, onClose }: ProgramSelectionModal
                                 <h6 className="text-sm font-bold text-zinc-700">
                                   {subfolder.name}
                                 </h6>
-                                {subfolder.targetCalories && (
+                                {subfolder.targetCalories ? (
                                   <p className="text-[10px] text-emerald-600 font-medium">
                                     {subfolder.targetCalories} ккал
                                   </p>
-                                )}
+                                ) : null}
                               </div>
                             </div>
                             {activeNutritionPlan?.programId === program.id &&

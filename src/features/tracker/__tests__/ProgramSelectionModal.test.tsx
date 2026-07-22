@@ -315,6 +315,38 @@ describe('ProgramSelectionModal', () => {
     });
   });
 
+  describe('подпись КБЖУ подпапки', () => {
+    function subfolderButton(name: string): HTMLElement {
+      const button = screen.getByText(name).closest('button');
+      if (!button) throw new Error(`Кнопка подпапки "${name}" не найдена`);
+      return button;
+    }
+
+    it('показывает калорийность подпапки, когда она задана', () => {
+      renderModal({
+        programs: [makeProgram({ subfolders: [makeSubfolder({ targetCalories: 1200 })] })],
+      });
+
+      expect(subfolderButton('Неделя 1').textContent).toContain('1200 ккал');
+    });
+
+    // LOG-2: `{subfolder.targetCalories && (<p>…</p>)}` при targetCalories === 0
+    // рендерит literal «0» рядом с названием подпапки.
+    it('не рендерит literal «0», когда калорийность подпапки равна нулю', () => {
+      renderModal({
+        programs: [makeProgram({ subfolders: [makeSubfolder({ targetCalories: 0 })] })],
+      });
+
+      expect(subfolderButton('Неделя 1').textContent).toBe('Неделя 1');
+    });
+
+    it('ничего не показывает, когда калорийность подпапки не задана', () => {
+      renderModal({ programs: [makeProgram({ subfolders: [makeSubfolder()] })] });
+
+      expect(subfolderButton('Неделя 1').textContent).toBe('Неделя 1');
+    });
+  });
+
   it('создаёт свой план питания и сразу делает его активным', async () => {
     const addSpy = vi.spyOn(fakeRepos.programs, 'add');
     const { onClose } = renderModal();
