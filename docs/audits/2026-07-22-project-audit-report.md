@@ -241,6 +241,8 @@
 
 > **Проблема:** `await (page as any).render({...}).promise` под `// eslint-disable-next-line @typescript-eslint/no-explicit-any` без объяснения, почему нужен `any` (несовпадение типов `RenderParameters` в `pdfjs-dist` 5.x).
 > **Исправление:** Добавить обоснование в комментарий рядом с disable либо типизировать через реальный тип pdfjs.
+>
+> ✅ Исправлено (commit b6b5dea)
 
 **[TS-2]** `src/shared/utils/pdfUtils.ts:56-57`
 
