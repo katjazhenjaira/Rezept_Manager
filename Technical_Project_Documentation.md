@@ -352,7 +352,6 @@ npm run test:worker      # то же, из корня
 - `src/shared/domain/` — 100%: macros (sumMacros, remainingMacros, resolveActiveTargets), allergies (recipeAllergens, recipeHasAllergens), staples (isStaple)
 - `src/infrastructure/testing/` — contract tests для 6 Fake-репозиториев
 - `src/infrastructure/firestore/converters.ts` — Timestamp ↔ ISO
-- `src/infrastructure/LocalStorageNutritionPlanRepository.ts`
 - `src/app/providers/` — DataProvider (подписки + `errors` при падении подписки), UserProfileProvider, RepositoryProvider (состав набора репозиториев, мемоизация по uid), I18nProvider (применение сохранённого языка на mount)
 - `src/app/layout/` — AppHeader (переключение и persist языка, открытие настроек), RecipeSelectionBar (видимость, disabled при пустом выборе, колбэки), DataErrorBanner (баннер по `useData().errors`)
 - `src/features/auth/useAuth.ts` — контракт «пользователь гарантированно есть» (бросает при loading/без пользователя)
