@@ -211,6 +211,12 @@ StrictMode
 | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `migrate-assign-user.ts` | Одноразовая миграция Firestore: проставляет `userId` во всех документах `recipes`/`planner`/`cart`/`programs`, где поле отсутствует, и переносит singleton-документы `settings/profile` → `userProfiles/{uid}`, `settings/plan` → `nutritionPlans/{uid}`. Нужна была для перехода на uid-scoped данные (multi-user). Переменные окружения: `GOOGLE_APPLICATION_CREDENTIALS` (путь к service account JSON, firebase-admin), `MIGRATION_USER_UID` (uid, на который переносятся данные) |
 
+### `docs/claude-code/` — резервные копии настроек Claude Code
+
+| Файл                       | Роль                                                                                                                                                                                       |
+| -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `project-audit-skill.md`   | Точная копия user-level скилла `~/.claude/skills/project-audit/SKILL.md` (не хранится в самом Claude Code внутри репозитория). Нужна для восстановления скилла при переезде на новый компьютер — см. §11.5 |
+
 ---
 
 ## 5. Внешние сервисы
@@ -218,7 +224,8 @@ StrictMode
 ### Firebase
 
 - **Проект:** `rezept-manager-62bd0` (личный аккаунт videnejev@gmail.com)
-- **Dashboard:** console.firebase.google.com → проект `rezept-manager-62bd0`
+- **Dashboard:** https://console.firebase.google.com → проект `rezept-manager-62bd0`
+- **Credentials:** запись в пароль-менеджере — «Evgeny's Google Login»
 - **Firestore:** данные пользователей — коллекции `recipes`, `planner`, `cart`, `programs`, `userProfiles`, `nutritionPlans`. Все uid-scoped (`where('userId', '==', uid)`).
 - **Auth:** email/password (Google OAuth — Phase 2b, не реализован)
 - **Security Rules:** `firestore.rules` — `request.auth.uid == resource.data.userId`, userId immutable при update
@@ -227,18 +234,32 @@ StrictMode
 ### Cloudflare
 
 - **Аккаунт:** связан с videnejev@gmail.com
-- **Dashboard:** dash.cloudflare.com
+- **Dashboard:** https://dash.cloudflare.com
+- **Credentials:** запись в пароль-менеджере — «Cloudflare Rezept-Manager»
 - **Pages:** фронтенд, деплоится автоматически из `main` ветки. Домен `rezept-manager.flowgence.de` (CNAME к Cloudflare; основной домен `flowgence.de` у HostEurope).
 - **Worker:** `rezept-manager-ai-proxy` — Gemini API прокси (6 маршрутов `/api/ai/*`)
 - **KV:** namespace `RATE_LIMIT_KV` — хранение счётчиков rate limiting
 
 ### Google Gemini (AI Studio)
 
+- **Dashboard:** https://aistudio.google.com (личный аккаунт videnejev@gmail.com — Google AI Pro/Ultra, см. `docs/roadmap-archive/decisions-log.md`)
+- **Credentials:** запись в пароль-менеджере — «Evgeny's Google Login»
 - **Ключ:** Cloudflare secret `GEMINI_API_KEY` — **никогда не в клиентском коде**
 - **Модели:**
   - `gemini-3-flash-preview` — import-from-url, import-from-pdf, import-from-photo, calculate-kbzhu, fill-remaining
   - `gemini-2.5-flash-image` — generate-image (aspectRatio 4:3, imageSize 1K)
 - **Rate limit:** 10 req/min на IP (счётчик по календарной минуте в Cloudflare KV, не token bucket — допускает всплеск запросов на границе минут). 11-й запрос → 429 + Retry-After.
+
+### GitHub
+
+- **Репозиторий:** https://github.com/katjazhenjaira/Rezept_Manager
+- **Credentials:** запись в пароль-менеджере — «GitHub Rezept Manager»
+
+### Регистратор домена (HostEurope)
+
+- **Роль:** основной домен `flowgence.de` (Cloudflare Pages подключён к нему через CNAME на поддомен `rezept-manager.flowgence.de`, см. §5 → Cloudflare)
+- **Dashboard:** https://www.hosteurope.de
+- **Credentials:** запись в пароль-менеджере — «Host Europe»
 
 ---
 
@@ -352,3 +373,106 @@ npm run coverage      # с coverage report
 | `GEMINI_API_KEY` только в Cloudflare secret | Безопасность — ключ не должен попасть в клиентский бандл        | Всегда через Worker proxy `/api/ai/*`                                                                                                                  |
 | Canvas API недоступен в Cloudflare Worker   | Workers runtime не поддерживает Canvas                          | PDF-операции (`extractImageFromPDF`) только на клиенте через `pdfjs-dist`                                                                              |
 | `App.tsx` < 300 строк (не < 200)            | Достигнуто 277; < 200 требует отдельного RecipeSelectionContext | Запланировано как future TODO                                                                                                                          |
+
+---
+
+## 11. Claude Code — окружение для восстановления на новом компьютере
+
+> Этот раздел — не про сам проект, а про AI-ассистированную разработку вокруг него: как воссоздать окружение Claude Code при переезде на новый компьютер. Секреты (API-ключи и т.п.) описаны в §6 — здесь только про настройки инструмента.
+
+Окружение Claude Code для этого проекта состоит из четырёх слоёв.
+
+### 11.1 Установка и вход
+
+Установить Claude Code CLI и войти тем же аккаунтом (`videnejev@gmail.com` / см. §5 — тот же аккаунт, что используется для Firebase и Cloudflare). Вход тем же аккаунтом нужен, чтобы сохранить доступ к account-level MCP-коннекторам claude.ai (Gmail, Google Calendar, Google Drive, Notion, Todoist) — это настройки самого аккаунта claude.ai, локальных файлов для них нет; переустанавливать не нужно, только залогиниться.
+
+### 11.2 Глобальные настройки `~/.claude/settings.json`
+
+Не входит в репозиторий — настройка уровня пользователя, общая для всех проектов. Текущее содержимое (скопировать на новую машину как есть):
+
+```json
+{
+  "enabledPlugins": {
+    "skill-creator@claude-plugins-official": true,
+    "context7@claude-plugins-official": true,
+    "make-skills@make-marketplace": true,
+    "frontend-design@claude-plugins-official": true,
+    "superpowers@claude-plugins-official": true,
+    "code-review@claude-plugins-official": true,
+    "code-simplifier@claude-plugins-official": true,
+    "github@claude-plugins-official": true,
+    "playwright@claude-plugins-official": true,
+    "claude-md-management@claude-plugins-official": true,
+    "security-guidance@claude-plugins-official": true
+  },
+  "extraKnownMarketplaces": {
+    "make-marketplace": {
+      "source": {
+        "source": "github",
+        "repo": "integromat/make-skills"
+      }
+    }
+  },
+  "language": "Russian",
+  "voice": {
+    "enabled": true,
+    "mode": "hold"
+  },
+  "theme": "dark-daltonized",
+  "voiceEnabled": true
+}
+```
+
+Плагин `make-skills` устанавливается из стороннего marketplace (`extraKnownMarketplaces`) — без этого блока Claude Code не найдёт его при установке.
+
+### 11.3 Настройки проекта (уже в git — ничего делать не нужно)
+
+Версионируются вместе с репозиторием, переносятся автоматическим `git clone`:
+
+- **`.claude/settings.json`** — определяет Stop-хук, который при прощании пользователя напоминает выполнить Session end protocol из `CLAUDE.md`.
+- **`.claude/hooks/session-end-reminder.sh`** — сам хук: парсит последнее сообщение пользователя из transcript (`jq` + `awk`) на прощальные фразы (ru/en) и возвращает напоминание модели через `additionalContext`.
+
+Хук зависит от `bash`, `jq` и `awk` в `PATH` — на macOS/Linux они есть по умолчанию, отдельная установка не нужна (кроме `jq`, если его нет — `brew install jq`).
+
+### 11.4 Локальный allowlist разрешений `.claude/settings.local.json` (не в git)
+
+Файл существует локально в каждом клоне репозитория и содержит накопленный allowlist разрешённых команд (`permissions.allow`) — в основном `npm run *`, `npx wrangler *`, `npx vitest *`, `git add/commit/push *`, набор точечных `curl`/`sqlite3`/`python3` команд, использовавшихся при отладке Worker'а, и MCP-инструменты (Playwright, Context7).
+
+Важный нюанс: этот файл исключён из git **не** через `.gitignore` проекта (там про `.claude` вообще ничего нет), а через **глобальный** `~/.config/git/ignore` на этой машине (строка `**/.claude/settings.local.json`). Это значит:
+
+- На новом компьютере с новым git-конфигом файл не будет автоматически скрыт от `git status`, пока не добавить туда ту же строку (либо перенести домашнюю конфигурацию git целиком).
+- Сам список разрешений при переезде проще всего перенести, скопировав файл напрямую со старой машины (`.claude/settings.local.json` в тот же путь на новой). Если старая машина недоступна — ничего страшного: без файла Claude Code будет просто заново спрашивать разрешение на каждую новую команду по мере работы, это не блокер, только вопрос удобства первых сессий.
+
+### 11.5 Кастомный скилл `project-audit`
+
+Используется workflow этого проекта — раздел `## Audit scope` и `## Проработка отчётов аудита` в `CLAUDE.md` описывают, как этот скилл сканирует код и сохраняет отчёты в `docs/audits/`. Скилл живёт на уровне пользователя (`~/.claude/skills/project-audit/SKILL.md`), а не в репозитории — полная копия его содержимого на случай переезда сохранена в `docs/claude-code/project-audit-skill.md`.
+
+Восстановление на новом компьютере:
+
+```bash
+mkdir -p ~/.claude/skills/project-audit
+cp docs/claude-code/project-audit-skill.md ~/.claude/skills/project-audit/SKILL.md
+```
+
+### 11.6 MCP-серверы
+
+В проекте нет `.mcp.json` — MCP-серверы не сконфигурированы на уровне репозитория. Два источника:
+
+- `context7` и `playwright` подключены как **user-level плагины** (см. §11.2 `enabledPlugins`) — восстанавливаются вместе с глобальными настройками.
+- Gmail / Google Calendar / Google Drive / Notion / Todoist — **account-level коннекторы claude.ai**, настраиваются в веб-интерфейсе claude.ai (Settings → Connectors), не через локальные файлы. Достаточно быть залогиненным тем же аккаунтом (§11.1).
+
+### 11.7 CLI-инструменты и авторизация
+
+| Инструмент  | Версия / состояние на текущей машине                                    | Что сделать на новой машине                                                                                          |
+| ----------- | ------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------- |
+| Node        | v24.14.1 (в репозитории не зафиксирована — нет `.nvmrc`/`engines`)       | Установить Node 24.x любым способом (nvm/fnm/Homebrew)                                                                |
+| npm         | 11.12.1 (идёт в комплекте с Node)                                        | Устанавливается вместе с Node                                                                                        |
+| `wrangler`  | 4.83.0, запускается через `npx`; авторизован OAuth-токеном на аккаунт `rezept-manager@flowgence.de` | `cd worker && npx wrangler login` — пройти OAuth в браузере тем же аккаунтом Cloudflare (credentials — «Cloudflare Rezept-Manager», см. §5) |
+| Firebase CLI | **Сознательно не установлен и не используется** — `firestore.rules`/`storage.rules` деплоятся вручную через Firebase Console (см. §10) | Устанавливать не нужно, если не меняется процесс деплоя правил                                                       |
+| git + GitHub | Remote по HTTPS: `https://github.com/katjazhenjaira/Rezept_Manager`; локально авторизация через `credential.helper=osxkeychain` | Настроить git-авторизацию заново: SSH-ключ либо HTTPS + `gh auth login` / Personal Access Token (credentials — «GitHub Rezept Manager», см. §5; токен/ключ сохранится в Keychain на macOS) |
+
+### 11.8 Memory Claude Code (опционально)
+
+Claude Code хранит накопленную для этого проекта память (предпочтения, факты о проекте, обратную связь) в `~/.claude/projects/-Users-evidenee-Flowgence-Rezept-Manager/memory/` — путь производится от **абсолютного пути** проекта. Если проект на новой машине клонируется в тот же путь (`/Users/evidenee/Flowgence/Rezept_Manager`), эта директория при переносе подхватится автоматически.
+
+Рекомендация: перед списанием старой машины скопировать эту директорию (и файл `MEMORY.md` внутри неё) на новую по тому же пути — иначе Claude Code начнёт накапливать память с нуля.
