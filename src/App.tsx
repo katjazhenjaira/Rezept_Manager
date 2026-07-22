@@ -10,6 +10,7 @@ import { useData } from '@/app/providers/DataContext';
 import { useRepositories } from '@/app/providers/RepositoryContext';
 import { TabBar } from '@/app/layout/TabBar';
 import { AppHeader } from '@/app/layout/AppHeader';
+import { DataErrorBanner } from '@/app/layout/DataErrorBanner';
 import { RecipeSelectionBar } from '@/app/layout/RecipeSelectionBar';
 import { SettingsModal } from '@/features/settings/SettingsModal';
 import { CartView } from '@/features/cart/CartView';
@@ -252,6 +253,8 @@ export default function App() {
   return (
     <div className="min-h-screen bg-zinc-50 text-zinc-900 font-sans">
       <AppHeader onOpenSettings={() => setIsSettingsOpen(true)} />
+
+      <DataErrorBanner />
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 py-8 pb-32">

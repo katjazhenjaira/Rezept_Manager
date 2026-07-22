@@ -178,12 +178,13 @@ StrictMode
 | Файл                                | Роль                                                            |
 | ----------------------------------- | --------------------------------------------------------------- |
 | `providers/RepositoryProvider.tsx`  | Инъекция 6 Firestore-реализаций через Context                   |
-| `providers/DataProvider.tsx`        | Reactive onSnapshot подписки (recipes, planner, cart, programs) |
+| `providers/DataProvider.tsx`        | Reactive onSnapshot подписки (recipes, planner, cart, programs) + `errors` при падении подписки |
 | `providers/UserProfileProvider.tsx` | userProfile + activeNutritionPlan                               |
 | `providers/I18nProvider.tsx`        | i18next setup                                                   |
 | `layout/Shell.tsx`                  | min-h-screen wrapper с pb-20 для fixed TabBar                   |
 | `layout/TabBar.tsx`                 | Нижняя навигация (5 вкладок)                                    |
 | `layout/AppHeader.tsx`              | Верхний заголовок                                               |
+| `layout/DataErrorBanner.tsx`        | Баннер «данные не загрузились» по `useData().errors`            |
 | `layout/RecipeSelectionBar.tsx`     | Бар выбора рецептов для Programs                                |
 
 ### `src/locales/` — переводы

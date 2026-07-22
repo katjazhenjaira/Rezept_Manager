@@ -85,6 +85,58 @@ describe('DataProvider', () => {
     expect(result.current.cartItems[0]?.name).toBe('Milk');
   });
 
+  it('exposes no errors while subscriptions are healthy', () => {
+    const { result } = renderHook(() => useData(), { wrapper: makeWrapper(repos) });
+    expect(result.current.errors ?? []).toEqual([]);
+  });
+
+  it('reports a failed subscription so the UI can tell "error" from "no data"', () => {
+    const { result } = renderHook(() => useData(), { wrapper: makeWrapper(repos) });
+
+    act(() => {
+      repos.recipes.failSubscriptions(new Error('permission-denied'));
+    });
+
+    expect(result.current.errors).toEqual(['recipes']);
+    expect(result.current.recipes).toEqual([]);
+  });
+
+  it('collects errors from every failing collection', () => {
+    const { result } = renderHook(() => useData(), { wrapper: makeWrapper(repos) });
+
+    act(() => {
+      repos.planner.failSubscriptions(new Error('permission-denied'));
+      repos.cart.failSubscriptions(new Error('permission-denied'));
+      repos.programs.failSubscriptions(new Error('permission-denied'));
+    });
+
+    expect(result.current.errors).toEqual(['plannerEntries', 'cartItems', 'programs']);
+  });
+
+  it('clears the error once the collection delivers data again', async () => {
+    const { result } = renderHook(() => useData(), { wrapper: makeWrapper(repos) });
+
+    act(() => {
+      repos.recipes.failSubscriptions(new Error('permission-denied'));
+    });
+    expect(result.current.errors).toEqual(['recipes']);
+
+    await act(async () => {
+      await repos.recipes.add({
+        title: 'Borsch',
+        time: '60m',
+        servings: 4,
+        categories: [],
+        ingredients: [],
+        steps: [],
+        macros: { calories: 300, proteins: 10, fats: 5, carbs: 40 },
+        createdAt: '2026-01-01T00:00:00.000Z',
+      });
+    });
+
+    expect(result.current.errors).toEqual([]);
+  });
+
   it('unsubscribes from all repos on unmount', () => {
     const { unmount } = renderHook(() => useData(), { wrapper: makeWrapper(repos) });
     unmount();
