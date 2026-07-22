@@ -27,14 +27,14 @@
 | Styles     | Tailwind CSS                        | 4.1                | Утилитарные стили                     |
 | State      | Context API + Repository pattern    | —                  | Нет внешней state lib                 |
 | DB/Backend | Firebase (Firestore + Auth)         | 12.9               | Текущий бэкенд (→ Supabase в Phase 3) |
-| AI         | Google Gemini via Cloudflare Worker | @google/genai 1.29 | Импорт рецептов, КБЖУ, AI-советы      |
-| Worker     | Hono на Cloudflare Workers          | —                  | Gemini proxy, rate limiting           |
+| AI         | Google Gemini via Cloudflare Worker | @google/genai 1.50 | Импорт рецептов, КБЖУ, AI-советы      |
+| Worker     | Hono на Cloudflare Workers          | hono 4.8           | Gemini proxy, rate limiting           |
 | i18n       | i18next + react-i18next             | 26 / 17            | ru/de/en                              |
 | Icons      | lucide-react                        | 0.546              | UI иконки                             |
-| Animation  | motion (framer-motion)              | —                  | Анимации                              |
+| Animation  | motion (framer-motion)              | 12.23              | Анимации                              |
 | Dates      | date-fns                            | 4.1                | Работа с датами                       |
-| PDF        | pdfjs-dist                          | —                  | Клиентский парсинг PDF (Canvas нужен) |
-| Testing    | Vitest + @testing-library/react     | 4.1                | 112 тестов                            |
+| PDF        | pdfjs-dist                          | 5.4                | Клиентский парсинг PDF (Canvas нужен) |
+| Testing    | Vitest + @testing-library/react     | 4.1                | 401 тест (283 фронтенд + 118 worker)  |
 | Hosting    | Cloudflare Pages + Workers          | —                  | Фронтенд + AI proxy                   |
 
 ---
@@ -350,7 +350,7 @@ npm --prefix worker test # тесты Cloudflare Worker
 npm run test:worker      # то же, из корня
 ```
 
-**Что покрыто (293 теста: 175 фронтенд + 118 worker):**
+**Что покрыто (401 тест: 283 фронтенд в 42 файлах + 118 worker в 11 файлах — прогон 2026-07-22):**
 
 - `src/shared/domain/` — 100%: macros (sumMacros, remainingMacros, resolveActiveTargets), allergies (recipeAllergens, recipeHasAllergens), staples (isStaple)
 - `src/infrastructure/testing/` — contract tests для 6 Fake-репозиториев
