@@ -15,7 +15,8 @@
     "format:check": "prettier --check .",
     "test": "vitest run --passWithNoTests",
     "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "test:worker": "npm --prefix worker test"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.14",

@@ -6,7 +6,7 @@ export default defineConfig({
     environment: 'node',
     globals: true,
     setupFiles: ['./src/test-setup.ts'],
-    exclude: ['**/node_modules/**', '**/.worktrees/**'],
+    exclude: ['**/node_modules/**', '**/.worktrees/**', 'worker/**'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'lcov'],
