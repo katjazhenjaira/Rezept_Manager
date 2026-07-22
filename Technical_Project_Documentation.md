@@ -355,7 +355,8 @@ npm run test:worker      # то же, из корня
 - `src/infrastructure/LocalStorageNutritionPlanRepository.ts`
 - `src/app/providers/` — DataProvider (4 теста), UserProfileProvider (7 тестов)
 - `src/features/auth/` — AuthProvider, LoginScreen, SignupScreen
-- `src/features/planner/` — PlannerView smoke tests
+- `src/App.tsx` — deep-link на программу (ошибка загрузки), валидация `availableCategories` из localStorage
+- `src/features/planner/` — PlannerView smoke tests + лимиты КБЖУ от активной программы
 - `src/features/tracker/` — TrackerView smoke tests
 - `worker/src/helpers/` — `validateExternalUrl` (SSRF-набор: протоколы, localhost/*.local, приватные IPv4/IPv6, IPv4-mapped и IPv4-compatible формы), `safeFetch` (ревалидация каждого redirect-хопа, блок редиректа на приватный хост), `timeout` (`isTimeoutError`, `UPSTREAM_TIMEOUT_MS`), `generateImageDataUri`
 - `worker/src/middleware/rateLimit.ts` — лимит через fake KV (счётчик, TTL, 429, минутные бакеты, X-Forwarded-For)
