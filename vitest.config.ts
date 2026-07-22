@@ -16,7 +16,6 @@ export default defineConfig({
         'src/infrastructure/firestore/converters.ts',
         'src/infrastructure/firestore/FirestoreNutritionPlanRepository.ts',
         'src/infrastructure/testing/**',
-        'src/infrastructure/LocalStorageNutritionPlanRepository.ts',
         'src/app/providers/**',
         'src/app/layout/**',
         'src/features/recipes/useRecipeFilters.ts',
