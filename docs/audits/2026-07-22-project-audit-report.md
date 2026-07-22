@@ -36,7 +36,7 @@
 | 5 | ProgramDetailModal — обработчики | TEST-3, LOG-5, LOG-6, UNDOC-2 | ✅ |
 | 6 | Cart | CONV-1, LOG-8 | ✅ |
 | 7 | Чистка пропов programs | DEAD-1, DEAD-3, TS-3 | ✅ |
-| 8 | Микрофиксы | LOG-10, TS-1, TS-2, DEAD-6 | — |
+| 8 | Микрофиксы | LOG-10, TS-1, TS-2, DEAD-6 | ✅ |
 | 9 | Инфраструктура | LOG-9, CONV-2 | — |
 | 10 | Тестовая конфигурация | DEAD-5, TEST-4, TEST-5 | — |
 | 11a | Документация: структура файлов | DOC-1, DOC-2, DOC-3, UNDOC-1 | — |
@@ -232,6 +232,8 @@
 
 > **Проблема:** Отладочный `console.log('[importFromPdf] text path, chars:', pdfText.length)` — единственный `console.log` во всём продакшн-коде (остальное — `console.error`).
 > **Исправление:** Удалить.
+>
+> ✅ Исправлено (commit 51522f9)
 
 ---
 
