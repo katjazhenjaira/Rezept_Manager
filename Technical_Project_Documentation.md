@@ -341,11 +341,13 @@ npx wrangler deploy
 ## 9. Тестирование
 
 ```bash
-npm test              # все тесты
-npm run coverage      # с coverage report
+npm test                 # тесты фронтенда (root package)
+npm run test:coverage    # фронтенд + coverage report
+npm --prefix worker test # тесты Cloudflare Worker
+npm run test:worker      # то же, из корня
 ```
 
-**Что покрыто (112 тестов):**
+**Что покрыто (293 теста: 175 фронтенд + 118 worker):**
 
 - `src/shared/domain/` — 100%: macros (sumMacros, remainingMacros, resolveActiveTargets), allergies (recipeAllergens, recipeHasAllergens), staples (isStaple)
 - `src/infrastructure/testing/` — contract tests для 6 Fake-репозиториев
@@ -355,13 +357,33 @@ npm run coverage      # с coverage report
 - `src/features/auth/` — AuthProvider, LoginScreen, SignupScreen
 - `src/features/planner/` — PlannerView smoke tests
 - `src/features/tracker/` — TrackerView smoke tests
+- `worker/src/helpers/` — `validateExternalUrl` (SSRF-набор: протоколы, localhost/*.local, приватные IPv4/IPv6, IPv4-mapped и IPv4-compatible формы), `safeFetch` (ревалидация каждого redirect-хопа, блок редиректа на приватный хост), `timeout` (`isTimeoutError`, `UPSTREAM_TIMEOUT_MS`), `generateImageDataUri`
+- `worker/src/middleware/rateLimit.ts` — лимит через fake KV (счётчик, TTL, 429, минутные бакеты, X-Forwarded-For)
+- `worker/src/routes/` — все 6 AI-роутов (`calculateKbzhu`, `fillRemaining`, `generateImage`, `importFromUrl`, `importFromPdf`, `importFromPhoto`): валидация входа, маппинг ответа, 504 при таймауте, 502 при ошибке (через `app.request()` с замоканным `@google/genai`)
+- `worker/src/index.ts` — сборка приложения: `GET /`, `onError` → generic 500, CORS, монтирование rate limit на `/api/ai/*`
+- `src/features/recipes/useRecipeFilters.ts` — фильтры/сортировки/hasActiveFilters
+- `src/services/ai/aiClient.ts` — 6 методов, формат ошибки, fallback на statusText
+- `src/app/providers/i18nConfig.ts` — `changeLanguage` + persist в localStorage
+- `src/shared/utils/pdfUtils.ts` — `extractTextFromPDF` (склейка страниц), graceful-ветки `extractImageFromPDF`
+- UI smoke-тесты (RTL): `RecipeCard`, `RecipesView`, `RecipeDetailModal`, `CartView`, `ProgramsView`, `TabBar`, `LandingPage`
 
 **Что НЕ покрыто:**
 
-- `worker/` — Cloudflare Worker (требует `@cloudflare/vitest-pool-workers`, TODO в Phase 0b)
+- Интеграционные тесты worker на реальном `workerd`-рантайме (`@cloudflare/vitest-pool-workers`) — unit-тесты используют node env + фейки KV/`@google/genai`; полноценный workerd-прогон остаётся TODO Phase 0b
 - E2E тесты (Playwright не настроен)
-- `RecipesView`, `ProgramsView`, `CartView` — только ручное тестирование
 - 4 regression flows (allergy check, KBZHU sync, fillRemaining, share-linking) — только ручное
+
+**Нетестируемые сценарии:**
+
+- `src/main.tsx` — bootstrap с side-effect `createRoot()` при импорте модуля; проверяется только сборкой/E2E, не unit-тестом.
+- `src/infrastructure/firebaseApp.ts` — инициализация Firebase SDK реальными env-ключами на этапе импорта; в юнит-среде нет валидного проекта.
+- `extractImageFromPDF` — рендер и кроп страницы PDF через Canvas 2D API, которого нет в jsdom (пакет `canvas`/`DOMMatrix` не установлен). Покрыты только graceful-ветки (`return ''` при отсутствии контекста/ошибке); реальный рендер — только ручная проверка/E2E.
+- `RecipesView`/`ProgramsView` в тестах требуют мок `@/shared/utils/pdfUtils`, т.к. транзитивно тянут `pdfjs-dist` (нужен `DOMMatrix`) — сам pdfjs в jsdom не инициализируется.
+- `Firestore*Repository` (×6) — требуют реального Firestore/эмулятора. Сознательно покрыты контрактно: чистая конверсия в `converters.ts` (протестирована) + поведенческие contract-тесты Fake-репозиториев с той же сигнатурой интерфейса. Прямые unit-тесты не пишем — мок поверхности `firebase/firestore` дал бы хрупкие «зеркальные» тесты.
+- `firestore.rules` / `storage.rules` — Firebase Emulator Suite не настроен; правила безопасности не покрываются автотестами.
+- Реальные вызовы Gemini (качество промптов, поведение модели) — в тестах SDK `@google/genai` замокан; недетерминированный платный upstream не гоняется в CI.
+- Поведение Workers-рантайма (KV eventual consistency, реальные redirect-цепочки `fetch`) — unit-тесты используют фейки; настоящий рантайм — только через pool-workers (TODO Phase 0b).
+- Полные E2E-потоки (навигация между вкладками, auth-флоу целиком) — Playwright не настроен.
 
 ---
 
