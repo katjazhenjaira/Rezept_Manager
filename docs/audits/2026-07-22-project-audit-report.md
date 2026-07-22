@@ -292,6 +292,8 @@
 
 > **Проблема:** Не покрыты drag-n-drop перенос рецептов между подпапками (`handleDropRecipe`, 167-197), редактирование целей программы/подпапки (`handleSaveEdit`, 232-271), добавление продуктов в корзину (`addProductsToCart`, 96-125). Соседний `ProgramsView.tsx` тесты имеет.
 > **Исправление:** Как минимум smoke-тест + тест `handleDropRecipe` (чистая функция преобразования массивов, легко изолируется).
+>
+> ✅ Исправлено (commit 693723f) — 12 тестов в `src/features/programs/__tests__/ProgramDetailModal.test.tsx`.
 
 **[TEST-4]** `vitest.config.ts:13-25`
 
