@@ -32,7 +32,7 @@
 | 1 | TrackerView (safety-critical) | CRIT-1, LOG-7, PERF-1 | ✅ |
 | 2 | PlannerView + App.tsx (safety-critical) | CRIT-2, DEAD-2, LOG-3, TS-4 | ✅ |
 | 3 | SettingsModal | TEST-1, LOG-1 | ✅ |
-| 4 | ProgramSelectionModal | TEST-2, LOG-2 | — |
+| 4 | ProgramSelectionModal | TEST-2, LOG-2 | ✅ |
 | 5 | ProgramDetailModal — обработчики | TEST-3, LOG-5, LOG-6, UNDOC-2 | — |
 | 6 | Cart | CONV-1, LOG-8 | — |
 | 7 | Чистка пропов programs | DEAD-1, DEAD-3, TS-3 | — |
@@ -134,6 +134,8 @@
 
 > **Проблема:** `{subfolder.targetCalories && (<p>…</p>)}` — при `targetCalories === 0` React отрендерит literal `0` вместо ничего.
 > **Исправление:** Тернарник или явная проверка, как в строке 244 того же файла (`program.targetCalories ? (…) : (…)`).
+>
+> ✅ Исправлено (commit c0d622c)
 
 **[LOG-3]** `src/App.tsx:127-139`
 
