@@ -39,6 +39,24 @@ describe('extractTextFromPDF', () => {
     ]);
   });
 
+  it('пропускает элементы разметки без поля str, не вставляя "undefined"', async () => {
+    getDocument.mockReturnValue({
+      promise: Promise.resolve({
+        numPages: 1,
+        getPage: async () => ({
+          getTextContent: async () => ({
+            items: [{ str: 'hello' }, { type: 'beginMarkedContent' }, { str: 'world' }],
+          }),
+        }),
+      }),
+    } as unknown as ReturnType<typeof pdfjs.getDocument>);
+
+    const result = await extractTextFromPDF(btoa('fake-pdf-bytes'));
+
+    expect(result).not.toContain('undefined');
+    expect(result.split('\n')[1]).toBe('hello  world');
+  });
+
   it('returns "" when getDocument().promise rejects', async () => {
     getDocument.mockReturnValue({
       promise: Promise.reject(new Error('boom')),

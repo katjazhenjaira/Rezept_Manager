@@ -58,8 +58,8 @@ export async function extractTextFromPDF(pdfData: string): Promise<string> {
       const page = await pdf.getPage(i);
       const content = await page.getTextContent();
       parts.push(`--- Page ${i} ---`);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      parts.push(content.items.map((item: any) => item.str).join(' '));
+      // items — TextItem | TextMarkedContent; строку несёт только TextItem.
+      parts.push(content.items.map((item) => ('str' in item ? item.str : '')).join(' '));
     }
     return parts.join('\n');
   } catch {
