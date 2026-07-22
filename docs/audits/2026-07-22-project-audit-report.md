@@ -137,6 +137,8 @@
 
 > **Проблема:** `handleSharedProgram()` — async-функция, вызванная без `await`, `void` и без `.catch()`. `programsRepo.getById()` при отказе Firestore-правил (см. DOC-5) отклоняется → unhandled promise rejection, пользователь не видит ни «Программа не найдена», ни ошибки.
 > **Исправление:** Обернуть в `void handleSharedProgram().catch(…)` с показом сообщения пользователю.
+>
+> ✅ Исправлено (commit cd3dc87)
 
 **[LOG-4]** `src/App.tsx:74`
 
