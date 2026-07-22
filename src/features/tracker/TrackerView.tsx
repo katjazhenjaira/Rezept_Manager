@@ -65,12 +65,16 @@ export function TrackerView({
   const [selectedSuggestionIds, setSelectedSuggestionIds] = useState<string[]>([]);
   const [isProgramSelectionOpen, setIsProgramSelectionOpen] = useState(false);
 
+  // Профиль приходит асинхронно: до его загрузки компонент рендерится с дефолтами,
+  // иначе цели показывались бы пустыми («Твоя цель:  мл»).
+  const profile = userProfile ?? DEFAULT_PROFILE;
+
   const today = format(new Date(), 'yyyy-MM-dd');
   const todayEntries = plannerEntries.filter((e) => e.date === today);
   const checkedEntriesData = todayEntries.filter((e) => checkedEntries.includes(e.id));
 
   const actualMacros = sumMacros(checkedEntriesData, recipes);
-  const currentTargets = resolveActiveTargets(activeNutritionPlan, userProfile ?? DEFAULT_PROFILE);
+  const currentTargets = resolveActiveTargets(activeNutritionPlan, profile);
   const remainingMacros = computeRemainingMacros(currentTargets, actualMacros);
 
   const handleSuggest = async (isAlternative = false) => {
@@ -89,7 +93,7 @@ export function TrackerView({
       const result = await aiClient.fillRemaining({
         remaining: remainingMacros,
         planName: currentTargets.name,
-        allergies: userProfile?.allergies ?? [],
+        allergies: profile.allergies,
         activeProgramRules: {
           allowedProducts: activeNutritionPlan?.allowedProducts ?? [],
           forbiddenProducts: activeNutritionPlan?.forbiddenProducts ?? [],
@@ -121,7 +125,7 @@ export function TrackerView({
 
     // Safety-critical constraint №1: AI получает список аллергий в промпте, но это доверие
     // к модели, а не гейт. Детерминированная проверка обязана быть здесь, перед записью.
-    const allergies = userProfile?.allergies ?? [];
+    const allergies = profile.allergies;
     const allergens = new Set<string>();
     for (const option of selectedOptions) {
       if (option.type === 'recipe') {
@@ -181,11 +185,11 @@ export function TrackerView({
               <h3 className="text-lg font-bold text-blue-900">
                 Не забудь пить достаточно воды сегодня!
               </h3>
-              <p className="text-blue-700 text-sm">Твоя цель: {userProfile?.waterGoal} мл</p>
+              <p className="text-blue-700 text-sm">Твоя цель: {profile.waterGoal} мл</p>
             </div>
           </div>
           <div className="text-blue-600 font-bold text-xl">
-            {Math.round((userProfile?.currentWeight ?? 0) * 35)} мл/день
+            {Math.round(profile.currentWeight * 35)} мл/день
           </div>
         </div>
 

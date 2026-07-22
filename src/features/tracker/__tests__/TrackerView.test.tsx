@@ -16,6 +16,7 @@ import type { DataState } from '@/app/providers/DataContext';
 import { TrackerView, type TrackerViewProps } from '../TrackerView';
 import { aiClient } from '@/services/ai/aiClient';
 import type { FillRemainingResponse } from '@/services/ai/contracts';
+import { DEFAULT_PROFILE } from '@/shared/domain/defaults';
 
 const defaultSuggestion: FillRemainingResponse = {
   options: [
@@ -246,6 +247,48 @@ describe('TrackerView', () => {
 
     fireEvent.click(screen.getByText(/перейти в планер/i));
     expect(onNavigateToPlanner).toHaveBeenCalledOnce();
+  });
+
+  // LOG-7: пока профиль не загружен, цель по воде должна браться из DEFAULT_PROFILE,
+  // а не рендериться пустой строкой.
+  it('показывает цель по воде из DEFAULT_PROFILE, пока профиль не загружен', () => {
+    const Wrapper = makeWrapper(emptyData, null);
+
+    render(
+      <Wrapper>
+        <TrackerView
+          checkedEntries={[]}
+          onCheckedEntriesChange={vi.fn()}
+          mealTypes={['Завтрак', 'Обед', 'Ужин', 'Перекус']}
+          onSelectRecipe={vi.fn()}
+          onNavigateToPlanner={vi.fn()}
+        />
+      </Wrapper>,
+    );
+
+    expect(screen.getByText(`Твоя цель: ${DEFAULT_PROFILE.waterGoal} мл`)).toBeDefined();
+    expect(
+      screen.getByText(`${Math.round(DEFAULT_PROFILE.currentWeight * 35)} мл/день`),
+    ).toBeDefined();
+  });
+
+  it('показывает цель по воде из профиля пользователя, когда он загружен', () => {
+    const Wrapper = makeWrapper(emptyData, { ...mockProfile, waterGoal: 2500, currentWeight: 70 });
+
+    render(
+      <Wrapper>
+        <TrackerView
+          checkedEntries={[]}
+          onCheckedEntriesChange={vi.fn()}
+          mealTypes={['Завтрак', 'Обед', 'Ужин', 'Перекус']}
+          onSelectRecipe={vi.fn()}
+          onNavigateToPlanner={vi.fn()}
+        />
+      </Wrapper>,
+    );
+
+    expect(screen.getByText('Твоя цель: 2500 мл')).toBeDefined();
+    expect(screen.getByText('2450 мл/день')).toBeDefined();
   });
 
   // CRIT-1: safety-critical constraint №1 — allergy check обязателен перед добавлением
