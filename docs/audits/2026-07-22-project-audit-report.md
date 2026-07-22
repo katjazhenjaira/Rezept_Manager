@@ -259,6 +259,8 @@
 
 > **Проблема:** Два компонента в одном файле — `CartItemRow` (23-111) и `CartView` (118-259). CLAUDE.md → Development conventions: «Один компонент на файл». Прецедент в проекте уже есть: `RecipeCard.tsx` вынесен из `RecipesView.tsx` при проработке CONV-1 прошлого аудита.
 > **Исправление:** Вынести `CartItemRow` в `src/features/cart/CartItemRow.tsx`.
+>
+> ✅ Исправлено (commit 0a4873a)
 
 **[CONV-2]** `src/shared/domain/macros.ts:67`
 
