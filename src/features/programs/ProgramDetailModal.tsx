@@ -234,6 +234,25 @@ export function ProgramDetailModal(props: ProgramDetailModalProps) {
     }
   };
 
+  const handleCreateSubfolder = async () => {
+    const newSubfolder: Subfolder = {
+      id: crypto.randomUUID(),
+      name: 'Новая подпапка',
+      description: '',
+      recipeIds: [],
+    };
+    try {
+      await programsRepo.update(program.id, {
+        subfolders: [...(program.subfolders || []), newSubfolder],
+      });
+      setOpenSubfolderId(newSubfolder.id);
+      setEditingSubfolderId(newSubfolder.id);
+    } catch (error) {
+      console.error('Error creating subfolder:', error);
+      alert('Ошибка при создании подпапки');
+    }
+  };
+
   const handleSaveEdit = async () => {
     if (!editingEntity) return;
     try {
@@ -307,19 +326,7 @@ export function ProgramDetailModal(props: ProgramDetailModalProps) {
                   <p className="text-xs text-zinc-500 mt-0.5 line-clamp-1">{program.description}</p>
                   <div className="flex flex-wrap gap-2 mt-3">
                     <button
-                      onClick={async () => {
-                        const newSubfolder: Subfolder = {
-                          id: crypto.randomUUID(),
-                          name: 'Новая подпапка',
-                          description: '',
-                          recipeIds: [],
-                        };
-                        await programsRepo.update(program.id, {
-                          subfolders: [...(program.subfolders || []), newSubfolder],
-                        });
-                        setOpenSubfolderId(newSubfolder.id);
-                        setEditingSubfolderId(newSubfolder.id);
-                      }}
+                      onClick={() => void handleCreateSubfolder()}
                       className="text-[10px] font-bold text-emerald-600 bg-emerald-50 hover:bg-emerald-100 px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-colors"
                     >
                       <FolderPlus className="w-3.5 h-3.5" />

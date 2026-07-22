@@ -411,6 +411,37 @@ describe('ProgramDetailModal', () => {
     });
   });
 
+  describe('создание подпапки', () => {
+    it('дописывает новую подпапку к существующим', async () => {
+      const { repos } = renderModal({ program: makeProgram({ subfolders: [makeSubfolder()] }) });
+      const update = vi.spyOn(repos.programs, 'update');
+
+      fireEvent.click(screen.getByText('Создать подпапку'));
+
+      await waitFor(() => expect(update).toHaveBeenCalledOnce());
+      expect(update.mock.calls[0]?.[0]).toBe('p1');
+      expect(update.mock.calls[0]?.[1]).toMatchObject({
+        subfolders: [
+          makeSubfolder(),
+          expect.objectContaining({ name: 'Новая подпапка', description: '', recipeIds: [] }),
+        ],
+      });
+    });
+
+    it('сообщает об ошибке, если создание не удалось', async () => {
+      const { repos } = renderModal({ program: makeProgram() });
+      vi.spyOn(repos.programs, 'update').mockRejectedValue(new Error('offline'));
+      const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+      fireEvent.click(screen.getByText('Создать подпапку'));
+
+      await waitFor(() =>
+        expect(globalThis.alert).toHaveBeenCalledWith('Ошибка при создании подпапки'),
+      );
+      consoleError.mockRestore();
+    });
+  });
+
   describe('handleSubfolderPdfUpload — прикрепление документа', () => {
     function fileInput(container: HTMLElement): HTMLInputElement {
       const input = container.querySelector<HTMLInputElement>('input[type="file"]');
