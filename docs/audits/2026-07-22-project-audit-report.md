@@ -162,6 +162,8 @@
 
 > **Проблема:** Inline `onClick={async () => { await programsRepo.update(...); setOpenSubfolderId(...); }}` без try/catch — при ошибке создания подпапки unhandled rejection, UI молча не меняется.
 > **Исправление:** Вынести в именованный обработчик с try/catch (как сделано в `handleSaveEdit` рядом).
+>
+> ✅ Исправлено (commit 19e3860)
 
 **[LOG-7]** `src/features/tracker/TrackerView.tsx:159`
 
