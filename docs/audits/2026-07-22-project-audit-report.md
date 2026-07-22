@@ -35,7 +35,7 @@
 | 4 | ProgramSelectionModal | TEST-2, LOG-2 | ✅ |
 | 5 | ProgramDetailModal — обработчики | TEST-3, LOG-5, LOG-6, UNDOC-2 | ✅ |
 | 6 | Cart | CONV-1, LOG-8 | ✅ |
-| 7 | Чистка пропов programs | DEAD-1, DEAD-3, TS-3 | — |
+| 7 | Чистка пропов programs | DEAD-1, DEAD-3, TS-3 | ✅ |
 | 8 | Микрофиксы | LOG-10, TS-1, TS-2, DEAD-6 | — |
 | 9 | Инфраструктура | LOG-9, CONV-2 | — |
 | 10 | Тестовая конфигурация | DEAD-5, TEST-4, TEST-5 | — |
@@ -249,6 +249,8 @@
 
 > **Проблема:** `programsRepo.update(editingEntity.programId!, …)` — non-null assertion без предшествующего guard. `programId` опционален в типе `editingEntity` (строка 132), и для `type === 'subfolder'` его отсутствие приведёт к `update(undefined)`.
 > **Исправление:** Явная проверка `if (!editingEntity.programId) return;` вместо `!`.
+>
+> ✅ Исправлено (commit 003439b)
 
 **[TS-4]** `src/App.tsx:35-43`
 
