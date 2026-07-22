@@ -12,6 +12,23 @@
 - **Техническая документация** — `Technical_Project_Documentation.md` в корне. Читай при необходимости глубокого технического контекста (архитектура, env vars, деплой, ограничения).
 - **Завершённые фазы и решения** — `docs/roadmap-archive/` (phase-0a.md, phase-0b.md, phase-1.md, phase-2.md, decisions-log.md).
 
+## Команды
+
+```bash
+npm run dev              # Vite dev server, порт 3000
+npm run build            # прод-сборка фронтенда
+npm test                 # vitest, фронтенд
+npm --prefix worker test # vitest, воркер
+npm run lint             # tsc --noEmit (НЕ eslint)
+npm run lint:eslint      # eslint src
+npm run test:coverage    # покрытие
+npm run format           # prettier --write .
+npm --prefix worker run dev     # wrangler dev
+npm --prefix worker run deploy  # wrangler deploy
+```
+
+CI нет (`.github/workflows` отсутствует), pre-commit хуков нет — зелёные тесты и typecheck перед коммитом обеспечиваются только вручную (см. TDD-раздел, шаг 4).
+
 ## Session start protocol
 
 1. Прочитай `STATUS.md` — активная фаза, следующий шаг, дата.
@@ -63,10 +80,12 @@
 ## Tech Stack
 
 - **Frontend:** React 19 + TypeScript 5.8 strict + Vite 6 + Tailwind CSS v4
-- **State management:** сейчас — `useState` в монолитном `App.tsx`; Phase 1 переводит на Context + Repository pattern + custom hooks
+- **State management:** Context API + Repository pattern (`src/app/providers/`: `DataProvider`, `RepositoryProvider`, `UserProfileProvider`), внешней state-библиотеки нет
 - **Backend / DB:** Firebase 12 (Firestore) → мигрируем на Supabase в Phase 3
-- **AI:** Google Gemini (`@google/genai`); Phase 0b выносит на Cloudflare Worker (серверный прокси)
+- **AI:** Google Gemini (`@google/genai`) — только через Cloudflare Worker (`worker/`, Hono)
 - **UI libs:** `lucide-react`, `motion`, `clsx`+`tailwind-merge`, `react-markdown`, `date-fns`, `pdfjs-dist` (клиентский парсинг PDF)
+- **i18n:** `i18next` + `react-i18next`, локали `src/locales/{ru,de,en}.json`. Инфраструктура готова, но переведены только `TabBar`, `AppHeader`, `SettingsModal` (~14 ключей) — остальной UI хардкодит русский. Новый код в этих трёх файлах обязан идти через `t()`; в остальных — по ситуации, но новые ключи класть во все три локали сразу.
+- **TS-конфиг:** алиас `@/*` → `./src/*`; включён `noUncheckedIndexedAccess` — индексный доступ к массиву даёт `T | undefined`, проверка обязательна
 - **Hosting:** Cloudflare Pages + Workers (решено в пользу Cloudflare vs Vercel — лучший free tier)
 
 ## Safety-critical constraints — не нарушать никогда
@@ -99,7 +118,7 @@
 - Один компонент на файл; co-locate styles, types, tests с компонентом
 - **Никаких прямых `fetch` в компонентах** — через сервисный слой (начиная с Phase 1)
 - Commits: conventional (`feat:`, `fix:`, `chore:`, `docs:`, `refactor:`, `test:`)
-- Ветки: `feature/`, `fix:`, `chore/`
+- Ветки: `feature/`, `fix/`, `chore/`
 - Комментарии в коде — только если объясняют неочевидное _почему_, а не _что_
 
 ## TDD и покрытие тестами — обязательный процесс
