@@ -1,6 +1,6 @@
 ---
 name: project-audit
-description: Perform a comprehensive code audit of any project. Use this skill when the user says "проверь код", "аудит кода", "code audit", "оптимизируй", "проверь на ошибки", "найди проблемы в коде", "code review", "проверь соответствие документации", "проверь логику", "найди противоречия", or any similar phrase asking to review, audit, check, or optimize code. This skill audits the codebase across 9 categories: logical errors, dead code, TypeScript violations, safety-critical constraint violations, convention compliance, performance red flags, documentation contradictions, import/dependency issues, and undocumented logic. Works with any project that has a CLAUDE.md file.
+description: Perform a comprehensive code audit of any project. Use this skill when the user says "проверь код", "аудит кода", "code audit", "оптимизируй", "проверь на ошибки", "найди проблемы в коде", "code review", "проверь соответствие документации", "проверь логику", "найди противоречия", or any similar phrase asking to review, audit, check, or optimize code. This skill audits the codebase across 10 categories: logical errors, dead code, TypeScript violations, safety-critical constraint violations, convention compliance, performance red flags, documentation contradictions, import/dependency issues, undocumented logic, and test coverage gaps. Works with any project that has a CLAUDE.md file.
 ---
 
 # Project Code Audit
@@ -28,7 +28,7 @@ description: Perform a comprehensive code audit of any project. Use this skill w
 
 Использовать пути из `## Audit scope` → `Исходный код`. Прочитать все `.ts` и `.tsx` файлы в указанных директориях, а также конфигурационные файлы из `Конфигурационные файлы для проверки`.
 
-## Phase 3: Анализ по 9 категориям
+## Phase 3: Анализ по 10 категориям
 
 Собрать **все** находки прежде чем писать отчёт. Для каждой находки:
 - категория + ID (CRIT-1, DOC-2 и т.д.)
@@ -106,6 +106,17 @@ description: Perform a comprehensive code audit of any project. Use this skill w
 - Отсутствие `useCallback` для функций, передаваемых как props дочерним компонентам
 - Монолитные компоненты, рендерящие всё без условий
 
+### 10. 🧪 Тестовое покрытие
+
+ID-префикс: TEST-N.
+
+- Экспортируемые функции/модули в директориях из `## Audit scope`, не покрытые ни одним тестом (сопоставить с `**/__tests__/**` и `*.test.*`)
+- Safety-critical логика (из `## Safety-critical constraints`) без выделенных тестов — приоритет выше обычных пробелов
+- Под-пакеты с собственным `package.json` (например `worker/`) без `test`-скрипта и тестовой инфраструктуры
+- `coverage.include` в vitest-конфиге отстаёт от директорий, которые уже фактически протестированы
+- Нетестируемые сценарии, не задокументированные в техдокументации (раздел «Тестирование» → «Нетестируемые сценарии») с указанием причины — это пробел в документации, а не в коде
+- Числа тестов/покрытия в документации расходятся с фактическим прогоном (`npm test`)
+
 ## Phase 4: Структурированный отчёт
 
 Формат строго такой:
@@ -125,6 +136,7 @@ description: Perform a comprehensive code audit of any project. Use this skill w
 | 🏛️ Соответствие соглашениям | N |
 | 🔄 Импорты / зависимости | N |
 | 🐢 Производительность | N |
+| 🧪 Тестовое покрытие | N |
 | **Итого** | **N** |
 
 ### 🔴 Критические нарушения
@@ -175,6 +187,7 @@ description: Perform a comprehensive code audit of any project. Use this skill w
 - Dead code (закомментированные блоки, недостижимые ветки)
 - TypeScript: добавить типы там, где правильный тип очевиден из контекста
 - Обновление документации для категории 📋
+- Обновление раздела «Тестирование» в техдокументации для категории 🧪 (добавить нетестируемые сценарии с причиной; сами недостающие тесты писать только после подтверждения пользователем)
 
 **Спросить перед исправлением:**
 - Противоречия с документацией, где намерение неоднозначно (`[ambiguous]`)
