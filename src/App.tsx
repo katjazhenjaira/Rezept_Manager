@@ -194,8 +194,6 @@ export default function App() {
             recipes={recipes}
             userProfile={userProfile}
             activeNutritionPlan={activeNutritionPlan}
-            checkedEntries={checkedEntries}
-            onCheckedEntriesChange={setCheckedEntries}
             onSelectRecipe={setSelectedRecipe}
             onNavigateToCart={() => setActiveTab('cart')}
             mealTypes={mealTypes}

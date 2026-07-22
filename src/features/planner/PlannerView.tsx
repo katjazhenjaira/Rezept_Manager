@@ -51,8 +51,6 @@ export type PlannerViewProps = {
   recipes: Recipe[];
   userProfile: UserProfile;
   activeNutritionPlan: ActiveNutritionPlan | null;
-  checkedEntries: string[];
-  onCheckedEntriesChange: (entries: string[]) => void;
   onSelectRecipe: (recipe: Recipe) => void;
   onNavigateToCart: () => void;
   mealTypes: string[];
