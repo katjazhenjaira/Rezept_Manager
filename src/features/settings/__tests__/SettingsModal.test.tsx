@@ -230,6 +230,25 @@ describe('SettingsModal', () => {
       await waitFor(() => expect(mockSaveUserProfile).toHaveBeenCalledOnce());
       expect(lastSavedProfile().waterGoal).toBe(Math.round(mockProfile.currentWeight * 35));
     });
+
+    // LOG-1: очистка числового поля не должна класть NaN в профиль — NaN уходит
+    // в Firestore и разносится по resolveActiveTargets() в прогресс-бары Трекера
+    // и лимиты Планера, откуда его не восстановить.
+    it('не пишет NaN в профиль при очистке числовых полей', async () => {
+      renderModal();
+
+      for (const field of NUMERIC_FIELDS) {
+        fireEvent.change(numericInput(field), { target: { value: '' } });
+      }
+      saveSettings();
+
+      await waitFor(() => expect(mockSaveUserProfile).toHaveBeenCalledOnce());
+      const saved = lastSavedProfile();
+      for (const field of NUMERIC_FIELDS) {
+        expect(Number.isNaN(saved[field])).toBe(false);
+        expect(saved[field]).toBe(0);
+      }
+    });
   });
 
   describe('категории', () => {

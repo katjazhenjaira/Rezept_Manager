@@ -173,7 +173,7 @@ export function SettingsModal({
                     type="number"
                     value={userProfile.age}
                     onChange={(e) =>
-                      setUserProfile({ ...userProfile, age: parseInt(e.target.value) })
+                      setUserProfile({ ...userProfile, age: parseInt(e.target.value) || 0 })
                     }
                     className="w-full bg-zinc-50 border border-zinc-100 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-emerald-500"
                   />
@@ -202,7 +202,10 @@ export function SettingsModal({
                     type="number"
                     value={userProfile.currentWeight}
                     onChange={(e) =>
-                      setUserProfile({ ...userProfile, currentWeight: parseFloat(e.target.value) })
+                      setUserProfile({
+                        ...userProfile,
+                        currentWeight: parseFloat(e.target.value) || 0,
+                      })
                     }
                     className="w-full bg-zinc-50 border border-zinc-100 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-emerald-500"
                   />
@@ -215,7 +218,10 @@ export function SettingsModal({
                     type="number"
                     value={userProfile.targetWeight}
                     onChange={(e) =>
-                      setUserProfile({ ...userProfile, targetWeight: parseFloat(e.target.value) })
+                      setUserProfile({
+                        ...userProfile,
+                        targetWeight: parseFloat(e.target.value) || 0,
+                      })
                     }
                     className="w-full bg-zinc-50 border border-zinc-100 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-emerald-500"
                   />
@@ -233,7 +239,10 @@ export function SettingsModal({
                       type="number"
                       value={userProfile.targetCalories}
                       onChange={(e) =>
-                        setUserProfile({ ...userProfile, targetCalories: parseInt(e.target.value) })
+                        setUserProfile({
+                          ...userProfile,
+                          targetCalories: parseInt(e.target.value) || 0,
+                        })
                       }
                       className="w-full bg-zinc-50 border border-zinc-100 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-emerald-500"
                     />
@@ -246,7 +255,10 @@ export function SettingsModal({
                       type="number"
                       value={userProfile.targetProteins}
                       onChange={(e) =>
-                        setUserProfile({ ...userProfile, targetProteins: parseInt(e.target.value) })
+                        setUserProfile({
+                          ...userProfile,
+                          targetProteins: parseInt(e.target.value) || 0,
+                        })
                       }
                       className="w-full bg-zinc-50 border border-zinc-100 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-emerald-500"
                     />
@@ -259,7 +271,10 @@ export function SettingsModal({
                       type="number"
                       value={userProfile.targetFats}
                       onChange={(e) =>
-                        setUserProfile({ ...userProfile, targetFats: parseInt(e.target.value) })
+                        setUserProfile({
+                          ...userProfile,
+                          targetFats: parseInt(e.target.value) || 0,
+                        })
                       }
                       className="w-full bg-zinc-50 border border-zinc-100 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-emerald-500"
                     />
@@ -272,7 +287,10 @@ export function SettingsModal({
                       type="number"
                       value={userProfile.targetCarbs}
                       onChange={(e) =>
-                        setUserProfile({ ...userProfile, targetCarbs: parseInt(e.target.value) })
+                        setUserProfile({
+                          ...userProfile,
+                          targetCarbs: parseInt(e.target.value) || 0,
+                        })
                       }
                       className="w-full bg-zinc-50 border border-zinc-100 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-emerald-500"
                     />
