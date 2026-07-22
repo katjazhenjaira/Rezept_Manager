@@ -283,6 +283,8 @@
 
 > **Проблема:** Компонент устанавливает активный план питания (`setActivePlan`) — механизм, на котором держится constraint №3 «Active program overrides profile goals». Не покрыт: ни выбор программы, ни выбор подпапки с наследованием КБЖУ (`subfolder.targetCalories ?? program.targetCalories ?? userProfile.targetCalories ?? 0`, строки 270-297), ни сброс на «По умолчанию».
 > **Исправление:** Тесты на цепочку наследования целей и на LOG-2.
+>
+> ✅ Исправлено (commit 9d15b29) — тест на LOG-2 добавлен вместе с самим фиксом LOG-2.
 
 **[TEST-3]** `src/features/programs/ProgramDetailModal.tsx` (1662 строки — крупнейший файл проекта, тестов нет)
 
