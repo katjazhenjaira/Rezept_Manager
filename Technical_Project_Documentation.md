@@ -154,7 +154,7 @@ StrictMode
 | `auth/`     | AuthProvider.tsx, AuthContext.ts, useAuth.ts, LandingPage.tsx, LoginScreen.tsx, SignupScreen.tsx | Firebase Auth flow                                 |
 | `recipes/`  | 7 файлов + оркестратор (см. таблицу ниже, CONV-1)                                                | 5 методов импорта: вручную, URL, PDF, фото, ссылка |
 | `planner/`  | PlannerView.tsx                                                                                  | Day/week/month/list вьюхи планировщика             |
-| `tracker/`  | TrackerView.tsx, AISuggestModal.tsx, ProgramSelectionModal.tsx                                   | КБЖУ трекер + AI советы                            |
+| `tracker/`  | TrackerView.tsx, ProgramSelectionModal.tsx                                                       | КБЖУ трекер + AI советы (UI подсказок — inline в TrackerView.tsx, отдельной модалки нет) |
 | `cart/`     | CartView.tsx, CartItemRow.tsx, services/staples.ts                                               | Список покупок + классификатор базовых продуктов   |
 | `programs/` | ProgramsView.tsx, ProgramDetailModal.tsx                                                         | Иерархия программ и подпапок                       |
 | `settings/` | SettingsModal.tsx                                                                                | Профиль, аллергии, цели, язык, выход               |
