@@ -162,30 +162,30 @@ StrictMode
 
 ### `src/features/recipes/` — декомпозирован на оркестратор + 7 файлов (CONV-1, `docs/audits/2026-07-19-project-audit-report.md`)
 
-| Файл                      | Роль                                                                                                       |
-| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Файл                      | Роль                                                                                                                                                                 |
+| ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `RecipesView.tsx`         | Оркестратор (333 строки): состояние формы add/edit, `toggleFavorite`, `handleEdit`, единственный вызов `useRecipeFilters`, JSX-скелет (toolbar/sidebar/grid/модалки) |
-| `RecipesEmptyState.tsx`   | Пустое состояние библиотеки (4 CTA: фото/PDF/ссылка/вручную)                                                                                                          |
+| `RecipesEmptyState.tsx`   | Пустое состояние библиотеки (4 CTA: фото/PDF/ссылка/вручную)                                                                                                         |
 | `RecipeCard.tsx`          | Карточка рецепта в гриде: drag-start, selection-mode чекбокс, allergen-бейдж, favorite-toggle                                                                        |
 | `useRecipeFilters.ts`     | Вся логика поиска/фильтрации/сортировки рецептов; вызывается ровно один раз, в `RecipesView.tsx`                                                                     |
 | `RecipesToolbar.tsx`      | Sticky-тулбар: поиск, переключатель Все/Избранное, фильтр-дропдаун, дропдаун добавления рецепта                                                                      |
 | `RecipeFilterSidebar.tsx` | Десктопный постоянный сайдбар с теми же фильтрами (тот же `useRecipeFilters`, без дублирования состояния)                                                            |
 | `AddRecipeModals.tsx`     | Модалки добавления/редактирования: вручную, по ссылке, PDF, фото (cross-tab), продукт-в-рецепт, delete-confirm                                                       |
-| `RecipeDetailModal.tsx`   | Детальная модалка: степпер порций (`scaleMacros()`), пересчёт КБЖУ, планирование, коллекции, share, delete                                                            |
+| `RecipeDetailModal.tsx`   | Детальная модалка: степпер порций (`scaleMacros()`), пересчёт КБЖУ, планирование, коллекции, share, delete                                                           |
 
 ### `src/app/` — providers и layout
 
-| Файл                                | Роль                                                            |
-| ----------------------------------- | --------------------------------------------------------------- |
-| `providers/RepositoryProvider.tsx`  | Инъекция 6 Firestore-реализаций через Context                   |
+| Файл                                | Роль                                                                                            |
+| ----------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `providers/RepositoryProvider.tsx`  | Инъекция 6 Firestore-реализаций через Context                                                   |
 | `providers/DataProvider.tsx`        | Reactive onSnapshot подписки (recipes, planner, cart, programs) + `errors` при падении подписки |
-| `providers/UserProfileProvider.tsx` | userProfile + activeNutritionPlan                               |
-| `providers/I18nProvider.tsx`        | i18next setup                                                   |
-| `layout/Shell.tsx`                  | min-h-screen wrapper с pb-20 для fixed TabBar                   |
-| `layout/TabBar.tsx`                 | Нижняя навигация (5 вкладок)                                    |
-| `layout/AppHeader.tsx`              | Верхний заголовок                                               |
-| `layout/DataErrorBanner.tsx`        | Баннер «данные не загрузились» по `useData().errors`            |
-| `layout/RecipeSelectionBar.tsx`     | Бар выбора рецептов для Programs                                |
+| `providers/UserProfileProvider.tsx` | userProfile + activeNutritionPlan                                                               |
+| `providers/I18nProvider.tsx`        | i18next setup                                                                                   |
+| `layout/Shell.tsx`                  | min-h-screen wrapper с pb-20 для fixed TabBar                                                   |
+| `layout/TabBar.tsx`                 | Нижняя навигация (5 вкладок)                                                                    |
+| `layout/AppHeader.tsx`              | Верхний заголовок                                                                               |
+| `layout/DataErrorBanner.tsx`        | Баннер «данные не загрузились» по `useData().errors`                                            |
+| `layout/RecipeSelectionBar.tsx`     | Бар выбора рецептов для Programs                                                                |
 
 ### `src/locales/` — переводы
 
@@ -214,9 +214,9 @@ StrictMode
 
 ### `docs/claude-code/` — резервные копии настроек Claude Code
 
-| Файл                       | Роль                                                                                                                                                                                       |
-| -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `project-audit-skill.md`   | Точная копия user-level скилла `~/.claude/skills/project-audit/SKILL.md` (не хранится в самом Claude Code внутри репозитория). Нужна для восстановления скилла при переезде на новый компьютер — см. §11.5 |
+| Файл                     | Роль                                                                                                                                                                                                       |
+| ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `project-audit-skill.md` | Точная копия user-level скилла `~/.claude/skills/project-audit/SKILL.md` (не хранится в самом Claude Code внутри репозитория). Нужна для восстановления скилла при переезде на новый компьютер — см. §11.5 |
 
 ---
 
@@ -354,7 +354,10 @@ npm run test:worker      # то же, из корня
 - `src/infrastructure/testing/` — contract tests для 6 Fake-репозиториев
 - `src/infrastructure/firestore/converters.ts` — Timestamp ↔ ISO
 - `src/infrastructure/LocalStorageNutritionPlanRepository.ts`
-- `src/app/providers/` — DataProvider (4 теста), UserProfileProvider (7 тестов)
+- `src/app/providers/` — DataProvider (подписки + `errors` при падении подписки), UserProfileProvider, RepositoryProvider (состав набора репозиториев, мемоизация по uid), I18nProvider (применение сохранённого языка на mount)
+- `src/app/layout/` — AppHeader (переключение и persist языка, открытие настроек), RecipeSelectionBar (видимость, disabled при пустом выборе, колбэки), DataErrorBanner (баннер по `useData().errors`)
+- `src/features/auth/useAuth.ts` — контракт «пользователь гарантированно есть» (бросает при loading/без пользователя)
+- `src/features/recipes/RecipesEmptyState.tsx` — четыре способа добавить первый рецепт, включая открытие скрытого file-input
 - `src/features/auth/` — AuthProvider, LoginScreen, SignupScreen
 - `src/App.tsx` — deep-link на программу (ошибка загрузки), валидация `availableCategories` из localStorage
 - `src/features/planner/` — PlannerView smoke tests + лимиты КБЖУ от активной программы
@@ -376,6 +379,7 @@ npm run test:worker      # то же, из корня
 - Интеграционные тесты worker на реальном `workerd`-рантайме (`@cloudflare/vitest-pool-workers`) — unit-тесты используют node env + фейки KV/`@google/genai`; полноценный workerd-прогон остаётся TODO Phase 0b
 - E2E тесты (Playwright не настроен)
 - 4 regression flows (allergy check, KBZHU sync, fillRemaining, share-linking) — только ручное
+- **Осознанно без своих тестов (TEST-5):** `src/app/layout/Shell.tsx` — обёртка из одного `div` с классами, поведения нет: собственный тест проверял бы разметку, а не логику; фактически рендерится в каждом ручном прогоне и в `AuthenticatedApp`. `src/features/recipes/RecipesToolbar.tsx` и `RecipeFilterSidebar.tsx` — крупные презентационные панели без собственного состояния данных: покрываются транзитивно через тесты родительского `RecipesView` (поиск, переключение вида, фильтры), отдельные тесты дублировали бы те же проверки на уровень ниже. Остальные модули из TEST-5 (`AppHeader`, `RecipeSelectionBar`, `RecipesEmptyState`, `useAuth`, `RepositoryProvider`, `I18nProvider`) получили собственные тесты — см. «Что покрыто».
 
 **Нетестируемые сценарии:**
 
@@ -490,13 +494,13 @@ cp docs/claude-code/project-audit-skill.md ~/.claude/skills/project-audit/SKILL.
 
 ### 11.7 CLI-инструменты и авторизация
 
-| Инструмент  | Версия / состояние на текущей машине                                    | Что сделать на новой машине                                                                                          |
-| ----------- | ------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------- |
-| Node        | v24.14.1 (в репозитории не зафиксирована — нет `.nvmrc`/`engines`)       | Установить Node 24.x любым способом (nvm/fnm/Homebrew)                                                                |
-| npm         | 11.12.1 (идёт в комплекте с Node)                                        | Устанавливается вместе с Node                                                                                        |
-| `wrangler`  | 4.83.0, запускается через `npx`; авторизован OAuth-токеном на аккаунт `rezept-manager@flowgence.de` | `cd worker && npx wrangler login` — пройти OAuth в браузере тем же аккаунтом Cloudflare (credentials — «Cloudflare Rezept-Manager», см. §5) |
-| Firebase CLI | **Сознательно не установлен и не используется** — `firestore.rules`/`storage.rules` деплоятся вручную через Firebase Console (см. §10) | Устанавливать не нужно, если не меняется процесс деплоя правил                                                       |
-| git + GitHub | Remote по HTTPS: `https://github.com/katjazhenjaira/Rezept_Manager`; локально авторизация через `credential.helper=osxkeychain` | Настроить git-авторизацию заново: SSH-ключ либо HTTPS + `gh auth login` / Personal Access Token (credentials — «GitHub Rezept Manager», см. §5; токен/ключ сохранится в Keychain на macOS) |
+| Инструмент   | Версия / состояние на текущей машине                                                                                                   | Что сделать на новой машине                                                                                                                                                                |
+| ------------ | -------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Node         | v24.14.1 (в репозитории не зафиксирована — нет `.nvmrc`/`engines`)                                                                     | Установить Node 24.x любым способом (nvm/fnm/Homebrew)                                                                                                                                     |
+| npm          | 11.12.1 (идёт в комплекте с Node)                                                                                                      | Устанавливается вместе с Node                                                                                                                                                              |
+| `wrangler`   | 4.83.0, запускается через `npx`; авторизован OAuth-токеном на аккаунт `rezept-manager@flowgence.de`                                    | `cd worker && npx wrangler login` — пройти OAuth в браузере тем же аккаунтом Cloudflare (credentials — «Cloudflare Rezept-Manager», см. §5)                                                |
+| Firebase CLI | **Сознательно не установлен и не используется** — `firestore.rules`/`storage.rules` деплоятся вручную через Firebase Console (см. §10) | Устанавливать не нужно, если не меняется процесс деплоя правил                                                                                                                             |
+| git + GitHub | Remote по HTTPS: `https://github.com/katjazhenjaira/Rezept_Manager`; локально авторизация через `credential.helper=osxkeychain`        | Настроить git-авторизацию заново: SSH-ключ либо HTTPS + `gh auth login` / Personal Access Token (credentials — «GitHub Rezept Manager», см. §5; токен/ключ сохранится в Keychain на macOS) |
 
 ### 11.8 Memory Claude Code (опционально)
 
