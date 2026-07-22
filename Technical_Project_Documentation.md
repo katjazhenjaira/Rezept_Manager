@@ -156,7 +156,7 @@ StrictMode
 | `recipes/`  | 7 файлов + оркестратор (см. таблицу ниже, CONV-1)                                                | 5 методов импорта: вручную, URL, PDF, фото, ссылка |
 | `planner/`  | PlannerView.tsx                                                                                  | Day/week/month/list вьюхи планировщика             |
 | `tracker/`  | TrackerView.tsx, AISuggestModal.tsx, ProgramSelectionModal.tsx                                   | КБЖУ трекер + AI советы                            |
-| `cart/`     | CartView.tsx, services/staples.ts                                                                | Список покупок + классификатор базовых продуктов   |
+| `cart/`     | CartView.tsx, CartItemRow.tsx, services/staples.ts                                               | Список покупок + классификатор базовых продуктов   |
 | `programs/` | ProgramsView.tsx, ProgramDetailModal.tsx                                                         | Иерархия программ и подпапок                       |
 | `settings/` | SettingsModal.tsx                                                                                | Профиль, аллергии, цели, язык, выход               |
 
@@ -368,7 +368,7 @@ npm run test:worker      # то же, из корня
 - `src/services/ai/aiClient.ts` — 6 методов, формат ошибки, fallback на statusText
 - `src/app/providers/i18nConfig.ts` — `changeLanguage` + persist в localStorage
 - `src/shared/utils/pdfUtils.ts` — `extractTextFromPDF` (склейка страниц), graceful-ветки `extractImageFromPDF`
-- UI smoke-тесты (RTL): `RecipeCard`, `RecipesView`, `RecipeDetailModal`, `CartView`, `ProgramsView`, `TabBar`, `LandingPage`
+- UI smoke-тесты (RTL): `RecipeCard`, `RecipesView`, `RecipeDetailModal`, `CartView`, `CartItemRow`, `ProgramsView`, `TabBar`, `LandingPage`
 
 **Что НЕ покрыто:**
 
