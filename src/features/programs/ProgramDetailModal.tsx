@@ -199,6 +199,9 @@ export function ProgramDetailModal(props: ProgramDetailModalProps) {
   const handleSubfolderPdfUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    // Сам файл никуда не загружается (ни Storage, ни Firestore) — в ресурсе остаётся только
+    // имя, поэтому сообщение не должно обещать пользователю загрузку файла (UNDOC-2).
+    const attachedMessage = `Документ ${file.name} прикреплён. Сохраняется только имя файла — сам файл никуда не загружается.`;
     const newResource: Resource = {
       id: crypto.randomUUID(),
       type: 'pdf',
@@ -208,7 +211,7 @@ export function ProgramDetailModal(props: ProgramDetailModalProps) {
     };
     if (editingEntity) {
       setEditFormData((prev) => ({ ...prev, resources: [...prev.resources, newResource] }));
-      alert(`Файл ${file.name} добавлен`);
+      alert(attachedMessage);
       return;
     }
     if (activeResourceForm) {
@@ -226,7 +229,7 @@ export function ProgramDetailModal(props: ProgramDetailModalProps) {
           await programsRepo.update(program.id, { subfolders: newSubfolders });
         }
         setActiveResourceForm(null);
-        alert(`Файл ${file.name} загружен`);
+        alert(attachedMessage);
       } catch (error) {
         console.error('Error attaching resource:', error);
         alert('Ошибка при добавлении файла');

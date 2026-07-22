@@ -462,6 +462,28 @@ describe('ProgramDetailModal', () => {
       expect(update).not.toHaveBeenCalled();
     });
 
+    // UNDOC-2: файл никуда не загружается — в ресурсе сохраняется только его имя,
+    // поэтому сообщение не должно утверждать, что файл «загружен».
+    it('сообщает, что сохранено только имя файла, и кладёт имя в url ресурса', async () => {
+      const { container, repos } = renderModal({ program: makeProgram() });
+      const update = vi.spyOn(repos.programs, 'update');
+
+      fireEvent.click(screen.getByTitle('Редактировать программу'));
+      fireEvent.change(fileInput(container), {
+        target: { files: [new File(['%PDF'], 'plan.pdf', { type: 'application/pdf' })] },
+      });
+      await screen.findByText('plan.pdf');
+      fireEvent.click(screen.getByText('Сохранить'));
+
+      expect(globalThis.alert).toHaveBeenCalledWith(
+        'Документ plan.pdf прикреплён. Сохраняется только имя файла — сам файл никуда не загружается.',
+      );
+      await waitFor(() => expect(update).toHaveBeenCalledOnce());
+      expect(update.mock.calls[0]?.[1]).toMatchObject({
+        resources: [expect.objectContaining({ type: 'pdf', url: 'plan.pdf', title: 'plan.pdf' })],
+      });
+    });
+
     it('игнорирует выбор файла, когда форма редактирования закрыта', async () => {
       const { container, repos } = renderModal({ program: makeProgram() });
       const update = vi.spyOn(repos.programs, 'update');
