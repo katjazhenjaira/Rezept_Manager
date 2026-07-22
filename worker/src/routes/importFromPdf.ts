@@ -103,7 +103,6 @@ export async function importFromPdf(c: Context<{ Bindings: Env }>) {
   try {
     if (pdfText) {
       // Large PDF path: client extracted text via pdfjs-dist, send as text prompt
-      console.log('[importFromPdf] text path, chars:', pdfText.length);
       const response = await ai.models.generateContent({
         model: 'gemini-3-flash-preview',
         contents: [{ text: buildPrompt(availableCategories) + '\n\nPDF content:\n' + pdfText }],
