@@ -14,6 +14,6 @@ View your app in AI Studio: https://ai.studio/apps/76541966-a1f8-465e-b52f-ba3d9
 
 1. Install dependencies:
    `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
+2. Set the `GEMINI_API_KEY` in [worker/.dev.vars](worker/.dev.vars) to your Gemini API key (see [Technical_Project_Documentation.md](Technical_Project_Documentation.md) for the full local dev setup, including running the Cloudflare Worker)
 3. Run the app:
    `npm run dev`
