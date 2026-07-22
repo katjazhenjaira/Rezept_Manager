@@ -38,7 +38,7 @@
 | 7 | Чистка пропов programs | DEAD-1, DEAD-3, TS-3 | ✅ |
 | 8 | Микрофиксы | LOG-10, TS-1, TS-2, DEAD-6 | ✅ |
 | 9 | Инфраструктура | LOG-9, CONV-2 | ✅ |
-| 10 | Тестовая конфигурация | DEAD-5, TEST-4, TEST-5 | — |
+| 10 | Тестовая конфигурация | DEAD-5, TEST-4, TEST-5 | ✅ |
 | 11a | Документация: структура файлов | DOC-1, DOC-2, DOC-3, UNDOC-1 | — |
 | 11b | Документация: числа и продукт | DOC-4, DOC-6, UNDOC-3 | — |
 | 12 | Спорное: продуктовые решения | LOG-4, DEAD-4, DOC-5 | — |
@@ -338,6 +338,8 @@
 
 > **Проблема:** `RecipesToolbar.tsx`, `RecipeFilterSidebar.tsx`, `RecipesEmptyState.tsx`, `AppHeader.tsx`, `Shell.tsx`, `RecipeSelectionBar.tsx`, `useAuth.ts`, `RepositoryProvider.tsx`, `I18nProvider.tsx` — экспортируемый код без co-located тестов и без записи в «Нетестируемых сценариях».
 > **Исправление:** Либо smoke-тесты, либо явная запись в TechDoc §9, что тонкие презентационные обёртки покрываются транзитивно через тесты родителей.
+>
+> ✅ Исправлено (commit 80e14a5) — тесты написаны для `useAuth`, `RepositoryProvider`, `I18nProvider`, `AppHeader`, `RecipeSelectionBar`, `RecipesEmptyState`; `Shell`, `RecipesToolbar` и `RecipeFilterSidebar` осознанно оставлены без своих тестов с причиной в TechDoc §9.
 
 ---
 
