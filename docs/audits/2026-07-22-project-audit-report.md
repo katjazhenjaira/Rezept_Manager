@@ -33,7 +33,7 @@
 | 2 | PlannerView + App.tsx (safety-critical) | CRIT-2, DEAD-2, LOG-3, TS-4 | ✅ |
 | 3 | SettingsModal | TEST-1, LOG-1 | ✅ |
 | 4 | ProgramSelectionModal | TEST-2, LOG-2 | ✅ |
-| 5 | ProgramDetailModal — обработчики | TEST-3, LOG-5, LOG-6, UNDOC-2 | — |
+| 5 | ProgramDetailModal — обработчики | TEST-3, LOG-5, LOG-6, UNDOC-2 | ✅ |
 | 6 | Cart | CONV-1, LOG-8 | — |
 | 7 | Чистка пропов programs | DEAD-1, DEAD-3, TS-3 | — |
 | 8 | Микрофиксы | LOG-10, TS-1, TS-2, DEAD-6 | — |
@@ -112,6 +112,8 @@
 
 > **Проблема:** `handleSubfolderPdfUpload` создаёт `Resource` с `url: file.name` — файл никуда не загружается (ни Storage, ни Firestore-blob), сохраняется только имя. Пользователю при этом показывается `alert('Файл ${file.name} загружен')`. Ни в `Application_description.md`, ни в TechDoc поведение «PDF-ресурс = только имя файла» не описано.
 > **Действие:** Задокументировать фактическое поведение в `Application_description.md` (Программы → ресурсы) либо завести задачу на реальную загрузку в Firebase Storage. Как минимум — поправить текст алерта, он вводит в заблуждение.
+>
+> ✅ Исправлено (commit 42bb358) — новый раздел «Ресурсы программы (ссылки и документы)» в `Application_description.md` + честный текст алерта. Реальная загрузка в Storage намеренно не реализована — отдельная задача.
 
 **[UNDOC-3]** `src/features/planner/PlannerView.tsx:497-498`
 
