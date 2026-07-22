@@ -34,7 +34,7 @@
 | 3 | SettingsModal | TEST-1, LOG-1 | ✅ |
 | 4 | ProgramSelectionModal | TEST-2, LOG-2 | ✅ |
 | 5 | ProgramDetailModal — обработчики | TEST-3, LOG-5, LOG-6, UNDOC-2 | ✅ |
-| 6 | Cart | CONV-1, LOG-8 | — |
+| 6 | Cart | CONV-1, LOG-8 | ✅ |
 | 7 | Чистка пропов programs | DEAD-1, DEAD-3, TS-3 | — |
 | 8 | Микрофиксы | LOG-10, TS-1, TS-2, DEAD-6 | — |
 | 9 | Инфраструктура | LOG-9, CONV-2 | — |
@@ -178,6 +178,8 @@
 
 > **Проблема:** Шесть операций записи в корзину (`toggleCartItem`, `deleteCartItem`, `updateCartItemAmount`, `clearCart`, `handleAddManualCartItem`) возвращают промисы, которые нигде не обрабатываются. Ни одна не имеет try/catch. Отказ Firestore → unhandled rejection и молчаливая потеря действия пользователя.
 > **Исправление:** try/catch с сообщением об ошибке, по образцу `ProgramDetailModal.addProductsToCart` (строки 96-125).
+>
+> ✅ Исправлено (commit d8d0db0)
 
 **[LOG-9]** `src/app/providers/DataProvider.tsx:19-22`
 
