@@ -25,10 +25,13 @@ function isPrivateIPv6(hostname: string): boolean {
   const mappedV4 = h.match(/^::(?:ffff:)?(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})$/)?.[1];
   if (mappedV4 && isPrivateIPv4(mappedV4)) return true;
 
-  // The WHATWG URL parser canonicalizes IPv4-mapped IPv6 to hex-group form
-  // (e.g. `::ffff:127.0.0.1` -> `::ffff:7f00:1`) before `hostname` is ever read,
-  // so the dotted-decimal branch above is dead for URLs built via `new URL()`.
-  const mappedV4Hex = h.match(/^::ffff:([0-9a-f]{1,4}):([0-9a-f]{1,4})$/);
+  // The WHATWG URL parser canonicalizes IPv4-mapped IPv6 (`::ffff:a.b.c.d`) and
+  // the deprecated IPv4-compatible form (`::a.b.c.d`, no `ffff:` label) to the
+  // same hex-group shape (e.g. `::ffff:127.0.0.1` -> `::ffff:7f00:1`, and
+  // `::127.0.0.1` -> `::7f00:1`) before `hostname` is ever read, so the
+  // dotted-decimal branch above is dead for URLs built via `new URL()`. The
+  // `ffff:` label must stay optional here to catch the compatible form too.
+  const mappedV4Hex = h.match(/^::(?:ffff:)?([0-9a-f]{1,4}):([0-9a-f]{1,4})$/);
   if (mappedV4Hex) {
     const hi = parseInt(mappedV4Hex[1]!, 16);
     const lo = parseInt(mappedV4Hex[2]!, 16);

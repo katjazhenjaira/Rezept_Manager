@@ -90,6 +90,26 @@ describe('validateExternalUrl', () => {
   it('allows public IPv4-mapped IPv6', () => {
     expect(validateExternalUrl('http://[::ffff:8.8.8.8]/')).not.toBeNull();
   });
+
+  // Deprecated IPv4-compatible IPv6 form (no `ffff:` label) canonicalizes to the
+  // same hex-group shape as the mapped form — e.g.
+  // `new URL('http://[::127.0.0.1]/').hostname` is `[::7f00:1]`. isPrivateIPv6
+  // must treat `ffff:` as optional in the hex branch, or these private
+  // addresses (including cloud metadata) slip through.
+  it.each([
+    '[::127.0.0.1]',
+    '[::192.168.1.1]',
+    '[::169.254.169.254]', // cloud metadata
+    '[::10.0.0.1]',
+  ])('blocks IPv4-compatible IPv6 of private addresses: %s', (host) => {
+    expect(validateExternalUrl(`http://${host}/`)).toBeNull();
+  });
+
+  it('allows public IPv4-compatible IPv6 (boundary case)', () => {
+    // [::808:808] is the hex-canonical form of the deprecated ::8.8.8.8
+    // compatible literal — 8.8.8.8 is public, so this must remain allowed.
+    expect(validateExternalUrl('http://[::808:808]/')).not.toBeNull();
+  });
 });
 
 describe('safeFetch', () => {
