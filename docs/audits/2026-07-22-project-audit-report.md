@@ -155,6 +155,8 @@
 
 > **Проблема:** `{userProfile?.waterGoal} мл` — без fallback на `DEFAULT_PROFILE`, хотя строкой выше (72) для целей КБЖУ используется `userProfile ?? DEFAULT_PROFILE`. Пока профиль не загружен, рендерится «Твоя цель:  мл».
 > **Исправление:** Ввести локальную `const profile = userProfile ?? DEFAULT_PROFILE` и использовать её везде в компоненте (строки 159 и 163).
+>
+> ✅ Исправлено (commit b83aceb)
 
 **[LOG-8]** `src/features/cart/CartView.tsx:140,142,144,146,162,170`
 
