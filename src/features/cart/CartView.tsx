@@ -20,28 +20,60 @@ export function CartView({ cart, allergies }: Props) {
     e.preventDefault();
     if (!newCartItemName.trim()) return;
 
-    await cartRepo.add({
-      name: newCartItemName,
-      amount: newCartItemAmount,
-      sourceDishes: [],
-      checked: false,
-      isBasic: isStaple(newCartItemName),
-      createdAt: new Date().toISOString(),
-    });
-
-    setNewCartItemName('');
-    setNewCartItemAmount('');
+    try {
+      await cartRepo.add({
+        name: newCartItemName,
+        amount: newCartItemAmount,
+        sourceDishes: [],
+        checked: false,
+        isBasic: isStaple(newCartItemName),
+        createdAt: new Date().toISOString(),
+      });
+      // Поля очищаются только после успешной записи — иначе сбой Firestore
+      // молча съел бы набранный пользователем текст.
+      setNewCartItemName('');
+      setNewCartItemAmount('');
+    } catch (error) {
+      console.error('Error adding cart item:', error);
+      alert('Ошибка при добавлении в корзину');
+    }
   };
 
-  const toggleCartItem = (item: CartItem) => cartRepo.update(item.id, { checked: !item.checked });
+  const toggleCartItem = async (item: CartItem) => {
+    try {
+      await cartRepo.update(item.id, { checked: !item.checked });
+    } catch (error) {
+      console.error('Error toggling cart item:', error);
+      alert('Ошибка при обновлении корзины');
+    }
+  };
 
-  const deleteCartItem = (id: string) => cartRepo.delete(id);
+  const deleteCartItem = async (id: string) => {
+    try {
+      await cartRepo.delete(id);
+    } catch (error) {
+      console.error('Error deleting cart item:', error);
+      alert('Ошибка при удалении из корзины');
+    }
+  };
 
-  const updateCartItemAmount = (id: string, amount: string) => cartRepo.update(id, { amount });
+  const updateCartItemAmount = async (id: string, amount: string) => {
+    try {
+      await cartRepo.update(id, { amount });
+    } catch (error) {
+      console.error('Error updating cart item amount:', error);
+      alert('Ошибка при обновлении корзины');
+    }
+  };
 
   const clearCart = async () => {
     if (!confirm('Очистить всю корзину?')) return;
-    await cartRepo.deleteAll();
+    try {
+      await cartRepo.deleteAll();
+    } catch (error) {
+      console.error('Error clearing cart:', error);
+      alert('Ошибка при очистке корзины');
+    }
   };
 
   const basicItems = cart.filter((item) => item.isBasic);
