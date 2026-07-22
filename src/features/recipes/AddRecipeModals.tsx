@@ -183,11 +183,15 @@ export function AddRecipeModals({
 
     let imageUrl = formData.image;
     if (!imageUrl) {
-      const generated = await aiClient.generateImage({
-        title: formData.title,
-        ingredients: formData.ingredients.split('\n'),
-      });
-      if (generated?.imageDataUri) imageUrl = generated.imageDataUri;
+      try {
+        const generated = await aiClient.generateImage({
+          title: formData.title,
+          ingredients: formData.ingredients.split('\n'),
+        });
+        if (generated?.imageDataUri) imageUrl = generated.imageDataUri;
+      } catch (error) {
+        console.error('Error generating recipe image:', error);
+      }
     }
 
     const recipeData = {
