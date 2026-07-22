@@ -339,7 +339,7 @@
 > **Проблема:** `RecipesToolbar.tsx`, `RecipeFilterSidebar.tsx`, `RecipesEmptyState.tsx`, `AppHeader.tsx`, `Shell.tsx`, `RecipeSelectionBar.tsx`, `useAuth.ts`, `RepositoryProvider.tsx`, `I18nProvider.tsx` — экспортируемый код без co-located тестов и без записи в «Нетестируемых сценариях».
 > **Исправление:** Либо smoke-тесты, либо явная запись в TechDoc §9, что тонкие презентационные обёртки покрываются транзитивно через тесты родителей.
 >
-> ✅ Исправлено (commit 80e14a5) — тесты написаны для `useAuth`, `RepositoryProvider`, `I18nProvider`, `AppHeader`, `RecipeSelectionBar`, `RecipesEmptyState`; `Shell`, `RecipesToolbar` и `RecipeFilterSidebar` осознанно оставлены без своих тестов с причиной в TechDoc §9.
+> ✅ Исправлено (commit 80e14a5) — тесты написаны для `useAuth`, `RepositoryProvider`, `I18nProvider`, `AppHeader`, `RecipeSelectionBar`, `RecipesEmptyState`; `Shell`, `RecipesToolbar` и `RecipeFilterSidebar` осознанно оставлены без своих тестов с причиной в TechDoc §9. Покрытие после группы 10: statements 48.99% (976/1992), branches 45.93% (649/1413), functions 43.97% (332/755), lines 49.02% (909/1854).
 
 ---
 
