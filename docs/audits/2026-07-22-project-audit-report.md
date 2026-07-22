@@ -30,7 +30,7 @@
 | # | Группа | Находки | Статус |
 |---|--------|---------|--------|
 | 1 | TrackerView (safety-critical) | CRIT-1, LOG-7, PERF-1 | ✅ |
-| 2 | PlannerView + App.tsx (safety-critical) | CRIT-2, DEAD-2, LOG-3, TS-4 | — |
+| 2 | PlannerView + App.tsx (safety-critical) | CRIT-2, DEAD-2, LOG-3, TS-4 | ✅ |
 | 3 | SettingsModal | TEST-1, LOG-1 | — |
 | 4 | ProgramSelectionModal | TEST-2, LOG-2 | — |
 | 5 | ProgramDetailModal — обработчики | TEST-3, LOG-5, LOG-6, UNDOC-2 | — |
@@ -236,6 +236,8 @@
 
 > **Проблема:** `JSON.parse(savedCategories)` возвращает `any` и без валидации присваивается в `useState<string[]>`. Испорченный localStorage (например `{"a":1}`) даст не-массив, и `availableCategories.map/includes` упадёт в рантайме.
 > **Исправление:** Проверить `Array.isArray(parsed) && parsed.every(x => typeof x === 'string')` перед возвратом.
+>
+> ✅ Исправлено (commit bd5ffc9)
 
 ---
 
