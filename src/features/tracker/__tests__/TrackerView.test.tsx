@@ -167,7 +167,10 @@ describe('TrackerView', () => {
     fakeRepos.planner.reset();
     vi.mocked(aiClient.fillRemaining).mockResolvedValue(defaultSuggestion);
     vi.stubGlobal('alert', vi.fn());
-    vi.stubGlobal('confirm', vi.fn(() => true));
+    vi.stubGlobal(
+      'confirm',
+      vi.fn(() => true),
+    );
   });
 
   afterEach(() => {
@@ -323,6 +326,48 @@ describe('TrackerView', () => {
 
     expect(screen.getByText('Твоя цель: 2500 мл')).toBeDefined();
     expect(screen.getByText('2450 мл/день')).toBeDefined();
+  });
+
+  // CONV-2: домен возвращает name === null («активного плана нет»), подпись резолвит UI.
+  it('подписывает текущий план по умолчанию, когда активного плана нет', () => {
+    const Wrapper = makeWrapper(emptyData);
+
+    render(
+      <Wrapper>
+        <TrackerView
+          checkedEntries={[]}
+          onCheckedEntriesChange={vi.fn()}
+          mealTypes={['Завтрак', 'Обед', 'Ужин', 'Перекус']}
+          onSelectRecipe={vi.fn()}
+          onNavigateToPlanner={vi.fn()}
+        />
+      </Wrapper>,
+    );
+
+    expect(screen.getByText('По умолчанию (из настроек)')).toBeDefined();
+  });
+
+  it('передаёт в AI-запрос читаемое имя плана, а не пустое значение', async () => {
+    const Wrapper = makeWrapper(emptyData);
+
+    render(
+      <Wrapper>
+        <TrackerView
+          checkedEntries={[]}
+          onCheckedEntriesChange={vi.fn()}
+          mealTypes={['Завтрак', 'Обед', 'Ужин', 'Перекус']}
+          onSelectRecipe={vi.fn()}
+          onNavigateToPlanner={vi.fn()}
+        />
+      </Wrapper>,
+    );
+
+    fireEvent.click(screen.getByText(/заполнить остаток кбжу/i));
+
+    await waitFor(() => expect(aiClient.fillRemaining).toHaveBeenCalled());
+    expect(vi.mocked(aiClient.fillRemaining).mock.calls[0]?.[0].planName).toBe(
+      'По умолчанию (из настроек)',
+    );
   });
 
   // CRIT-1: safety-critical constraint №1 — allergy check обязателен перед добавлением

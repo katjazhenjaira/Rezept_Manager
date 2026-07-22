@@ -40,6 +40,10 @@ function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+/** Подпись для случая, когда активного плана нет и цели берутся из профиля.
+ *  Живёт в UI-слое: `resolveActiveTargets()` возвращает `name: null` (CONV-2). */
+const DEFAULT_PLAN_LABEL = 'По умолчанию (из настроек)';
+
 export type TrackerViewProps = {
   checkedEntries: string[];
   onCheckedEntriesChange: (entries: string[]) => void;
@@ -88,6 +92,7 @@ export function TrackerView({
     [checkedEntriesData, recipes],
   );
   const currentTargets = resolveActiveTargets(activeNutritionPlan, profile);
+  const currentPlanLabel = currentTargets.name ?? DEFAULT_PLAN_LABEL;
   const remainingMacros = computeRemainingMacros(currentTargets, actualMacros);
 
   const handleSuggest = async (isAlternative = false) => {
@@ -105,7 +110,7 @@ export function TrackerView({
     try {
       const result = await aiClient.fillRemaining({
         remaining: remainingMacros,
-        planName: currentTargets.name,
+        planName: currentPlanLabel,
         allergies: profile.allergies,
         activeProgramRules: {
           allowedProducts: activeNutritionPlan?.allowedProducts ?? [],
@@ -215,7 +220,7 @@ export function TrackerView({
             <div>
               <p className="text-xs font-bold text-zinc-400 uppercase">Текущий план</p>
               <h3 className="text-sm font-bold text-zinc-900">
-                {currentTargets.name}
+                {currentPlanLabel}
                 {activeNutritionPlan?.subfolderName && (
                   <span className="text-emerald-600 ml-1">
                     / {activeNutritionPlan.subfolderName}

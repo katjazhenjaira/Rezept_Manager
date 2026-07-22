@@ -1,7 +1,9 @@
 import type { Macros, PlannerEntry, Recipe, UserProfile, ActiveNutritionPlan } from './types';
 
 export type NutritionTargets = {
-  name: string;
+  /** Имя активного плана; `null` — активного плана нет, цели взяты из профиля.
+   *  Подпись для пользователя резолвит UI-слой: домен не содержит UI-строк. */
+  name: string | null;
   calories: number;
   proteins: number;
   fats: number;
@@ -64,7 +66,7 @@ export function resolveActiveTargets(
     };
   }
   return {
-    name: 'По умолчанию (из настроек)',
+    name: null,
     calories: profile.targetCalories,
     proteins: profile.targetProteins,
     fats: profile.targetFats,

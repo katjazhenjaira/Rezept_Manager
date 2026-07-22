@@ -142,10 +142,12 @@ describe('remainingMacros', () => {
 });
 
 describe('resolveActiveTargets', () => {
+  // name === null — доменный маркер «активного плана нет, цели из профиля».
+  // Человекочитаемая подпись резолвится в UI-слое: домен не содержит UI-строк (CONV-2).
   it('falls back to profile defaults when plan is null', () => {
     const result = resolveActiveTargets(null, baseProfile);
     expect(result).toEqual({
-      name: 'По умолчанию (из настроек)',
+      name: null,
       calories: 2000,
       proteins: 120,
       fats: 60,
@@ -176,6 +178,11 @@ describe('resolveActiveTargets', () => {
       allowedProducts: ['куриная грудка'],
       forbiddenProducts: ['сахар'],
     });
+  });
+
+  it('does not leak UI strings from the domain layer', () => {
+    const result = resolveActiveTargets(null, baseProfile);
+    expect(result.name).toBeNull();
   });
 
   it('defaults allowedProducts/forbiddenProducts to empty arrays when plan omits them', () => {
