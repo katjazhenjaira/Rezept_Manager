@@ -66,22 +66,22 @@ describe('validateExternalUrl', () => {
     },
   );
 
-  // KNOWN BUG (see report): the WHATWG URL parser canonicalizes IPv4-mapped
-  // IPv6 literals to hex-group form before validateExternalUrl ever sees the
-  // hostname — e.g. `new URL('http://[::ffff:127.0.0.1]/').hostname` is
-  // `[::ffff:7f00:1]`, never `[::ffff:127.0.0.1]`. isPrivateIPv6's mapped-v4
-  // regex only matches dotted-decimal (`::(ffff:)?\d{1,3}\.\d{1,3}...`), so it
-  // never fires and these private addresses are NOT actually blocked. This
-  // test documents the current (insecure) behavior rather than the intended
-  // one — do not "fix" it here; the source needs a real fix (parse hex groups
-  // too, or compare against `parsed.hostname` before/without relying on the
-  // dotted form).
-  it.each(['[::ffff:127.0.0.1]', '[::ffff:192.168.1.1]'])(
-    'does NOT block IPv4-mapped IPv6 of private addresses (known bug): %s',
-    (host) => {
-      expect(validateExternalUrl(`http://${host}/`)).not.toBeNull();
-    },
-  );
+  // The WHATWG URL parser canonicalizes IPv4-mapped IPv6 literals to hex-group
+  // form before validateExternalUrl ever sees the hostname — e.g.
+  // `new URL('http://[::ffff:127.0.0.1]/').hostname` is `[::ffff:7f00:1]`,
+  // never `[::ffff:127.0.0.1]`. isPrivateIPv6 must recognize the canonical hex
+  // form too, not just dotted-decimal, or these private addresses slip through.
+  it.each([
+    '[::ffff:127.0.0.1]',
+    '[::ffff:192.168.1.1]',
+    '[::ffff:169.254.169.254]', // cloud metadata
+    '[::ffff:10.0.0.1]',
+    '[0:0:0:0:0:ffff:127.0.0.1]', // long form
+    '[::FFFF:127.0.0.1]', // uppercase
+    '[::ffff:7f00:1]', // direct hex-canonical form
+  ])('blocks IPv4-mapped IPv6 of private addresses: %s', (host) => {
+    expect(validateExternalUrl(`http://${host}/`)).toBeNull();
+  });
 
   it('allows public IPv6', () => {
     expect(validateExternalUrl('http://[2606:4700::1111]/')).not.toBeNull();
