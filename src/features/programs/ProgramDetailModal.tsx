@@ -118,7 +118,6 @@ export function ProgramDetailModal(props: ProgramDetailModalProps) {
   };
 
   const [openSubfolderId, setOpenSubfolderId] = useState<string | null>(null);
-  const [, setEditingSubfolderId] = useState<string | null>(null);
   const [editingEntity, setEditingEntity] = useState<{
     type: 'program' | 'subfolder';
     id: string;
@@ -242,7 +241,6 @@ export function ProgramDetailModal(props: ProgramDetailModalProps) {
         subfolders: [...(program.subfolders || []), newSubfolder],
       });
       setOpenSubfolderId(newSubfolder.id);
-      setEditingSubfolderId(newSubfolder.id);
     } catch (error) {
       console.error('Error creating subfolder:', error);
       alert('Ошибка при создании подпапки');
@@ -1646,7 +1644,6 @@ export function ProgramDetailModal(props: ProgramDetailModalProps) {
                       ),
                     });
                     setSubfolderToDelete(null);
-                    setEditingSubfolderId(null);
                   }}
                   className="flex-1 py-3 font-bold text-white bg-red-600 hover:bg-red-700 rounded-xl transition-colors shadow-lg"
                 >
