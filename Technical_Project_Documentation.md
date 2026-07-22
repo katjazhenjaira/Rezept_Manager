@@ -95,7 +95,7 @@ StrictMode
 1. `TrackerView` вычисляет remaining macros через `remainingMacros()`
 2. `aiClient.fillRemaining({ remaining, allergies, activeProgram, recipeLibrary })`
 3. Worker → Gemini → 3 варианта (`FillRemainingOption[]`)
-4. `AISuggestModal` → выбор → `plannerRepo.add()`
+4. Inline-UI подсказок в `TrackerView` → выбор → детерминированный allergy-гейт (`recipeAllergens`/`productAllergens` + `confirm`) → `plannerRepo.add()`
 
 **Авторизация:**
 
