@@ -165,6 +165,8 @@ export function RecipeDetailModal({
               <Edit3 className="w-5 h-5" />
             </button>
             <button
+              type="button"
+              aria-label={recipe.isFavorite ? 'Убрать из избранного' : 'В избранное'}
               onClick={() => onToggleFavorite(recipe.id)}
               className={cn(
                 'w-10 h-10 rounded-full flex items-center justify-center transition-all border',
@@ -176,6 +178,8 @@ export function RecipeDetailModal({
               <Activity className={cn('w-5 h-5', recipe.isFavorite && 'fill-current')} />
             </button>
             <button
+              type="button"
+              aria-label="Закрыть"
               onClick={() => {
                 onSelectedRecipeChange(null);
                 setIsPlanning(false);

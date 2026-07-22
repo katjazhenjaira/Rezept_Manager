@@ -104,7 +104,14 @@ export const RecipeCard = React.memo(function RecipeCard({
         />
         <div className="absolute top-3 right-3 flex gap-2">
           <button
-            onClick={(e) => onToggleFavorite(recipe.id, e)}
+            type="button"
+            aria-label={recipe.isFavorite ? 'Убрать из избранного' : 'В избранное'}
+            // Гасим всплытие сами, а не полагаемся на onToggleFavorite: клик по «избранному»
+            // не должен открывать карточку (onClick родительского motion.div).
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleFavorite(recipe.id, e);
+            }}
             className={cn(
               'w-8 h-8 rounded-full flex items-center justify-center backdrop-blur-md transition-all',
               recipe.isFavorite

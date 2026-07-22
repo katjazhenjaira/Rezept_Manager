@@ -69,10 +69,10 @@ describe('RecipeCard', () => {
     expect(onSelectRecipe).toHaveBeenCalledWith(recipe);
   });
 
-  it('fires onToggleFavorite when the favorite button is clicked', () => {
-    // stopPropagation matches how real callers (e.g. RecipesView.toggleFavorite) use this prop,
-    // preventing the click from bubbling up to the card's own onClick.
-    const onToggleFavorite = vi.fn((_id: string, e?: React.MouseEvent) => e?.stopPropagation());
+  it('fires onToggleFavorite and does not open the card when the favorite button is clicked', () => {
+    // onToggleFavorite is a plain spy that does NOT stop propagation — the component itself
+    // must gate the click, so this verifies RecipeCard's own guarantee, not the caller's.
+    const onToggleFavorite = vi.fn();
     const onSelectRecipe = vi.fn();
     render(
       <RecipeCard
@@ -86,7 +86,7 @@ describe('RecipeCard', () => {
       />,
     );
 
-    fireEvent.click(screen.getByRole('button'));
+    fireEvent.click(screen.getByRole('button', { name: 'В избранное' }));
     expect(onToggleFavorite).toHaveBeenCalledWith('r1', expect.anything());
     expect(onSelectRecipe).not.toHaveBeenCalled();
   });

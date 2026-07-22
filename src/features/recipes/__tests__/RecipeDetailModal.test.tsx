@@ -94,4 +94,44 @@ describe('RecipeDetailModal', () => {
     fireEvent.click(screen.getByRole('button', { name: /готово/i }));
     expect(onSelectedRecipeChange).toHaveBeenCalledWith(null);
   });
+
+  it('closes via the accessible header "Закрыть" button', () => {
+    const onSelectedRecipeChange = vi.fn();
+    render(
+      <Wrapper>
+        <RecipeDetailModal
+          recipe={recipe}
+          programs={[]}
+          userProfile={mockProfile}
+          onSelectedRecipeChange={onSelectedRecipeChange}
+          onToggleFavorite={vi.fn()}
+          onEdit={vi.fn()}
+          onDeleteRequested={vi.fn()}
+        />
+      </Wrapper>,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Закрыть' }));
+    expect(onSelectedRecipeChange).toHaveBeenCalledWith(null);
+  });
+
+  it('fires onToggleFavorite from the accessible favorite button', () => {
+    const onToggleFavorite = vi.fn();
+    render(
+      <Wrapper>
+        <RecipeDetailModal
+          recipe={recipe}
+          programs={[]}
+          userProfile={mockProfile}
+          onSelectedRecipeChange={vi.fn()}
+          onToggleFavorite={onToggleFavorite}
+          onEdit={vi.fn()}
+          onDeleteRequested={vi.fn()}
+        />
+      </Wrapper>,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'В избранное' }));
+    expect(onToggleFavorite).toHaveBeenCalledWith('r1');
+  });
 });
