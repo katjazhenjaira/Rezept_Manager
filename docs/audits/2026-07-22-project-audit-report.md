@@ -331,6 +331,8 @@
 
 > **Проблема:** `coverage.include` — allowlist, отставший от реального покрытия. В нём нет `src/features/recipes/**` (при существующих тестах на `RecipeCard`, `RecipesView`, `RecipeDetailModal`, `AddRecipeModals`, `useRecipeFilters`), `src/features/cart/CartView.tsx`, `src/features/auth/**`, `src/features/planner/**`, `src/features/tracker/**`, `src/infrastructure/firebaseStorage.ts` (тест есть — `src/infrastructure/__tests__/firebaseStorage.test.ts`). `npm run test:coverage` рапортует по устаревшему подмножеству и не показывает реальных дыр.
 > **Исправление:** Заменить allowlist на `src/**` с `exclude` для заведомо непокрываемого (`main.tsx`, `firebaseApp.ts`, `test-setup.ts`) — тогда пробелы TEST-1..3 станут видны в отчёте.
+>
+> ✅ Исправлено (commit f2a67ab) — фактическое покрытие по всему `src/` после расширения: statements 47.43% (945/1992), branches 44.65% (631/1413), functions 41.32% (312/755), lines 47.35% (878/1854).
 
 **[TEST-5]** Презентационные модули без тестов (низкий приоритет)
 
