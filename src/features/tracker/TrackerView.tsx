@@ -1,5 +1,5 @@
 // src/features/tracker/TrackerView.tsx
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   Target,
   Droplets,
@@ -70,10 +70,23 @@ export function TrackerView({
   const profile = userProfile ?? DEFAULT_PROFILE;
 
   const today = format(new Date(), 'yyyy-MM-dd');
-  const todayEntries = plannerEntries.filter((e) => e.date === today);
-  const checkedEntriesData = todayEntries.filter((e) => checkedEntries.includes(e.id));
 
-  const actualMacros = sumMacros(checkedEntriesData, recipes);
+  // Три прохода по коллекциям (два filter + sumMacros по всем рецептам) раньше выполнялись
+  // на каждом рендере — включая рендеры от isSuggesting, выбора вариантов и открытия
+  // модалки выбора программы (PERF-1). При длинной истории планера это полный скан на клик.
+  const todayEntries = useMemo(
+    () => plannerEntries.filter((e) => e.date === today),
+    [plannerEntries, today],
+  );
+  const checkedEntriesData = useMemo(
+    () => todayEntries.filter((e) => checkedEntries.includes(e.id)),
+    [todayEntries, checkedEntries],
+  );
+
+  const actualMacros = useMemo(
+    () => sumMacros(checkedEntriesData, recipes),
+    [checkedEntriesData, recipes],
+  );
   const currentTargets = resolveActiveTargets(activeNutritionPlan, profile);
   const remainingMacros = computeRemainingMacros(currentTargets, actualMacros);
 

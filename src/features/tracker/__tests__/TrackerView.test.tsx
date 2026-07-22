@@ -17,6 +17,7 @@ import { TrackerView, type TrackerViewProps } from '../TrackerView';
 import { aiClient } from '@/services/ai/aiClient';
 import type { FillRemainingResponse } from '@/services/ai/contracts';
 import { DEFAULT_PROFILE } from '@/shared/domain/defaults';
+import { sumMacros } from '@/shared/domain/macros';
 
 const defaultSuggestion: FillRemainingResponse = {
   options: [
@@ -47,6 +48,13 @@ vi.mock('@/services/ai/aiClient', () => ({
     fillRemaining: vi.fn(),
   },
 }));
+
+// PERF-1: sumMacros оборачивается шпионом (реализация настоящая), чтобы проверить,
+// что агрегация КБЖУ не пересчитывается на рендерах, не связанных с данными.
+vi.mock('@/shared/domain/macros', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/shared/domain/macros')>();
+  return { ...actual, sumMacros: vi.fn(actual.sumMacros) };
+});
 
 const mockProfile: UserProfile = {
   name: 'Тест',
@@ -247,6 +255,32 @@ describe('TrackerView', () => {
 
     fireEvent.click(screen.getByText(/перейти в планер/i));
     expect(onNavigateToPlanner).toHaveBeenCalledOnce();
+  });
+
+  // PERF-1: агрегаты по записям дня не должны пересчитываться на рендерах,
+  // вызванных состоянием UI (isSuggesting, выбор вариантов, открытие модалки).
+  it('не пересчитывает КБЖУ дня при рендерах, не меняющих данные', async () => {
+    const Wrapper = makeWrapper(dataWithEntry);
+
+    render(
+      <Wrapper>
+        <TrackerView
+          checkedEntries={['e1']}
+          onCheckedEntriesChange={vi.fn()}
+          mealTypes={['Завтрак', 'Обед', 'Ужин', 'Перекус']}
+          onSelectRecipe={vi.fn()}
+          onNavigateToPlanner={vi.fn()}
+        />
+      </Wrapper>,
+    );
+
+    const callsAfterMount = vi.mocked(sumMacros).mock.calls.length;
+
+    fireEvent.click(screen.getByText(/заполнить остаток кбжу/i));
+    await screen.findByText('Творог 5%');
+    fireEvent.click(screen.getByText('Творог 5%'));
+
+    expect(vi.mocked(sumMacros).mock.calls.length).toBe(callsAfterMount);
   });
 
   // LOG-7: пока профиль не загружен, цель по воде должна браться из DEFAULT_PROFILE,
