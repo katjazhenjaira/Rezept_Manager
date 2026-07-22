@@ -31,7 +31,7 @@
 |---|--------|---------|--------|
 | 1 | TrackerView (safety-critical) | CRIT-1, LOG-7, PERF-1 | ✅ |
 | 2 | PlannerView + App.tsx (safety-critical) | CRIT-2, DEAD-2, LOG-3, TS-4 | ✅ |
-| 3 | SettingsModal | TEST-1, LOG-1 | — |
+| 3 | SettingsModal | TEST-1, LOG-1 | ✅ |
 | 4 | ProgramSelectionModal | TEST-2, LOG-2 | — |
 | 5 | ProgramDetailModal — обработчики | TEST-3, LOG-5, LOG-6, UNDOC-2 | — |
 | 6 | Cart | CONV-1, LOG-8 | — |
