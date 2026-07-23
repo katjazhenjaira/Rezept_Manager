@@ -82,6 +82,9 @@ export default function App() {
   const { activeNutritionPlan } = useNutritionPlan();
   const { userProfile: contextProfile, saveUserProfile } = useUserProfile();
   const userProfile = contextProfile ?? DEFAULT_PROFILE;
+  const { recipes, cartItems, programs } = useData();
+  const { programs: programsRepo } = useRepositories();
+
   // Типы трапез — пользовательская настройка профиля (LOG-4): без персистенции добавленный
   // слот исчезал после перезагрузки, а записи планера с ним переставали рендериться.
   const mealTypes = userProfile.mealTypes ?? DEFAULT_MEAL_TYPES;
@@ -92,8 +95,6 @@ export default function App() {
       alert('Не удалось сохранить типы приёмов пищи');
     });
   };
-  const { recipes, cartItems, programs } = useData();
-  const { programs: programsRepo } = useRepositories();
 
   const handleStartRecipeSelection = (programId: string, subfolderId: string | 'main') => {
     setSelectionTarget({ programId, subfolderId });
@@ -299,7 +300,6 @@ export default function App() {
         onClose={() => setIsSettingsOpen(false)}
         availableCategories={availableCategories}
         setAvailableCategories={setAvailableCategories}
-        onCategoryRemoved={() => {}}
       />
     </div>
   );

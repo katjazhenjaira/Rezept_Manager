@@ -61,7 +61,6 @@ type RenderOptions = {
 function renderModal(options: RenderOptions = {}) {
   const { profile = mockProfile, availableCategories = ['Завтрак', 'Обед'] } = options;
   const setAvailableCategories = vi.fn<(setter: (prev: string[]) => string[]) => void>();
-  const onCategoryRemoved = vi.fn<(cat: string) => void>();
   const onClose = vi.fn<() => void>();
   const Wrapper = makeWrapper(profile);
 
@@ -72,12 +71,11 @@ function renderModal(options: RenderOptions = {}) {
         onClose={onClose}
         availableCategories={availableCategories}
         setAvailableCategories={setAvailableCategories}
-        onCategoryRemoved={onCategoryRemoved}
       />
     </Wrapper>,
   );
 
-  return { setAvailableCategories, onCategoryRemoved, onClose };
+  return { setAvailableCategories, onClose };
 }
 
 /** Порядок числовых полей в DOM — он же порядок полей профиля в форме. */
@@ -142,7 +140,6 @@ describe('SettingsModal', () => {
           onClose={vi.fn()}
           availableCategories={[]}
           setAvailableCategories={vi.fn()}
-          onCategoryRemoved={vi.fn()}
         />
       </Wrapper>,
     );
@@ -267,7 +264,7 @@ describe('SettingsModal', () => {
     });
 
     it('удаляет только кастомную категорию после подтверждения', () => {
-      const { setAvailableCategories, onCategoryRemoved } = renderModal({
+      const { setAvailableCategories } = renderModal({
         availableCategories: ['Завтрак', 'Праздничное'],
       });
 
@@ -285,7 +282,6 @@ describe('SettingsModal', () => {
 
       const setter = setAvailableCategories.mock.calls[0]?.[0] as (prev: string[]) => string[];
       expect(setter(['Завтрак', 'Праздничное'])).toEqual(['Завтрак']);
-      expect(onCategoryRemoved).toHaveBeenCalledWith('Праздничное');
     });
   });
 

@@ -47,7 +47,6 @@ type Props = {
   onClose: () => void;
   availableCategories: string[];
   setAvailableCategories: (setter: (prev: string[]) => string[]) => void;
-  onCategoryRemoved: (cat: string) => void;
 };
 
 export function SettingsModal({
@@ -55,7 +54,6 @@ export function SettingsModal({
   onClose,
   availableCategories,
   setAvailableCategories,
-  onCategoryRemoved,
 }: Props) {
   const { i18n } = useTranslation();
   const { userProfile: contextProfile, saveUserProfile } = useUserProfile();
@@ -107,7 +105,6 @@ export function SettingsModal({
   const confirmRemoveCategory = () => {
     if (categoryToDelete) {
       setAvailableCategories((prev) => prev.filter((c) => c !== categoryToDelete));
-      onCategoryRemoved(categoryToDelete);
       setIsCategoryDeleteConfirmOpen(false);
       setCategoryToDelete(null);
     }
