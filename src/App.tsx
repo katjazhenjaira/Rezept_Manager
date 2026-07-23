@@ -16,7 +16,7 @@ import { SettingsModal } from '@/features/settings/SettingsModal';
 import { CartView } from '@/features/cart/CartView';
 import { ProgramsView } from '@/features/programs/ProgramsView';
 import type { Tab, Recipe } from '@/shared/domain/types';
-import { DEFAULT_PROFILE } from '@/shared/domain/defaults';
+import { DEFAULT_PROFILE, DEFAULT_MEAL_TYPES } from '@/shared/domain/defaults';
 import { RecipesView } from '@/features/recipes/RecipesView';
 import { PlannerView } from '@/features/planner/PlannerView';
 import { TrackerView } from '@/features/tracker/TrackerView';
@@ -78,11 +78,20 @@ export default function App() {
   } | null>(null);
   const [selectedRecipeIds, setSelectedRecipeIds] = useState<string[]>([]);
   const [checkedEntries, setCheckedEntries] = useState<string[]>([]);
-  const [mealTypes, setMealTypes] = useState(['Завтрак', 'Обед', 'Ужин', 'Перекус']);
   const [openProgramId, setOpenProgramId] = useState<string | null>(null);
   const { activeNutritionPlan } = useNutritionPlan();
-  const { userProfile: contextProfile } = useUserProfile();
+  const { userProfile: contextProfile, saveUserProfile } = useUserProfile();
   const userProfile = contextProfile ?? DEFAULT_PROFILE;
+  // Типы трапез — пользовательская настройка профиля (LOG-4): без персистенции добавленный
+  // слот исчезал после перезагрузки, а записи планера с ним переставали рендериться.
+  const mealTypes = userProfile.mealTypes ?? DEFAULT_MEAL_TYPES;
+
+  const handleMealTypesChange = (types: string[]) => {
+    void saveUserProfile({ ...userProfile, mealTypes: types }).catch((error: unknown) => {
+      console.error('Error saving meal types:', error);
+      alert('Не удалось сохранить типы приёмов пищи');
+    });
+  };
   const { recipes, cartItems, programs } = useData();
   const { programs: programsRepo } = useRepositories();
 
@@ -207,7 +216,7 @@ export default function App() {
             onSelectRecipe={setSelectedRecipe}
             onNavigateToCart={() => setActiveTab('cart')}
             mealTypes={mealTypes}
-            onMealTypesChange={setMealTypes}
+            onMealTypesChange={handleMealTypesChange}
           />
         );
       case 'cart':

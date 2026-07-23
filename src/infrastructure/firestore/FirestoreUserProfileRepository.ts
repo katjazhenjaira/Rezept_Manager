@@ -2,7 +2,8 @@ import { doc, onSnapshot, setDoc } from 'firebase/firestore';
 import { db } from '@/infrastructure/firebaseApp';
 import type { UserProfile } from '@/shared/domain/types';
 import type { UserProfileRepository } from '@/services/UserProfileRepository';
-import { requiredNumber, requiredString } from './converters';
+import { requiredNumber, requiredString, stringArray } from './converters';
+import { DEFAULT_MEAL_TYPES } from '@/shared/domain/defaults';
 
 function fromFirestore(data: Record<string, unknown>): UserProfile {
   return {
@@ -16,7 +17,8 @@ function fromFirestore(data: Record<string, unknown>): UserProfile {
     targetFats: requiredNumber(data['targetFats'], 'targetFats'),
     targetCarbs: requiredNumber(data['targetCarbs'], 'targetCarbs'),
     waterGoal: requiredNumber(data['waterGoal'], 'waterGoal'),
-    allergies: (data['allergies'] as string[]) ?? [],
+    allergies: stringArray(data['allergies'], 'allergies', []),
+    mealTypes: stringArray(data['mealTypes'], 'mealTypes', DEFAULT_MEAL_TYPES),
   };
 }
 

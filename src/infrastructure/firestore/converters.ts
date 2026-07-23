@@ -30,6 +30,15 @@ export function requiredNumber(value: unknown, fieldName: string): number {
   return value;
 }
 
+export function stringArray(value: unknown, fieldName: string, fallback: string[]): string[] {
+  if (value === undefined || value === null) return fallback;
+  if (!Array.isArray(value) || !value.every((item) => typeof item === 'string')) {
+    console.warn(`stringArray: ${fieldName} is not an array of strings, using fallback`, value);
+    return fallback;
+  }
+  return value as string[];
+}
+
 export function requiredMacros(value: unknown, fieldName: string): Macros {
   if (value == null || typeof value !== 'object') {
     console.warn(

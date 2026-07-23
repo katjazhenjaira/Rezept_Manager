@@ -37,6 +37,8 @@ export type UserProfile = {
   targetCarbs: number;
   waterGoal: number;
   allergies: string[];
+  // Опционально: профили, созданные до LOG-4, поля не имеют — читатели падают на DEFAULT_MEAL_TYPES.
+  mealTypes?: string[];
 };
 
 export type RecipeView = 'all' | 'favorites';

@@ -1,5 +1,7 @@
 import type { UserProfile } from './types';
 
+export const DEFAULT_MEAL_TYPES = ['Завтрак', 'Обед', 'Ужин', 'Перекус'];
+
 export const DEFAULT_PROFILE: UserProfile = {
   name: '',
   age: 30,
@@ -12,4 +14,5 @@ export const DEFAULT_PROFILE: UserProfile = {
   targetCarbs: 200,
   waterGoal: 2000,
   allergies: [],
+  mealTypes: DEFAULT_MEAL_TYPES,
 };

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { timestampToISO, type TimestampLike } from '../converters';
+import { timestampToISO, stringArray, type TimestampLike } from '../converters';
 
 describe('timestampToISO', () => {
   it('passes through an ISO string unchanged', () => {
@@ -39,5 +39,33 @@ describe('timestampToISO', () => {
     timestampToISO(null);
     expect(warn).toHaveBeenCalledWith(expect.stringContaining('missing createdAt'));
     warn.mockRestore();
+  });
+});
+
+describe('stringArray', () => {
+  it('passes through an array of strings unchanged', () => {
+    expect(stringArray(['Завтрак', 'Обед'], 'mealTypes', ['Ужин'])).toEqual(['Завтрак', 'Обед']);
+  });
+
+  it('returns the fallback when the field is missing', () => {
+    expect(stringArray(undefined, 'mealTypes', ['Ужин'])).toEqual(['Ужин']);
+  });
+
+  it('returns the fallback when the value is not an array', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    expect(stringArray({ a: 1 }, 'mealTypes', ['Ужин'])).toEqual(['Ужин']);
+    expect(warn).toHaveBeenCalled();
+    warn.mockRestore();
+  });
+
+  it('returns the fallback when the array contains non-strings', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    expect(stringArray(['Завтрак', 42], 'mealTypes', ['Ужин'])).toEqual(['Ужин']);
+    expect(warn).toHaveBeenCalled();
+    warn.mockRestore();
+  });
+
+  it('passes through an empty array without falling back', () => {
+    expect(stringArray([], 'allergies', ['молоко'])).toEqual([]);
   });
 });
